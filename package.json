@@ -7,7 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "postinstall": "prisma generate"
+    "postinstall": "npx prisma generate"
   },
   "dependencies": {
     "@hookform/resolvers": "^5.2.2",
@@ -28,7 +28,9 @@
     "resend": "^6.8.0",
     "tailwind-merge": "^3.4.0",
     "tailwindcss-animate": "^1.0.7",
-    "zod": "^4.3.5"
+    "zod": "^4.3.5",
+    "@prisma/client": "^6.2.1",
+    "prisma": "^6.2.1"
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
