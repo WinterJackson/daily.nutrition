@@ -1,58 +1,78 @@
-import fs from "fs/promises";
-import path from "path";
 import { services } from "./data";
+import { prisma } from "./prisma";
 
-const CONFIG_FILE = path.join(process.cwd(), "src/data/services-config.json");
-
-// Ensure directory exists
-async function ensureConfigFile() {
+// Helper to seed/sync services if missing
+export async function ensureServicesExist() {
     try {
-        await fs.access(CONFIG_FILE);
-    } catch {
-        const dir = path.dirname(CONFIG_FILE);
-        try {
-            await fs.access(dir);
-        } catch {
-            await fs.mkdir(dir, { recursive: true });
+        const count = await prisma.service.count();
+        if (count === 0) {
+            console.log("Seeding services to database...");
+            for (const service of services) {
+                await prisma.service.create({
+                    data: {
+                        id: service.id,
+                        title: service.title,
+                        shortDescription: service.shortDescription,
+                        isVisible: true,
+                    }
+                });
+            }
         }
-        // Default config: All services active
-        const defaultConfig = services.reduce((acc, service) => {
-            acc[service.id] = true;
-            return acc;
-        }, {} as Record<string, boolean>);
-
-        await fs.writeFile(CONFIG_FILE, JSON.stringify(defaultConfig, null, 2));
+    } catch (error) {
+        console.warn("Database not ready or reachable, treating as empty config.", error);
     }
 }
 
 export async function getServiceConfig(): Promise<Record<string, boolean>> {
-    await ensureConfigFile();
     try {
-        const data = await fs.readFile(CONFIG_FILE, "utf-8");
-        return JSON.parse(data);
+        // Attempt to fetch from DB
+        const dbServices = await prisma.service.findMany({
+            select: { id: true, isVisible: true }
+        });
+
+        if (dbServices.length === 0) {
+            // Fallback to all true for static list
+            return services.reduce((acc, s) => ({ ...acc, [s.id]: true }), {});
+        }
+
+        return dbServices.reduce((acc, s) => {
+            acc[s.id] = s.isVisible;
+            return acc;
+        }, {} as Record<string, boolean>);
+
     } catch (error) {
-        console.error("Failed to read service config:", error);
-        return {};
+        // Check if it's a "connection error" to avoid spamming logs, but logging is good
+        console.error("Failed to fetch service config from DB (using default):", error);
+        // Fallback static
+        return services.reduce((acc, s) => ({ ...acc, [s.id]: true }), {});
     }
 }
 
 export async function updateServiceConfig(id: string, isVisible: boolean) {
-    await ensureConfigFile();
-    const config = await getServiceConfig();
-    config[id] = isVisible;
-    await fs.writeFile(CONFIG_FILE, JSON.stringify(config, null, 2));
-    return config;
-}
-
-export async function getPublicServices() {
-    const config = await getServiceConfig();
-    return services.filter(service => config[service.id] !== false);
+    try {
+        // Upsert ensures that if the service didn't exist in DB yet (e.g. static file updated), we create it
+        await prisma.service.upsert({
+            where: { id },
+            update: { isVisible },
+            create: {
+                id,
+                title: services.find(s => s.id === id)?.title || "Unknown Service",
+                shortDescription: services.find(s => s.id === id)?.shortDescription || "",
+                isVisible
+            }
+        });
+        return getServiceConfig();
+    } catch (error) {
+        console.error("Failed to update service in DB:", error);
+        throw error;
+    }
 }
 
 export async function getAllServicesWithStatus() {
     const config = await getServiceConfig();
+
     return services.map(service => ({
         ...service,
-        isVisible: config[service.id] !== false // Default to true if missing
+        isVisible: config[service.id] !== false // Default to true
     }));
 }
