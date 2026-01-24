@@ -1,28 +1,42 @@
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
-const resend = new Resend(process.env.RESEND_API_KEY);
-
 export async function POST(request: Request) {
-    try {
-        const body = await request.json();
-        const { name, email, phone, service, message } = body;
+  try {
+    const apiKey = process.env.RESEND_API_KEY;
 
-        // Validate input
-        if (!name || !email || !message) {
-            return NextResponse.json(
-                { error: 'Name, email, and message are required' },
-                { status: 400 }
-            );
-        }
+    // During build time, this might run without env vars. 
+    // We handle this gracefully.
+    if (!apiKey) {
+      console.error('RESEND_API_KEY is missing');
+      // If this is hit during build, it just returns strict json. 
+      // If hit during runtime, it creates an error response.
+      // However, we only initialize Resend if we have a key.
+      return NextResponse.json(
+        { error: 'Server configuration error: Missing API Key' },
+        { status: 500 }
+      );
+    }
 
-        // Send email to the business
-        const { data, error } = await resend.emails.send({
-            from: 'Daily Nutrition <noreply@dailynutrition.com>',
-            to: ['info@dailynutrition.com'],
-            replyTo: email,
-            subject: `New Inquiry: ${service || 'General'} - ${name}`,
-            html: `
+    const resend = new Resend(apiKey);
+    const body = await request.json();
+    const { name, email, phone, service, message } = body;
+
+    // Validate input
+    if (!name || !email || !message) {
+      return NextResponse.json(
+        { error: 'Name, email, and message are required' },
+        { status: 400 }
+      );
+    }
+
+    // Send email to the business
+    const { data, error } = await resend.emails.send({
+      from: 'Daily Nutrition <noreply@dailynutrition.com>',
+      to: ['info@dailynutrition.com'],
+      replyTo: email,
+      subject: `New Inquiry: ${service || 'General'} - ${name}`,
+      html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #4A5D23 0%, #6B8E23 100%); padding: 24px; border-radius: 12px 12px 0 0;">
             <h1 style="color: white; margin: 0; font-size: 24px;">New Consultation Inquiry</h1>
@@ -61,19 +75,19 @@ export async function POST(request: Request) {
           </div>
         </div>
       `,
-        });
+    });
 
-        if (error) {
-            console.error('Resend error:', error);
-            return NextResponse.json({ error: 'Failed to send email' }, { status: 500 });
-        }
+    if (error) {
+      console.error('Resend error:', error);
+      return NextResponse.json({ error: 'Failed to send email' }, { status: 500 });
+    }
 
-        // Send confirmation email to the client
-        await resend.emails.send({
-            from: 'Daily Nutrition <noreply@dailynutrition.com>',
-            to: [email],
-            subject: 'Thank you for contacting Daily Nutrition',
-            html: `
+    // Send confirmation email to the client
+    await resend.emails.send({
+      from: 'Daily Nutrition <noreply@dailynutrition.com>',
+      to: [email],
+      subject: 'Thank you for contacting Daily Nutrition',
+      html: `
         <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
           <div style="background: linear-gradient(135deg, #4A5D23 0%, #6B8E23 100%); padding: 24px; border-radius: 12px 12px 0 0; text-align: center;">
             <h1 style="color: white; margin: 0; font-size: 24px;">Thank You, ${name}!</h1>
@@ -100,11 +114,11 @@ export async function POST(request: Request) {
           </div>
         </div>
       `,
-        });
+    });
 
-        return NextResponse.json({ success: true, id: data?.id });
-    } catch (error) {
-        console.error('API error:', error);
-        return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
-    }
+    return NextResponse.json({ success: true, id: data?.id });
+  } catch (error) {
+    console.error('API error:', error);
+    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+  }
 }
