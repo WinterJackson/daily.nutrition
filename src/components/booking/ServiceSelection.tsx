@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/Button"
 import { pricing, services } from "@/lib/data"
 import { cn } from "@/lib/utils"
-import { CheckCircle2, Globe, MapPin } from "lucide-react"
+import { CheckCircle2, Globe, MapPin, Sparkles } from "lucide-react"
 import { useState } from "react"
 
 interface ServiceSelectionProps {
@@ -18,6 +18,9 @@ export function ServiceSelection({ onServiceSelect, selectedServiceId, activeSer
   const visibleServices = activeServiceIds 
     ? services.filter(s => activeServiceIds.includes(s.id))
     : services;
+
+  const discoveryService = visibleServices.find(s => s.id === "discovery-call")
+  const gridServices = visibleServices.filter(s => s.id !== "discovery-call")
 
   return (
     <div className="space-y-12">
@@ -67,9 +70,62 @@ export function ServiceSelection({ onServiceSelect, selectedServiceId, activeSer
         </p>
       </div>
 
+      {/* Featured Service (Discovery Call) */}
+      {/* Featured Service (Discovery Call) */}
+      {discoveryService && (
+        <div 
+          onClick={() => onServiceSelect(discoveryService.id)}
+          className={cn(
+            "relative group cursor-pointer rounded-3xl p-8 md:p-10 border transition-all duration-300 hover:shadow-xl overflow-hidden max-w-5xl mx-auto",
+            selectedServiceId === discoveryService.id
+              ? "bg-white dark:bg-white/5 border-brand-green ring-1 ring-brand-green shadow-lg shadow-brand-green/10"
+              : "bg-white/60 dark:bg-white/[0.02] border-neutral-200 dark:border-white/10 hover:border-brand-green/50 backdrop-blur-sm"
+          )}
+        >
+           {/* Selection Check */}
+           <div className={cn(
+              "absolute top-6 right-6 w-8 h-8 rounded-full border-2 flex items-center justify-center transition-colors z-10",
+              selectedServiceId === discoveryService.id
+                ? "bg-brand-green border-brand-green text-white"
+                : "border-neutral-300 dark:border-white/20"
+            )}>
+              {selectedServiceId === discoveryService.id && <CheckCircle2 className="w-5 h-5" />}
+            </div>
+
+           <div className="flex flex-col md:flex-row items-center gap-8">
+              <div className="flex-shrink-0">
+                 <div className={cn("w-20 h-20 rounded-2xl flex items-center justify-center", discoveryService.bgColor, discoveryService.color)}>
+                    <discoveryService.icon className="w-10 h-10" />
+                 </div>
+              </div>
+              <div className="flex-grow text-center md:text-left">
+                 <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-green/10 text-brand-green text-xs font-bold uppercase tracking-wider mb-3">
+                    <Sparkles className="w-3 h-3" />
+                    Most Popular
+                 </div>
+                 <h3 className="text-2xl font-serif font-bold text-olive dark:text-off-white mb-2">
+                    {discoveryService.title}
+                 </h3>
+                 <p className="text-neutral-600 dark:text-neutral-300 mb-6 max-w-2xl leading-relaxed">
+                    {discoveryService.fullDescription}
+                 </p>
+                 <Button 
+                    variant={selectedServiceId === discoveryService.id ? "accent" : "default"} 
+                    className={cn(
+                      "w-full md:w-auto min-w-[200px] h-12 rounded-full font-semibold shadow-md",
+                      selectedServiceId === discoveryService.id ? "" : "bg-brand-green hover:bg-brand-green/90 text-white"
+                    )}
+                 >
+                    {selectedServiceId === discoveryService.id ? "Selected" : "Select Free Discovery Call"}
+                 </Button>
+              </div>
+           </div>
+        </div>
+      )}
+
       {/* Service Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        {visibleServices.map((service) => (
+        {gridServices.map((service) => (
           <div 
             key={service.id}
             onClick={() => onServiceSelect(service.id)}

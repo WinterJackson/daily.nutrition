@@ -14,6 +14,9 @@ import Link from "next/link"
 export function ServicesPageContent({ activeServiceIds }: { activeServiceIds: string[] }) {
   const visibleServices = allServices.filter(s => activeServiceIds.includes(s.id))
   
+  const discoveryService = visibleServices.find(s => s.id === "discovery-call")
+  const gridServices = visibleServices.filter(s => s.id !== "discovery-call")
+  
   const isDiscoveryCallActive = activeServiceIds.includes("discovery-call")
 
   return (
@@ -59,11 +62,58 @@ export function ServicesPageContent({ activeServiceIds }: { activeServiceIds: st
             Comprehensive, evidence-based nutrition programs tailored to your unique health goals.
           </motion.p>
        </section>
+
+       {/* Featured Service (Discovery Call) */}
+       {discoveryService && (
+          <section className="relative z-10 container max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 mb-24">
+             <motion.div
+               initial={{ opacity: 0, y: 20 }}
+               whileInView={{ opacity: 1, y: 0 }}
+               viewport={{ once: true }}
+               whileHover={{ y: -5 }}
+               transition={{ duration: 0.5 }}
+             >
+                <Card className="border-brand-green/30 dark:border-brand-green/20 shadow-xl shadow-brand-green/5 bg-white/60 dark:bg-white/5 backdrop-blur-md overflow-hidden">
+                   <div className="flex flex-col md:flex-row items-center">
+                      <div className="p-8 md:p-12 flex-shrink-0 bg-brand-green/10 md:h-full flex items-center justify-center min-h-[200px] md:min-h-0 w-full md:w-auto md:border-r border-brand-green/10">
+                         <div className="w-20 h-20 rounded-2xl bg-white dark:bg-charcoal text-brand-green flex items-center justify-center shadow-sm">
+                            <discoveryService.icon className="w-10 h-10" />
+                         </div>
+                      </div>
+                      <div className="flex-grow p-8 md:p-12 text-center md:text-left">
+                         <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-green/10 text-brand-green text-xs font-bold uppercase tracking-wider mb-4">
+                            <Sparkles className="w-3 h-3" />
+                            Most Popular
+                         </div>
+                         <h3 className="text-2xl md:text-3xl font-serif font-bold text-olive dark:text-off-white mb-4">
+                            {discoveryService.title}
+                         </h3>
+                         <p className="text-neutral-600 dark:text-neutral-300 mb-8 max-w-xl mx-auto md:mx-0 leading-relaxed">
+                            {discoveryService.fullDescription}
+                         </p>
+                         <div className="flex flex-col sm:flex-row items-center gap-4 justify-center md:justify-start">
+                            <Button asChild size="lg" className="bg-brand-green hover:bg-brand-green/90 text-white font-semibold px-8 h-12 rounded-full shadow-lg shadow-brand-green/20">
+                               <Link href={`/booking?service=${discoveryService.slug}`}>
+                                  Book Now - Free
+                               </Link>
+                            </Button>
+                            <Button asChild variant="ghost" className="text-olive dark:text-off-white hover:bg-olive/5 dark:hover:bg-white/10">
+                               <Link href={`/services/${discoveryService.slug}`} className="flex items-center gap-2">
+                                  Learn more <ArrowRight className="w-4 h-4" />
+                               </Link>
+                            </Button>
+                         </div>
+                      </div>
+                   </div>
+                </Card>
+             </motion.div>
+          </section>
+       )}
        
        {/* Grid */}
        <section className="relative z-10 container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6">
-            {visibleServices.map((service, index) => (
+            {gridServices.map((service, index) => (
               <motion.div
                 key={service.id}
                 initial={{ opacity: 0, y: 30 }}

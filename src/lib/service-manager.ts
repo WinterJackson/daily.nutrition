@@ -32,7 +32,7 @@ export async function getServiceConfig(): Promise<Record<string, boolean>> {
 
         if (dbServices.length === 0) {
             // Fallback to all true for static list
-            return services.reduce((acc, s) => ({ ...acc, [s.id]: true }), {});
+            return services.reduce((acc, s) => ({ ...acc, [s.id]: true }), {} as Record<string, boolean>);
         }
 
         return dbServices.reduce((acc, s) => {
@@ -44,7 +44,7 @@ export async function getServiceConfig(): Promise<Record<string, boolean>> {
         // Check if it's a "connection error" to avoid spamming logs, but logging is good
         console.error("Failed to fetch service config from DB (using default):", error);
         // Fallback static
-        return services.reduce((acc, s) => ({ ...acc, [s.id]: true }), {});
+        return services.reduce((acc, s) => ({ ...acc, [s.id]: true }), {} as Record<string, boolean>);
     }
 }
 
