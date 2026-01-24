@@ -83,8 +83,8 @@ export const services = [
             "Preventive Care"
         ],
         targetAudience: "Anyone seeking to improve their general health and prevent chronic diseases.",
-        color: "text-gold",
-        bgColor: "bg-gold/10",
+        color: "text-olive",
+        bgColor: "bg-olive/10",
     },
 ]
 
