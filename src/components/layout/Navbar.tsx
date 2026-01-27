@@ -13,6 +13,7 @@ import * as React from "react"
 const navLinks = [
   { name: "Services", href: "/services" },
   { name: "About", href: "/about" },
+  { name: "Blog", href: "/blog" },
   { name: "Contact", href: "/contact" },
 ]
 
@@ -35,7 +36,7 @@ export function Navbar() {
         className={cn(
           "fixed top-[5px] left-[5px] right-[5px] z-50 transition-all duration-300 border border-transparent rounded-xl",
           isScrolled
-            ? "bg-white/80 dark:bg-charcoal/80 backdrop-blur-md shadow-lg border-neutral-200 dark:border-white/10"
+            ? "bg-white/80 dark:bg-olive/70 backdrop-blur-md shadow-lg border-neutral-200 dark:border-white/10"
             : "bg-transparent"
         )}
       >
@@ -54,24 +55,28 @@ export function Navbar() {
             </Link>
 
             {/* Desktop Nav */}
-            <nav className="hidden md:flex items-center gap-8">
-              {navLinks.map((link) => (
-                <Link
-                  key={link.href}
-                  href={link.href}
-                  className={cn(
-                    "text-sm font-medium transition-colors hover:text-brand-green relative",
-                    pathname === link.href ? "text-brand-green" : "text-charcoal dark:text-gray-300"
+            <nav className="hidden md:flex items-center">
+              {navLinks.map((link, index) => (
+                <div key={link.href} className="flex items-center">
+                  <Link
+                    href={link.href}
+                    className={cn(
+                      "text-sm font-medium transition-colors hover:text-orange relative",
+                      pathname === link.href ? "text-orange" : "text-charcoal dark:text-gray-200"
+                    )}
+                  >
+                    {link.name}
+                    {pathname === link.href && (
+                      <motion.div
+                        layoutId="underline"
+                        className="absolute left-0 top-full block h-[2px] w-full bg-orange mt-1"
+                      />
+                    )}
+                  </Link>
+                  {index < navLinks.length - 1 && (
+                    <span className="mx-8 text-neutral-400 dark:text-white/60 select-none font-normal">|</span>
                   )}
-                >
-                  {link.name}
-                  {pathname === link.href && (
-                    <motion.div
-                      layoutId="underline"
-                      className="absolute left-0 top-full block h-[2px] w-full bg-brand-green mt-1"
-                    />
-                  )}
-                </Link>
+                </div>
               ))}
             </nav>
 
@@ -105,7 +110,7 @@ export function Navbar() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden bg-white dark:bg-charcoal border-b border-neutral-200 dark:border-white/10 overflow-hidden shadow-lg"
+              className="md:hidden bg-white dark:bg-olive border-b border-neutral-200 dark:border-white/10 overflow-hidden shadow-lg"
             >
               <div className="container mx-auto px-4 py-6 space-y-4 flex flex-col">
                 {navLinks.map((link) => (

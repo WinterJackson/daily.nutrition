@@ -9,7 +9,8 @@ import {
     DialogTitle,
     DialogTrigger,
 } from "@/components/ui/Dialog"
-import { Calendar, Clock, Globe, Video } from "lucide-react"
+import { AlertCircle, Calendar, Clock, Globe, Video } from "lucide-react"
+import Link from "next/link"
 import { useState } from "react"
 
 interface BookingModalProps {
@@ -19,9 +20,11 @@ interface BookingModalProps {
 
 export function BookingModal({
   trigger,
-  calendlyUrl = "https://calendly.com/dailynutrition/consultation",
+  calendlyUrl = "",
 }: BookingModalProps) {
   const [isOpen, setIsOpen] = useState(false)
+
+  const isCalendlyConfigured = calendlyUrl && calendlyUrl.startsWith("https://calendly.com/")
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
@@ -71,32 +74,64 @@ export function BookingModal({
           </div>
         </div>
 
-        {/* Calendly Embed */}
-        <div className="h-[500px] w-full">
-          <iframe
-            src={calendlyUrl}
-            width="100%"
-            height="100%"
-            frameBorder="0"
-            title="Book a consultation"
-            className="border-0"
-          />
-        </div>
+        {/* Calendly Embed or Fallback */}
+        {isCalendlyConfigured ? (
+          <div className="h-[500px] w-full">
+            <iframe
+              src={calendlyUrl}
+              width="100%"
+              height="100%"
+              frameBorder="0"
+              title="Book a consultation"
+              className="border-0"
+            />
+          </div>
+        ) : (
+          <div className="p-12 text-center">
+            <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-orange/10 flex items-center justify-center">
+              <AlertCircle className="w-8 h-8 text-orange" />
+            </div>
+            <h3 className="text-xl font-serif font-bold text-olive dark:text-off-white mb-3">
+              Booking Coming Soon
+            </h3>
+            <p className="text-neutral-500 dark:text-neutral-400 max-w-md mx-auto mb-6">
+              Online booking is currently unavailable. Please check back later or contact us directly to book your appointment.
+            </p>
+            <div className="flex gap-3 justify-center">
+              <Link 
+                href="/booking" 
+                className="inline-flex items-center gap-2 px-6 py-3 bg-brand-green text-white rounded-full font-medium hover:bg-brand-green/90 transition-colors"
+                onClick={() => setIsOpen(false)}
+              >
+                Go to Booking Page
+              </Link>
+              <Link 
+                href="/contact" 
+                className="inline-flex items-center gap-2 px-6 py-3 border border-neutral-200 dark:border-white/10 rounded-full font-medium hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors"
+                onClick={() => setIsOpen(false)}
+              >
+                Contact Us
+              </Link>
+            </div>
+          </div>
+        )}
 
-        {/* Fallback Link */}
-        <div className="p-4 bg-neutral-50 dark:bg-white/5 border-t border-neutral-100 dark:border-white/10 text-center">
-          <p className="text-xs text-neutral-500">
-            Having trouble? {" "}
-            <a
-              href={calendlyUrl}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-brand-green hover:underline font-medium"
-            >
-              Open in new tab
-            </a>
-          </p>
-        </div>
+        {/* Fallback Link - only show when Calendly is configured */}
+        {isCalendlyConfigured && (
+          <div className="p-4 bg-neutral-50 dark:bg-white/5 border-t border-neutral-100 dark:border-white/10 text-center">
+            <p className="text-xs text-neutral-500">
+              Having trouble?{" "}
+              <a
+                href={calendlyUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-brand-green hover:underline font-medium"
+              >
+                Open in new tab
+              </a>
+            </p>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   )

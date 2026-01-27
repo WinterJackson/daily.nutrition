@@ -1,14 +1,18 @@
 "use client"
 
+import { uploadImage } from "@/app/actions/upload"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
-import { Calendar, Upload } from "lucide-react"
+import { Calendar, Upload, X } from "lucide-react"
+import Image from "next/image"
+import { useRef, useTransition } from "react"
 
 interface EditorSidebarProps {
   status: "Draft" | "Published"
   category: string
   date: string
+  image: string | null
   onChange: (key: string, value: string) => void
   onSave: () => void
   isSaving: boolean
@@ -16,7 +20,37 @@ interface EditorSidebarProps {
 
 const categories = ["Education", "Announcement", "Nutrition Tips", "Research", "Recipe"]
 
-export function EditorSidebar({ status, category, date, onChange, onSave, isSaving }: EditorSidebarProps) {
+export function EditorSidebar({ status, category, date, image, onChange, onSave, isSaving }: EditorSidebarProps) {
+  const [isUploading, startTransition] = useTransition()
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handleUploadClick = () => {
+    fileInputRef.current?.click()
+  }
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    startTransition(async () => {
+        const formData = new FormData()
+        formData.append("file", file)
+        
+        const res = await uploadImage(formData)
+        if (res.success && res.url) {
+            onChange("image", res.url)
+        } else {
+            console.error("Upload failed", res.error)
+            // Ideally show a toast here
+        }
+    })
+  }
+
+  const removeImage = (e: React.MouseEvent) => {
+    e.stopPropagation()
+    onChange("image", "")
+  }
+
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-1 gap-6">
       {/* Publish Card */}
@@ -88,12 +122,49 @@ export function EditorSidebar({ status, category, date, onChange, onSave, isSavi
            <CardTitle className="text-sm font-bold uppercase tracking-wider text-neutral-500">Featured Image</CardTitle>
         </CardHeader>
         <CardContent className="pt-4">
-           <div className="border-2 border-dashed border-neutral-200 dark:border-white/10 rounded-xl p-6 flex flex-col items-center justify-center text-center hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors cursor-pointer">
-               <div className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-white/10 flex items-center justify-center mb-3">
-                  <Upload className="w-5 h-5 text-neutral-400" />
-               </div>
-               <p className="text-xs text-neutral-500 font-medium">Click to upload</p>
-               <p className="text-[10px] text-neutral-400 mt-1">PNG, JPG up to 2MB</p>
+           <div 
+             onClick={handleUploadClick}
+             className={`relative border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center transition-colors cursor-pointer overflow-hidden ${
+               isUploading ? "opacity-50 pointer-events-none" : "hover:bg-neutral-50 dark:hover:bg-white/5"
+             } ${image ? "border-solid border-transparent p-0" : "border-neutral-200 dark:border-white/10"}`}
+           >
+               <input 
+                 ref={fileInputRef}
+                 type="file" 
+                 accept="image/*" 
+                 className="hidden" 
+                 onChange={handleFileChange}
+               />
+               
+               {image ? (
+                 <div className="relative w-full aspect-video group">
+                    <Image 
+                      src={image} 
+                      alt="Featured" 
+                      fill 
+                      className="object-cover" 
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
+                       <p className="text-white text-xs font-medium">Click to change</p>
+                    </div>
+                    <button 
+                      onClick={removeImage}
+                      className="absolute top-2 right-2 p-1 bg-white/20 backdrop-blur-md rounded-full hover:bg-red-500 hover:text-white transition-colors text-white"
+                    >
+                       <X className="w-4 h-4" />
+                    </button>
+                 </div>
+               ) : (
+                 <>
+                   <div className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-white/10 flex items-center justify-center mb-3">
+                      {isUploading ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-brand-green"></div> : <Upload className="w-5 h-5 text-neutral-400" />}
+                   </div>
+                   <p className="text-xs text-neutral-500 font-medium">
+                      {isUploading ? "Uploading..." : "Click to upload"}
+                   </p>
+                   <p className="text-[10px] text-neutral-400 mt-1">PNG, JPG up to 2MB</p>
+                 </>
+               )}
            </div>
         </CardContent>
       </Card>

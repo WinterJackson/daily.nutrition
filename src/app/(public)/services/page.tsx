@@ -1,11 +1,10 @@
+import { getServices } from "@/app/actions/services"
 import { ServicesPageContent } from "@/components/services/ServicesPageContent"
-import { getServiceConfig } from "@/lib/service-manager"
 
 export default async function ServicesPage() {
-  const serviceConfig = await getServiceConfig()
-  const activeServiceIds = Object.keys(serviceConfig).filter(id => serviceConfig[id])
+  const services = await getServices()
 
   return (
-    <ServicesPageContent activeServiceIds={activeServiceIds} />
+    <ServicesPageContent services={services} />
   )
 }

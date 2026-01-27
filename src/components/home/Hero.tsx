@@ -9,7 +9,11 @@ import { ArrowRight } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 
-export function Hero() {
+interface HeroProps {
+  calendlyUrl?: string
+}
+
+export function Hero({ calendlyUrl }: HeroProps) {
   const { scrollY } = useScroll()
   const y = useTransform(scrollY, [0, 500], [0, 100])
   const opacity = useTransform(scrollY, [0, 300], [1, 0])
@@ -56,7 +60,7 @@ export function Hero() {
             </p>
             
             <div className="flex flex-col sm:flex-row gap-4 pt-2">
-              <BookingModal />
+              <BookingModal calendlyUrl={calendlyUrl} />
               <Link href="/services">
                 <Button size="lg" variant="outline" className="h-12 px-8 border-olive/20 hover:bg-olive/5 text-olive dark:text-off-white dark:border-white/20 dark:hover:bg-white/10">
                   View Services

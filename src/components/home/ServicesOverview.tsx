@@ -3,15 +3,27 @@
 import { AnimatedBackground } from "@/components/ui/AnimatedBackground"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
-import { services as allServices } from "@/lib/data"
+import { ServiceIcon } from "@/components/ui/ServiceIcon"
 import { motion } from "framer-motion"
-import { ArrowRight } from "lucide-react"
+import { ArrowRight, Sparkles } from "lucide-react"
+import Link from "next/link"
 
-export function ServicesOverview({ activeServiceIds }: { activeServiceIds?: string[] }) {
-  // If activeServiceIds is provided, filter. Otherwise show all (or handle default).
-  const visibleServices = activeServiceIds 
-    ? allServices.filter(s => activeServiceIds.includes(s.id))
-    : allServices; // or empty? Default to all is safer for now if prop missing.
+interface Service {
+    id: string
+    title: string
+    slug: string
+    icon: string
+    shortDescription: string
+    fullDescription: string | null
+    features: string[]
+    targetAudience: string | null
+    color: string
+    bgColor: string
+}
+
+export function ServicesOverview({ services }: { services: Service[] }) {
+  const discoveryService = services.find(s => s.id === "discovery-call")
+  const gridServices = services.filter(s => s.id !== "discovery-call")
 
   return (
     <section className="py-24 bg-white/50 dark:bg-charcoal relative overflow-hidden">
@@ -49,8 +61,54 @@ export function ServicesOverview({ activeServiceIds }: { activeServiceIds?: stri
           </motion.p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {visibleServices.map((service, index) => (
+        {/* Featured Service (Discovery Call) */}
+        {discoveryService && (
+           <motion.div
+             initial={{ opacity: 0, y: 20 }}
+             whileInView={{ opacity: 1, y: 0 }}
+             viewport={{ once: true }}
+             whileHover={{ y: -5 }}
+             transition={{ duration: 0.5 }}
+             className="mb-16 max-w-5xl mx-auto"
+           >
+              <Card className="border-brand-green/30 dark:border-brand-green/20 shadow-xl shadow-brand-green/5 bg-white/60 dark:bg-white/5 backdrop-blur-md overflow-hidden">
+                 <div className="flex flex-col md:flex-row items-center">
+                    <div className="p-8 md:p-12 flex-shrink-0 bg-brand-green/10 md:h-full flex items-center justify-center min-h-[200px] md:min-h-0 w-full md:w-auto md:border-r border-brand-green/10">
+                       <div className="w-20 h-20 rounded-2xl bg-white dark:bg-charcoal text-brand-green flex items-center justify-center shadow-sm">
+                          <ServiceIcon name={discoveryService.icon} className="w-10 h-10" />
+                       </div>
+                    </div>
+                    <div className="flex-grow p-8 md:p-12 text-center md:text-left">
+                       <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-green/10 text-brand-green text-xs font-bold uppercase tracking-wider mb-4">
+                          <Sparkles className="w-3 h-3" />
+                          Most Popular
+                       </div>
+                       <h3 className="text-2xl md:text-3xl font-serif font-bold text-olive dark:text-off-white mb-4">
+                          {discoveryService.title}
+                       </h3>
+                       <p className="text-neutral-600 dark:text-neutral-300 mb-8 max-w-xl mx-auto md:mx-0 leading-relaxed">
+                          {discoveryService.fullDescription}
+                       </p>
+                       <div className="flex flex-col sm:flex-row items-center gap-4 justify-center md:justify-start">
+                          <Button asChild size="lg" className="bg-brand-green hover:bg-brand-green/90 text-white font-semibold px-8 h-12 rounded-full shadow-lg shadow-brand-green/20">
+                             <Link href={`/booking?service=${discoveryService.slug}`}>
+                                Book Now - Free
+                             </Link>
+                          </Button>
+                          <Button asChild variant="ghost" className="text-olive dark:text-off-white hover:bg-olive/5 dark:hover:bg-white/10">
+                             <Link href={`/services/${discoveryService.slug}`} className="flex items-center gap-2">
+                                Learn more <ArrowRight className="w-4 h-4" />
+                             </Link>
+                          </Button>
+                       </div>
+                    </div>
+                 </div>
+              </Card>
+           </motion.div>
+        )}
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {gridServices.map((service, index) => (
             <motion.div
               key={service.id}
               initial={{ opacity: 0, y: 30 }}
@@ -63,7 +121,7 @@ export function ServicesOverview({ activeServiceIds }: { activeServiceIds?: stri
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-transparent to-soft-green/5 dark:to-white/5 rounded-bl-[100px] transition-all group-hover:scale-110"></div>
                 <CardHeader>
                   <div className={`w-12 h-12 rounded-xl ${service.bgColor} ${service.color} flex items-center justify-center mb-4 transition-transform group-hover:scale-110`}>
-                    <service.icon className="w-6 h-6" />
+                    <ServiceIcon name={service.icon} className="w-6 h-6" />
                   </div>
                   <CardTitle className="mb-2 text-xl text-olive dark:text-off-white">{service.title}</CardTitle>
                 </CardHeader>

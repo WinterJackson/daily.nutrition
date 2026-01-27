@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/Button"
 import { cn } from "@/lib/utils"
 import { AnimatePresence, motion } from "framer-motion"
 import {
+    Calendar,
     ChevronLeft,
     Files,
     Laptop,
@@ -12,6 +13,7 @@ import {
     Menu,
     Moon,
     Settings,
+    Star,
     Sun,
     User,
     Users,
@@ -25,9 +27,11 @@ import { useEffect, useState } from "react"
 
 const adminLinks = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
+  { name: "Bookings", href: "/admin/bookings", icon: Calendar },
   { name: "Services", href: "/admin/services", icon: Files },
   { name: "Blog & News", href: "/admin/blog", icon: Files },
   { name: "Inquiries", href: "/admin/inquiries", icon: Users },
+  { name: "Testimonials", href: "/admin/testimonials", icon: Star },
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ]
 
@@ -234,7 +238,38 @@ export function AdminSidebar() {
     </>
   )
 
-  if (!mounted) return null
+  // Return a skeleton placeholder while not mounted to prevent layout shift
+  if (!mounted) {
+    return (
+      <>
+        {/* Mobile Header Skeleton */}
+        <div className="lg:hidden fixed top-[2px] left-[2px] right-[2px] h-16 bg-olive/95 backdrop-blur-lg border-b border-white/10 z-50 flex items-center justify-between px-4 shadow-lg rounded-[10px]">
+          <div className="w-10 h-10 bg-white/20 rounded-[10px] animate-pulse" />
+          <div className="w-28 h-10 bg-white/20 rounded-[10px] animate-pulse" />
+          <div className="w-9 h-9 bg-white/20 rounded-full animate-pulse" />
+        </div>
+        
+        {/* Desktop Sidebar Skeleton */}
+        <aside className="hidden lg:flex fixed top-[5px] left-[5px] bottom-[5px] w-[260px] bg-olive text-white shadow-2xl z-40 flex-col border border-white/10 rounded-xl overflow-hidden">
+          <div className="h-20 flex items-center border-b border-white/10 px-4">
+            <div className="h-12 w-32 bg-white/20 rounded-[10px] animate-pulse" />
+          </div>
+          <nav className="flex-1 p-3 space-y-2">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-11 bg-white/10 rounded-xl animate-pulse" />
+            ))}
+          </nav>
+          <div className="p-4 border-t border-white/10 space-y-4 bg-black/10">
+            <div className="h-10 bg-white/10 rounded-xl animate-pulse" />
+            <div className="h-10 bg-white/10 rounded-xl animate-pulse" />
+          </div>
+        </aside>
+        
+        {/* Spacer for desktop sidebar */}
+        <div className="hidden lg:block w-[265px] shrink-0 h-screen" />
+      </>
+    )
+  }
 
   return (
     <>

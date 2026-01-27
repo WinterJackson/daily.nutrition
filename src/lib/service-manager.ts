@@ -11,6 +11,7 @@ export async function ensureServicesExist() {
                 await prisma.service.create({
                     data: {
                         id: service.id,
+                        slug: service.id, // Use ID as slug for now
                         title: service.title,
                         shortDescription: service.shortDescription,
                         isVisible: true,
@@ -41,9 +42,9 @@ export async function getServiceConfig(): Promise<Record<string, boolean>> {
         }, {} as Record<string, boolean>);
 
     } catch (error) {
-        // Check if it's a "connection error" to avoid spamming logs, but logging is good
-        console.error("Failed to fetch service config from DB (using default):", error);
-        // Fallback static
+        // Log the error but don't crash the app (warn only to avoid overlay)
+        console.warn("Failed to fetch service config from DB (using default):", error instanceof Error ? error.message : String(error));
+        // Fallback: assume all services are visible
         return services.reduce((acc, s) => ({ ...acc, [s.id]: true }), {} as Record<string, boolean>);
     }
 }
@@ -56,6 +57,7 @@ export async function updateServiceConfig(id: string, isVisible: boolean) {
             update: { isVisible },
             create: {
                 id,
+                slug: id,
                 title: services.find(s => s.id === id)?.title || "Unknown Service",
                 shortDescription: services.find(s => s.id === id)?.shortDescription || "",
                 isVisible

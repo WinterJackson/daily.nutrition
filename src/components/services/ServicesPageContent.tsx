@@ -5,19 +5,31 @@ import { Button } from "@/components/ui/Button"
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/Card"
 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/Accordion"
-import { services as allServices, faqs, processSteps } from "@/lib/data"
+import { ServiceIcon } from "@/components/ui/ServiceIcon"
+import { faqs, processSteps } from "@/lib/data"
 import { motion } from "framer-motion"
 import { ArrowRight, Sparkles } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
 
-export function ServicesPageContent({ activeServiceIds }: { activeServiceIds: string[] }) {
-  const visibleServices = allServices.filter(s => activeServiceIds.includes(s.id))
+interface Service {
+    id: string
+    title: string
+    slug: string
+    icon: string
+    shortDescription: string
+    fullDescription: string | null
+    features: string[]
+    targetAudience: string | null
+    color: string
+    bgColor: string
+}
+
+export function ServicesPageContent({ services }: { services: Service[] }) {
+  const discoveryService = services.find(s => s.id === "discovery-call")
+  const gridServices = services.filter(s => s.id !== "discovery-call")
   
-  const discoveryService = visibleServices.find(s => s.id === "discovery-call")
-  const gridServices = visibleServices.filter(s => s.id !== "discovery-call")
-  
-  const isDiscoveryCallActive = activeServiceIds.includes("discovery-call")
+  const isDiscoveryCallActive = !!discoveryService
 
   return (
     <div className="min-h-screen bg-off-white dark:bg-charcoal pt-24 pb-24 relative overflow-hidden">
@@ -77,7 +89,7 @@ export function ServicesPageContent({ activeServiceIds }: { activeServiceIds: st
                    <div className="flex flex-col md:flex-row items-center">
                       <div className="p-8 md:p-12 flex-shrink-0 bg-brand-green/10 md:h-full flex items-center justify-center min-h-[200px] md:min-h-0 w-full md:w-auto md:border-r border-brand-green/10">
                          <div className="w-20 h-20 rounded-2xl bg-white dark:bg-charcoal text-brand-green flex items-center justify-center shadow-sm">
-                            <discoveryService.icon className="w-10 h-10" />
+                            <ServiceIcon name={discoveryService.icon} className="w-10 h-10" />
                          </div>
                       </div>
                       <div className="flex-grow p-8 md:p-12 text-center md:text-left">
@@ -128,7 +140,7 @@ export function ServicesPageContent({ activeServiceIds }: { activeServiceIds: st
                    
                    <CardHeader className="relative pb-2">
                      <div className={`absolute top-4 right-4 p-2.5 rounded-xl ${service.bgColor} ${service.color} opacity-80 group-hover:scale-110 transition-transform`}>
-                        <service.icon className="w-5 h-5" />
+                        <ServiceIcon name={service.icon} className="w-5 h-5" />
                      </div>
                      <CardTitle className="text-xl font-serif mt-8 mb-1 group-hover:text-brand-green transition-colors leading-tight pr-12">
                         {service.title}

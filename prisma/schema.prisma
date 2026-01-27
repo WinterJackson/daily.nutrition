@@ -8,11 +8,33 @@ datasource db {
   // directUrl = env("POSTGRES_URL_NON_POOLING") // Enable if you have a separate non-pooling URL
 }
 
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String?
+  role      String   @default("ADMIN")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 model Service {
   id               String   @id
+  slug             String   @unique
   title            String
   shortDescription String
+  fullDescription  String?
+  features         String[] // Array of feature strings
+  targetAudience   String?
+  image            String?  // Cloudinary URL
+  icon             String   @default("Activity") // Lucide icon name
+  color            String   @default("text-brand-green")
+  bgColor          String   @default("bg-brand-green/10")
+  priceVirtual     Int?     // Price in KES for virtual consultation
+  priceInPerson    Int?     // Price in KES for in-person consultation
   isVisible        Boolean  @default(true)
+  displayOrder     Int      @default(0)
+  createdAt        DateTime @default(now())
   updatedAt        DateTime @updatedAt
 }
 
@@ -40,7 +62,41 @@ model BlogPost {
   title     String
   slug      String   @unique
   content   String   // Markdown or HTML
+  image     String?  // Cloudinary URL
+  category  String   @default("General")
   published Boolean  @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+}
+
+model SiteSettings {
+  id              String   @id @default("default") // Singleton pattern
+  businessName    String   @default("Daily Nutrition")
+  contactEmail    String   @default("info@dailynutrition.com")
+  phoneNumber     String   @default("+254 700 000 000")
+  address         String   @default("Nairobi, Kenya")
+  pageTitle       String   @default("Daily Nutrition | Professional Nutrition Consultancy")
+  metaDescription String   @default("Expert nutrition advice.")
+  keywords        String   @default("nutrition, health, diet")
+  // Calendly Integration
+  calendlyUrl     String   @default("")
+  updatedAt       DateTime @updatedAt
+}
+
+// Booking model for tracking appointments (synced from Calendly)
+model Booking {
+  id            String   @id @default(cuid())
+  calendlyId    String?  @unique // External ID from Calendly webhook
+  clientName    String
+  clientEmail   String
+  clientPhone   String?
+  serviceId     String?
+  serviceName   String   // Denormalized for quick display
+  sessionType   String   @default("virtual") // virtual | in-person
+  scheduledAt   DateTime
+  duration      Int      @default(60) // Duration in minutes
+  status        String   @default("CONFIRMED") // CONFIRMED, COMPLETED, CANCELLED, NO_SHOW
+  notes         String?  // Admin notes
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
 }

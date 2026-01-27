@@ -1,24 +1,9 @@
+import { prisma } from '@/lib/prisma';
 import { NextResponse } from 'next/server';
 import { Resend } from 'resend';
 
 export async function POST(request: Request) {
   try {
-    const apiKey = process.env.RESEND_API_KEY;
-
-    // During build time, this might run without env vars. 
-    // We handle this gracefully.
-    if (!apiKey) {
-      console.error('RESEND_API_KEY is missing');
-      // If this is hit during build, it just returns strict json. 
-      // If hit during runtime, it creates an error response.
-      // However, we only initialize Resend if we have a key.
-      return NextResponse.json(
-        { error: 'Server configuration error: Missing API Key' },
-        { status: 500 }
-      );
-    }
-
-    const resend = new Resend(apiKey);
     const body = await request.json();
     const { name, email, phone, service, message } = body;
 
@@ -29,6 +14,27 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    // PHASE 2: Save inquiry to database FIRST (before email)
+    // This ensures data is never lost, even if email fails
+    const inquiry = await prisma.inquiry.create({
+      data: {
+        name,
+        email,
+        message: `${service ? `[${service}] ` : ''}${message}${phone ? `\n\nPhone: ${phone}` : ''}`,
+        status: 'NEW',
+      },
+    });
+    console.log('Inquiry saved to database:', inquiry.id);
+
+    // Now attempt to send email (optional - won't lose data if this fails)
+    const apiKey = process.env.RESEND_API_KEY;
+    if (!apiKey) {
+      console.warn('RESEND_API_KEY is missing - inquiry saved but email not sent');
+      return NextResponse.json({ success: true, id: inquiry.id, emailSent: false });
+    }
+
+    const resend = new Resend(apiKey);
 
     // Send email to the business
     const { data, error } = await resend.emails.send({

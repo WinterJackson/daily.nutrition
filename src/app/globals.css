@@ -176,3 +176,278 @@ html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark 
 .dark .glow-orange {
   box-shadow: 0 0 80px rgba(232, 117, 26, 0.2);
 }
+
+/* Custom Scrollbar */
+/* Custom Scrollbar */
+*::-webkit-scrollbar {
+  width: 1px !important; 
+  height: 1px !important;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--color-orange) !important;
+  border-radius: 999px !important;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #C2410C !important;
+}
+
+/* Firefox Support */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-orange) transparent;
+}
+
+/* Explicit Utility for 1px Scrollbar */
+.scrollbar-thin-1px::-webkit-scrollbar {
+  width: 1px !important;
+  height: 1px !important;
+}
+.scrollbar-thin-1px::-webkit-scrollbar-track {
+  background: transparent !important;
+}
+.scrollbar-thin-1px::-webkit-scrollbar-thumb {
+  background: var(--color-orange) !important;
+  border-radius: 999px !important;
+}
+.scrollbar-thin-1px {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-orange) transparent;
+}
+
+/* CSS Tooltip */
+[data-tooltip] {
+  position: relative;
+  cursor: pointer;
+}
+
+[data-tooltip]::before {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: 100%;
+  left: 50%;
+  transform: translateX(-50%) translateY(-4px);
+  padding: 6px 10px;
+  background-color: #0E1110;
+  color: white;
+  font-size: 12px;
+  border-radius: 6px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 100;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  margin-bottom: 6px;
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.dark [data-tooltip]::before {
+  background-color: white;
+  color: #0E1110;
+  border: 1px solid rgba(0,0,0,0.1);
+}
+
+[data-tooltip]:hover::before {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ===== PROSE / TYPOGRAPHY STYLES FOR MARKDOWN PREVIEW ===== */
+/* Custom prose styles since @tailwindcss/typography is not installed */
+
+.prose {
+  color: #374151;
+  max-width: 65ch;
+  line-height: 1.75;
+}
+
+.prose h1 {
+  color: var(--color-olive);
+  font-size: 2.25em;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-top: 0;
+  margin-bottom: 0.8em;
+}
+
+.prose h2 {
+  color: var(--color-olive);
+  font-size: 1.5em;
+  font-weight: 700;
+  line-height: 1.3;
+  margin-top: 2em;
+  margin-bottom: 0.75em;
+  padding-bottom: 0.3em;
+  border-bottom: 1px solid rgba(92, 111, 43, 0.2);
+}
+
+.prose h3 {
+  color: var(--color-olive);
+  font-size: 1.25em;
+  font-weight: 600;
+  line-height: 1.4;
+  margin-top: 1.6em;
+  margin-bottom: 0.6em;
+}
+
+.prose p {
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+}
+
+.prose strong {
+  color: inherit;
+  font-weight: 700;
+}
+
+.prose em {
+  font-style: italic;
+}
+
+.prose ul {
+  list-style-type: disc;
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+  padding-left: 1.625em;
+}
+
+.prose ol {
+  list-style-type: decimal;
+  margin-top: 1.25em;
+  margin-bottom: 1.25em;
+  padding-left: 1.625em;
+}
+
+.prose li {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+.prose li::marker {
+  color: var(--color-soft-green);
+}
+
+.prose blockquote {
+  font-style: italic;
+  color: #6b7280;
+  border-left: 4px solid var(--color-brand-green);
+  padding-left: 1em;
+  margin-top: 1.6em;
+  margin-bottom: 1.6em;
+  background-color: rgba(92, 111, 43, 0.05);
+  padding: 0.75em 1em;
+  border-radius: 0 8px 8px 0;
+}
+
+.prose a {
+  color: var(--color-orange);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 500;
+}
+
+.prose a:hover {
+  color: var(--color-orange-text);
+}
+
+.prose code {
+  color: var(--color-orange);
+  background-color: rgba(232, 117, 26, 0.1);
+  padding: 0.2em 0.4em;
+  border-radius: 4px;
+  font-size: 0.875em;
+  font-family: ui-monospace, monospace;
+}
+
+.prose pre {
+  background-color: #1f2937;
+  color: #e5e7eb;
+  padding: 1em;
+  border-radius: 8px;
+  overflow-x: auto;
+  margin-top: 1.6em;
+  margin-bottom: 1.6em;
+}
+
+.prose pre code {
+  background-color: transparent;
+  color: inherit;
+  padding: 0;
+  font-size: 0.875em;
+}
+
+.prose hr {
+  border-color: rgba(92, 111, 43, 0.2);
+  margin-top: 3em;
+  margin-bottom: 3em;
+}
+
+.prose img {
+  margin-top: 2em;
+  margin-bottom: 2em;
+  border-radius: 8px;
+}
+
+/* Prose Dark Mode */
+.dark .prose,
+.prose-invert {
+  color: #e5e7eb;
+}
+
+.dark .prose h1,
+.dark .prose h2,
+.dark .prose h3,
+.dark .prose h4,
+.prose-invert h1,
+.prose-invert h2,
+.prose-invert h3,
+.prose-invert h4 {
+  color: var(--color-off-white);
+}
+
+.dark .prose h2,
+.prose-invert h2 {
+  border-bottom-color: rgba(248, 250, 245, 0.1);
+}
+
+.dark .prose blockquote,
+.prose-invert blockquote {
+  color: #9ca3af;
+  background-color: rgba(92, 111, 43, 0.1);
+}
+
+.dark .prose li::marker,
+.prose-invert li::marker {
+  color: var(--color-brand-green);
+}
+
+.dark .prose code,
+.prose-invert code {
+  background-color: rgba(232, 117, 26, 0.15);
+}
+
+/* Prose sizes */
+.prose-lg {
+  font-size: 1.125rem;
+  line-height: 1.8;
+}
+
+.prose-lg h1 {
+  font-size: 2.5em;
+}
+
+.prose-lg h2 {
+  font-size: 1.75em;
+}
+
+/* Max width overrides */
+.prose.max-w-none {
+  max-width: none;
+}
+
