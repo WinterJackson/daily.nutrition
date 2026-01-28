@@ -36,15 +36,16 @@ export async function getServiceBySlug(slug: string) {
 export async function updateService(id: string, data: {
     title?: string
     shortDescription?: string
-    fullDescription?: string
+    fullDescription?: string | null
     features?: string[]
-    targetAudience?: string
+    targetAudience?: string | null
     icon?: string
     color?: string
     bgColor?: string
-    priceVirtual?: number
-    priceInPerson?: number
+    priceVirtual?: number | null
+    priceInPerson?: number | null
     isVisible?: boolean
+    image?: string | null
     displayOrder?: number
 }) {
     try {
@@ -77,6 +78,7 @@ export async function toggleServiceVisibility(id: string) {
         return { success: true, service: updated }
     } catch (error) {
         console.error("Failed to toggle service visibility:", error)
+        return { success: false, error: "Failed to toggle service visibility" }
     }
 }
 

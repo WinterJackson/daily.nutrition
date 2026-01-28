@@ -43,7 +43,7 @@ export function ServiceManagerClient({ initialServices }: { initialServices: Ser
     setServices(prev => prev.map(s => s.id === id ? { ...s, isVisible: !currentState } : s))
 
     startTransition(async () => {
-      const result = await toggleServiceVisibility(id, !currentState)
+      const result = await toggleServiceVisibility(id)
       if (!result.success) {
         // Revert on failure
         setServices(prev => prev.map(s => s.id === id ? { ...s, isVisible: currentState } : s))

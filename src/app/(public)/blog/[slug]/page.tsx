@@ -32,7 +32,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
   return (
     <div className="min-h-screen bg-off-white dark:bg-charcoal pt-24 pb-24 relative">
-      <AnimatedBackground variant="dots" />
+      <AnimatedBackground variant="subtle" />
       
       <article className="container max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
         <div className="mb-8">

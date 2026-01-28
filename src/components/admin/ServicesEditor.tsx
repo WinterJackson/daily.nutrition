@@ -1,3 +1,5 @@
+"use client"
+
 import { createService, deleteService, toggleServiceVisibility, updateService } from "@/app/actions/services"
 import { uploadImage } from "@/app/actions/upload"
 import { Button } from "@/components/ui/Button"
