@@ -24,7 +24,6 @@ export interface BookingData {
  */
 export async function getBookings(filter?: "all" | "upcoming" | "past" | "today") {
     try {
-        console.log("Fetching bookings for filter:", filter)
         const now = new Date()
         const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
         const endOfToday = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000)
@@ -63,7 +62,6 @@ export async function getBookings(filter?: "all" | "upcoming" | "past" | "today"
 
         return { bookings, error: null }
     } catch (error) {
-        console.log("Hit error in bookings fetch, triggering mock data")
         console.warn("Failed to fetch bookings (using mock data):", error instanceof Error ? error.message : String(error))
         // Return mock data so the admin UI is populated as requested
         return {
