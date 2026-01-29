@@ -4,25 +4,22 @@ import { BookingSteps } from "@/components/booking/BookingSteps"
 import { FAQSection } from "@/components/booking/FAQSection"
 import { ServiceSelection } from "@/components/booking/ServiceSelection"
 import { AnimatedBackground } from "@/components/ui/AnimatedBackground"
-import { buildCalendlyUrl } from "@/lib/calendly"
-import { services } from "@/lib/data"
 import { motion } from "framer-motion"
-import { AlertCircle, Calendar } from "lucide-react"
-import { useTheme } from "next-themes"
+import { Calendar } from "lucide-react"
 import Link from "next/link"
-import { useSearchParams } from "next/navigation"
-import { useEffect, useMemo, useRef, useState } from "react"
+import { useRouter, useSearchParams } from "next/navigation"
+import { useEffect, useState } from "react"
 
 interface BookingClientProps {
   activeServiceIds: string[]
-  calendlyUrl: string
+  calendlyUrl: string // Kept in props interface to avoid breaking parent passing it, even if unused
 }
 
-export function BookingClient({ activeServiceIds, calendlyUrl }: BookingClientProps) {
+export function BookingClient({ activeServiceIds }: BookingClientProps) {
   const [selectedService, setSelectedService] = useState<string | undefined>()
   const [sessionType, setSessionType] = useState<"virtual" | "in-person">("virtual")
-  const calendarRef = useRef<HTMLDivElement>(null)
   const searchParams = useSearchParams()
+  const router = useRouter()
 
   useEffect(() => {
     const serviceId = searchParams.get("service")
@@ -30,9 +27,6 @@ export function BookingClient({ activeServiceIds, calendlyUrl }: BookingClientPr
     
     if (serviceId && activeServiceIds.includes(serviceId)) {
       setSelectedService(serviceId)
-      setTimeout(() => {
-        calendarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
-      }, 500)
     }
     if (type === "virtual" || type === "in-person") {
       setSessionType(type)
@@ -41,38 +35,9 @@ export function BookingClient({ activeServiceIds, calendlyUrl }: BookingClientPr
 
   const handleServiceSelect = (serviceId: string) => {
     setSelectedService(serviceId)
-    setTimeout(() => {
-      calendarRef.current?.scrollIntoView({ behavior: "smooth", block: "start" })
-    }, 100)
+    // Redirect to scheduling page
+    router.push(`/booking/schedule?service=${serviceId}&type=${sessionType}`)
   }
-
-  const { resolvedTheme } = useTheme()
-
-  // Build dynamic Calendly URL with prefill and theme
-  const dynamicCalendlyUrl = useMemo(() => {
-    if (!calendlyUrl) return ""
-    
-    const serviceName = selectedService 
-      ? services.find(s => s.id === selectedService)?.title 
-      : undefined
-
-    // Theme colors matching globals.css
-    // Light: bg-off-white (#F8FAF5), Text #0E1110
-    // Dark: bg-charcoal (#0E1110), Text #F8FAF5
-    const isDark = resolvedTheme === "dark"
-    const bgColor = isDark ? "0E1110" : "F8FAF5"
-    const textColor = isDark ? "F8FAF5" : "0E1110"
-
-    return buildCalendlyUrl(calendlyUrl, {
-      service: serviceName,
-      sessionType: sessionType,
-      backgroundColor: bgColor,
-      textColor: textColor,
-      primaryColor: "E8751A" // Always orange
-    })
-  }, [calendlyUrl, selectedService, sessionType, resolvedTheme])
-
-  const isCalendlyConfigured = calendlyUrl && calendlyUrl.startsWith("https://calendly.com/")
 
   return (
     <div className="min-h-screen bg-off-white dark:bg-charcoal pt-24 pb-16 relative overflow-hidden">
@@ -130,61 +95,6 @@ export function BookingClient({ activeServiceIds, calendlyUrl }: BookingClientPr
           activeServiceIds={activeServiceIds}
         />
       </section>
-
-      {/* Booking Calendar */}
-      <div ref={calendarRef} className="bg-white dark:bg-charcoal border-y border-neutral-100 dark:border-white/5 py-24 mb-24 relative z-10">
-         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-24 items-start">
-              {/* Left Column: Text */}
-              <div className="lg:col-span-4 lg:sticky lg:top-32">
-                 <h2 className="text-3xl md:text-4xl font-serif font-bold text-olive dark:text-off-white mb-6">Pick a Time</h2>
-                 <p className="text-lg text-neutral-600 dark:text-neutral-300 leading-relaxed">
-                   {selectedService 
-                     ? "Great choice. Select an available slot on the calendar to confirm your appointment." 
-                     : "Please select a service above, then choose a time that works for you."}
-                 </p>
-                 <div className="mt-8 hidden lg:block p-6 bg-orange/5 rounded-2xl border border-orange/10">
-                    <p className="text-sm text-neutral-500 dark:text-neutral-400 mb-2 font-medium uppercase tracking-wide">Note</p>
-                    <p className="text-sm text-neutral-600 dark:text-neutral-300">
-                      All times are in your local time zone. Checking out details will be sent to your email immediately after booking.
-                    </p>
-                 </div>
-              </div>
-
-              {/* Right Column: Calendar */}
-              <div className="lg:col-span-8">
-                {isCalendlyConfigured ? (
-                  <iframe
-                    src={dynamicCalendlyUrl}
-                    width="100%"
-                    height="800"
-                    frameBorder="0"
-                    title="Book a consultation"
-                    className="w-full min-h-[800px] rounded-xl"
-                  />
-                ) : (
-                  <div className="bg-white dark:bg-white/5 shadow-2xl shadow-olive/10 rounded-2xl overflow-hidden border border-neutral-200 dark:border-white/10 p-12 text-center">
-                    <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-orange/10 flex items-center justify-center">
-                      <AlertCircle className="w-8 h-8 text-orange" />
-                    </div>
-                    <h3 className="text-xl font-serif font-bold text-olive dark:text-off-white mb-3">
-                      Booking Coming Soon
-                    </h3>
-                    <p className="text-neutral-500 dark:text-neutral-400 max-w-md mx-auto mb-6">
-                      Our online booking system is being set up. In the meantime, please contact us directly to schedule your consultation.
-                    </p>
-                    <Link 
-                      href="/contact" 
-                      className="inline-flex items-center gap-2 px-6 py-3 bg-orange text-white rounded-full font-medium hover:bg-orange/90 transition-colors shadow-lg shadow-orange/20"
-                    >
-                      Contact Us
-                    </Link>
-                  </div>
-                )}
-              </div>
-            </div>
-         </div>
-      </div>
 
       {/* Pre-session List */}
       <section className="container max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mb-24 relative z-10">

@@ -120,7 +120,7 @@ export function ServiceBookingCard({
         </div>
 
         {/* Book Button */}
-        <Link href={`/booking?service=${serviceId}&type=${sessionType}`}>
+        <Link href={`/booking/schedule?service=${serviceId}&type=${sessionType}`}>
           <Button className="w-full h-12 text-base font-semibold shadow-lg shadow-orange/20" variant="accent">
             <Calendar className="mr-2 h-4 w-4" />
             Book {serviceTitle} Consultation
