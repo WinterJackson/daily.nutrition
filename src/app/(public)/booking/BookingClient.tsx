@@ -8,6 +8,7 @@ import { buildCalendlyUrl } from "@/lib/calendly"
 import { services } from "@/lib/data"
 import { motion } from "framer-motion"
 import { AlertCircle, Calendar } from "lucide-react"
+import { useTheme } from "next-themes"
 import Link from "next/link"
 import { useSearchParams } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
@@ -45,7 +46,9 @@ export function BookingClient({ activeServiceIds, calendlyUrl }: BookingClientPr
     }, 100)
   }
 
-  // Build dynamic Calendly URL with prefill
+  const { resolvedTheme } = useTheme()
+
+  // Build dynamic Calendly URL with prefill and theme
   const dynamicCalendlyUrl = useMemo(() => {
     if (!calendlyUrl) return ""
     
@@ -53,11 +56,21 @@ export function BookingClient({ activeServiceIds, calendlyUrl }: BookingClientPr
       ? services.find(s => s.id === selectedService)?.title 
       : undefined
 
+    // Theme colors matching globals.css
+    // Light: bg-off-white (#F8FAF5), Text #0E1110
+    // Dark: bg-charcoal (#0E1110), Text #F8FAF5
+    const isDark = resolvedTheme === "dark"
+    const bgColor = isDark ? "0E1110" : "F8FAF5"
+    const textColor = isDark ? "F8FAF5" : "0E1110"
+
     return buildCalendlyUrl(calendlyUrl, {
       service: serviceName,
-      sessionType: sessionType
+      sessionType: sessionType,
+      backgroundColor: bgColor,
+      textColor: textColor,
+      primaryColor: "E8751A" // Always orange
     })
-  }, [calendlyUrl, selectedService, sessionType])
+  }, [calendlyUrl, selectedService, sessionType, resolvedTheme])
 
   const isCalendlyConfigured = calendlyUrl && calendlyUrl.startsWith("https://calendly.com/")
 

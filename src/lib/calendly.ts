@@ -15,6 +15,9 @@ export function buildCalendlyUrl(
         email?: string
         service?: string
         sessionType?: "virtual" | "in-person"
+        backgroundColor?: string
+        textColor?: string
+        primaryColor?: string
     }
 ): string {
     if (!baseUrl) return DEFAULT_CALENDLY_URL
@@ -37,9 +40,11 @@ export function buildCalendlyUrl(
         }
 
         // Styling parameters (only active for Pro/Premium accounts)
-        url.searchParams.set("primary_color", "E8751A") // Brand Orange
-        url.searchParams.set("text_color", "0E1110")    // Charcoal
-        url.searchParams.set("background_color", "F8FAF5") // Off White
+        // Use provided colors or fallback to defaults
+        url.searchParams.set("primary_color", options?.primaryColor || "E8751A") // Brand Orange
+        url.searchParams.set("text_color", options?.textColor || "0E1110")       // Charcoal
+        url.searchParams.set("background_color", options?.backgroundColor || "F8FAF5") // Off White
+
         url.searchParams.set("hide_event_type_details", "1")
         url.searchParams.set("hide_gdpr_banner", "1")
 
