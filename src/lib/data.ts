@@ -6,17 +6,18 @@ export const services = [
         title: "Free Discovery Call",
         slug: "discovery-call",
         icon: Phone,
-        shortDescription: "A complimentary 5-minute chat to discuss your goals and see if we're a fit.",
-        fullDescription: "Not sure where to start? Book a free 5-minute discovery call with our nutritionists. We'll briefly discuss your health goals and help you choose the right plan for your journey.",
+        shortDescription: "A complimentary 5-minute virtual chat to discuss your goals and see if we're a fit.",
+        fullDescription: "Not sure where to start? Book a free 5-minute virtual discovery call with our nutritionists. We'll briefly discuss your health goals and help you choose the right plan for your journey.",
         features: [
             "5-minute duration",
+            "Virtual only (via Zoom)",
             "Available Mon-Fri, 1:30 - 2:30 PM",
-            "Plan recommendation",
             "No obligation"
         ],
         targetAudience: "Anyone unsure about which nutrition plan is right for them.",
         color: "text-brand-green",
         bgColor: "bg-brand-green/10",
+        isVirtualOnly: true,
     },
     {
         id: "cancer-nutrition",
