@@ -141,16 +141,14 @@ export function BookingClient({ activeServiceIds, calendlyUrl }: BookingClientPr
               {/* Right Column: Calendar */}
               <div className="lg:col-span-8">
                 {isCalendlyConfigured ? (
-                  <div className="bg-white dark:bg-white/5 shadow-2xl shadow-olive/10 rounded-2xl overflow-hidden border border-neutral-200 dark:border-white/10 w-full min-h-[800px] h-full">
-                     <iframe
-                       src={dynamicCalendlyUrl}
-                       width="100%"
-                       height="100%"
-                       frameBorder="0"
-                       title="Book a consultation"
-                       className="w-full h-full min-h-[800px]"
-                     />
-                  </div>
+                  <iframe
+                    src={dynamicCalendlyUrl}
+                    width="100%"
+                    height="800"
+                    frameBorder="0"
+                    title="Book a consultation"
+                    className="w-full min-h-[800px] rounded-xl"
+                  />
                 ) : (
                   <div className="bg-white dark:bg-white/5 shadow-2xl shadow-olive/10 rounded-2xl overflow-hidden border border-neutral-200 dark:border-white/10 p-12 text-center">
                     <div className="w-16 h-16 mx-auto mb-6 rounded-full bg-orange/10 flex items-center justify-center">

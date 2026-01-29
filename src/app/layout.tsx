@@ -1,3 +1,4 @@
+import { CookieConsent } from "@/components/CookieConsent";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
@@ -73,6 +74,7 @@ export default function RootLayout({
           >
             <ServiceWorkerRegistration />
             {children}
+            <CookieConsent />
         </ThemeProvider>
       </body>
     </html>
