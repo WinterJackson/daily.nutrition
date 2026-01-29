@@ -80,6 +80,8 @@ model SiteSettings {
   keywords        String   @default("nutrition, health, diet")
   // Calendly Integration
   calendlyUrl     String   @default("")
+  profileImageUrl String?  @default("")
+  themePreference String   @default("light") // 'light', 'dark', 'system'
   updatedAt       DateTime @updatedAt
 }
 

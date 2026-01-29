@@ -1,11 +1,13 @@
 "use client"
 
 import { getSettings, SettingsData, updateSettings } from "@/app/actions/settings"
+import { uploadImage } from "@/app/actions/upload"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
-import { Calendar, CheckCircle, ChevronRight, ExternalLink, Loader2, Save, ShieldCheck, Sparkles } from "lucide-react"
-import { useEffect, useState, useTransition } from "react"
+import { Calendar, CheckCircle, ChevronRight, ExternalLink, ImageIcon, Loader2, Moon, Save, ShieldCheck, Sparkles, Sun, Trash2, Upload } from "lucide-react"
+import Image from "next/image"
+import { useEffect, useRef, useState, useTransition } from "react"
 
 const defaultSettings: SettingsData = {
   businessName: "Daily Nutrition",
@@ -16,6 +18,8 @@ const defaultSettings: SettingsData = {
   metaDescription: "Expert nutrition care for cancer, diabetes, and gut health. Virtual and in-person consultations.",
   keywords: "nutrition, cancer, diabetes, gut health, kenya, dietitian",
   calendlyUrl: "",
+  profileImageUrl: "",
+  themePreference: "light",
 }
 
 // Calendly setup steps for the admin
@@ -61,6 +65,8 @@ export default function AdminSettingsPage() {
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [expandedStep, setExpandedStep] = useState<number | null>(null)
+  const [isUploading, setIsUploading] = useState(false)
+  const fileInputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
     async function load() {
@@ -90,6 +96,42 @@ export default function AdminSettingsPage() {
   const isValidCalendlyUrl = (url: string) => {
     if (!url) return true // Empty is valid (optional)
     return url.startsWith("https://calendly.com/")
+  }
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    setIsUploading(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+      const result = await uploadImage(formData)
+      if (result.success && result.url) {
+        setSettings(prev => ({ ...prev, profileImageUrl: result.url }))
+        // Auto-save when image is uploaded
+        const res = await updateSettings({ ...settings, profileImageUrl: result.url })
+        if (res.success) {
+          setSaveSuccess(true)
+          setTimeout(() => setSaveSuccess(false), 3000)
+        }
+      }
+    } catch (error) {
+      console.error("Upload failed:", error)
+    } finally {
+      setIsUploading(false)
+    }
+  }
+
+  const handleImageDelete = async () => {
+    // Clear the profileImageUrl
+    setSettings(prev => ({ ...prev, profileImageUrl: "" }))
+    // Auto-save when image is deleted
+    const res = await updateSettings({ ...settings, profileImageUrl: "" })
+    if (res.success) {
+      setSaveSuccess(true)
+      setTimeout(() => setSaveSuccess(false), 3000)
+    }
   }
 
   if (isLoading) {
@@ -206,6 +248,111 @@ export default function AdminSettingsPage() {
                     />
                   </div>
                 </div>
+              </CardContent>
+            </Card>
+
+            {/* Profile Image Card */}
+            <Card className="border-none shadow-xl shadow-neutral-200/50 dark:shadow-black/20 bg-white/90 dark:bg-white/5 backdrop-blur-md">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <ImageIcon className="w-5 h-5 text-brand-green" />
+                  Profile Image
+                </CardTitle>
+                <CardDescription>This image appears on the About page. Upload a professional photo.</CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
+                  {/* Image Preview */}
+                  <div className="relative w-32 h-32 rounded-2xl overflow-hidden bg-neutral-100 dark:bg-white/5 border-2 border-dashed border-neutral-200 dark:border-white/10 flex items-center justify-center">
+                    {settings.profileImageUrl ? (
+                      <Image
+                        src={settings.profileImageUrl}
+                        alt="Profile"
+                        fill
+                        className="object-cover"
+                      />
+                    ) : (
+                      <ImageIcon className="w-10 h-10 text-neutral-300" />
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="space-y-3">
+                    <input
+                      type="file"
+                      ref={fileInputRef}
+                      onChange={handleImageUpload}
+                      accept="image/*"
+                      className="hidden"
+                    />
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => fileInputRef.current?.click()}
+                      disabled={isUploading}
+                      className="w-full sm:w-auto"
+                    >
+                      {isUploading ? (
+                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...</>
+                      ) : (
+                        <><Upload className="mr-2 h-4 w-4" /> Upload New Image</>
+                      )}
+                    </Button>
+                    {settings.profileImageUrl && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        onClick={handleImageDelete}
+                        className="w-full sm:w-auto text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10"
+                      >
+                        <Trash2 className="mr-2 h-4 w-4" /> Remove Image
+                      </Button>
+                    )}
+                    <p className="text-xs text-neutral-400">
+                      Recommended: Square image, at least 400x400px. JPG or PNG.
+                    </p>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Theme Preference Card */}
+            <Card className="border-none shadow-xl shadow-neutral-200/50 dark:shadow-black/20 bg-white/90 dark:bg-white/5 backdrop-blur-md">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Sun className="w-5 h-5 text-orange" />
+                  Default Theme
+                </CardTitle>
+                <CardDescription>Set the default theme for website visitors.</CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-4 p-4 rounded-xl bg-neutral-50 dark:bg-white/5">
+                  <button
+                    onClick={() => handleChange("themePreference", "light")}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                      settings.themePreference === "light"
+                        ? "bg-white dark:bg-charcoal shadow-md ring-2 ring-brand-green"
+                        : "hover:bg-white/50 dark:hover:bg-white/10"
+                    }`}
+                  >
+                    <Sun className="w-4 h-4" />
+                    <span className="font-medium">Light</span>
+                  </button>
+                  <button
+                    onClick={() => handleChange("themePreference", "dark")}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-all ${
+                      settings.themePreference === "dark"
+                        ? "bg-white dark:bg-charcoal shadow-md ring-2 ring-brand-green"
+                        : "hover:bg-white/50 dark:hover:bg-white/10"
+                    }`}
+                  >
+                    <Moon className="w-4 h-4" />
+                    <span className="font-medium">Dark</span>
+                  </button>
+                </div>
+                <p className="text-xs text-neutral-400 mt-3">
+                  This sets the default theme for new visitors. Users can still toggle the theme manually.
+                </p>
               </CardContent>
             </Card>
           </div>

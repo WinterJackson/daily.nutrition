@@ -12,6 +12,8 @@ export interface SettingsData {
     metaDescription: string
     keywords: string
     calendlyUrl: string
+    profileImageUrl?: string | null
+    themePreference: string
 }
 
 export async function getSettings() {
