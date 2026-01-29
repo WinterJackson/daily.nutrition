@@ -1,10 +1,11 @@
 "use client"
 
 import { getSettings, SettingsData, updateSettings } from "@/app/actions/settings"
-import { uploadImage } from "@/app/actions/upload"
+import { deleteImage, uploadImage } from "@/app/actions/upload"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
+import { getPublicIdFromUrl } from "@/lib/cloudinary-utils"
 import { Calendar, CheckCircle, ChevronRight, ExternalLink, ImageIcon, Loader2, Moon, Save, ShieldCheck, Sparkles, Sun, Trash2, Upload } from "lucide-react"
 import Image from "next/image"
 import { useEffect, useRef, useState, useTransition } from "react"
@@ -124,9 +125,18 @@ export default function AdminSettingsPage() {
   }
 
   const handleImageDelete = async () => {
-    // Clear the profileImageUrl
+    const currentUrl = settings.profileImageUrl
+    
+    // First delete from Cloudinary if it's a Cloudinary URL
+    if (currentUrl && currentUrl.includes('cloudinary.com')) {
+      const publicId = getPublicIdFromUrl(currentUrl)
+      if (publicId) {
+        await deleteImage(publicId)
+      }
+    }
+
+    // Clear the profileImageUrl in DB
     setSettings(prev => ({ ...prev, profileImageUrl: "" }))
-    // Auto-save when image is deleted
     const res = await updateSettings({ ...settings, profileImageUrl: "" })
     if (res.success) {
       setSaveSuccess(true)
