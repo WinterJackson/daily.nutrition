@@ -48,6 +48,10 @@ export function ServiceBookingCard({
 }: ServiceBookingCardProps) {
   const [sessionType, setSessionType] = useState<"virtual" | "in-person">("virtual")
   const message = serviceMessages[serviceId] || serviceMessages["general-counselling"]
+  
+  // Use service-specific pricing for diabetes, default for others
+  const servicePricing = serviceId === "diabetes-management" ? pricing.diabetes : pricing.default
+  const isDiabetes = serviceId === "diabetes-management"
 
   return (
     <Card className="border-none shadow-2xl shadow-olive/10 bg-white dark:bg-charcoal overflow-hidden">
@@ -84,7 +88,7 @@ export function ServiceBookingCard({
               <Video className={cn("w-5 h-5 mb-2", sessionType === "virtual" ? "text-brand-green" : "text-neutral-400")} />
               <p className="text-sm font-semibold text-olive dark:text-off-white">Virtual</p>
               <p className="text-xs text-neutral-500">via Zoom</p>
-              <p className="text-lg font-bold text-brand-green mt-2">Ksh {pricing.virtual.toLocaleString()}</p>
+              <p className="text-lg font-bold text-brand-green mt-2">Ksh {servicePricing.virtual.toLocaleString()}</p>
             </button>
             <button
               onClick={() => setSessionType("in-person")}
@@ -98,7 +102,7 @@ export function ServiceBookingCard({
               <MapPin className={cn("w-5 h-5 mb-2", sessionType === "in-person" ? "text-brand-green" : "text-neutral-400")} />
               <p className="text-sm font-semibold text-olive dark:text-off-white">In-Person</p>
               <p className="text-xs text-neutral-500">Parklands / South C</p>
-              <p className="text-lg font-bold text-brand-green mt-2">Ksh {pricing.inPerson.toLocaleString()}</p>
+              <p className="text-lg font-bold text-brand-green mt-2">Ksh {servicePricing.inPerson.toLocaleString()}</p>
             </button>
           </div>
         </div>

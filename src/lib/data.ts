@@ -48,7 +48,7 @@ export const services = [
             "Portion control & meal timing",
             "Pre-diabetes reversal plans"
         ],
-        targetAudience: "Newly diagnosed diabetics, pre-diabetics, and those seeking better control.",
+        targetAudience: "Newly diagnosed diabetics, pre-diabetics, those seeking Type II diabetes remission and better glycemic control.",
         color: "text-brand-green",
         bgColor: "bg-brand-green/10",
     },
@@ -58,7 +58,7 @@ export const services = [
         slug: "gut-health",
         icon: Apple,
         shortDescription: "Dietary interventions for IBS, GERD, and other digestive disorders.",
-        fullDescription: "Dietary strategies for managing symptoms of Irritable Bowel Syndrome (IBS), Hyperacidity, Gastritis, GERD, and Crohn's disease. We offer guidance on elimination diets (FODMAP) and gut microbiome optimization.",
+        fullDescription: "Dietary strategies for managing symptoms related to Irritable Bowel Syndrome (IBS), Hyperacidity, Gastritis, GERD, and Crohn's disease. We offer guidance on elimination diets (FODMAP) and gut microbiome optimization.",
         features: [
             "Symptom management (Bloating, Acid Reflux)",
             "FODMAP & Elimination diets",
@@ -75,7 +75,7 @@ export const services = [
         slug: "general-counselling",
         icon: Scale,
         shortDescription: "Weight management, hypertension control, and general wellness guidance.",
-        fullDescription: "Holistic support for healthy weight loss or gain, cholesterol management, and hypertension control. We also offer renal nutrition guidance and general preventive care.",
+        fullDescription: "Holistic support for healthy weight loss or gain, cholesterol and hypertension management. We also offer renal nutrition guidance and general preventive care.",
         features: [
             "Weight Management (Loss/Gain)",
             "Hypertension & Cholesterol Control",
@@ -89,8 +89,15 @@ export const services = [
 ]
 
 export const pricing = {
-    virtual: 2500,
-    inPerson: 3000,
+    default: {
+        virtual: 2500,
+        inPerson: 3000,
+    },
+    diabetes: {
+        virtual: 3000,
+        inPerson: 3500,
+        note: "Includes a personalized meal plan / guidelines."
+    },
     packages: [
         {
             name: "Kickstart Package",
@@ -102,7 +109,8 @@ export const pricing = {
             description: "Initial Consultation + 3 Follow-up Sessions",
             priceRange: "Ksh 9,000 - 10,000"
         }
-    ]
+    ],
+    footerNote: "For Cancer, General wellness & Gut health: extra charges apply for individualized meal plans."
 }
 
 export const processSteps = [

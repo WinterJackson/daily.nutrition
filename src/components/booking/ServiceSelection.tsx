@@ -59,7 +59,7 @@ export function ServiceSelection({ onServiceSelect, selectedServiceId, activeSer
         <p className="text-3xl font-bold font-serif text-olive dark:text-off-white">
           {selectedServiceId === "discovery-call" 
             ? "Free"
-            : `Ksh ${sessionType === "virtual" ? pricing.virtual.toLocaleString() : pricing.inPerson.toLocaleString()}`
+            : `Ksh ${sessionType === "virtual" ? pricing.default.virtual.toLocaleString() : pricing.default.inPerson.toLocaleString()}`
           }
         </p>
         <p className="text-neutral-500 dark:text-neutral-400">
