@@ -24,35 +24,44 @@ export function ServiceSelection({ onServiceSelect, selectedServiceId, activeSer
 
   return (
     <div className="space-y-12">
-      {/* Session Type Toggle */}
-      <div className="flex justify-center">
-        <div className="inline-flex bg-neutral-100 dark:bg-white/5 p-1 rounded-xl">
-          <button
-            onClick={() => setSessionType("virtual")}
-            className={cn(
-              "flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all duration-300",
-              sessionType === "virtual" 
-                ? "bg-white dark:bg-charcoal text-brand-green shadow-sm" 
-                : "text-neutral-500 hover:text-olive dark:hover:text-off-white"
-            )}
-          >
-            <Globe className="w-4 h-4" />
-            Virtual Session
-          </button>
-          <button
-            onClick={() => setSessionType("in-person")}
-            className={cn(
-              "flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all duration-300",
-              sessionType === "in-person"
-                ? "bg-white dark:bg-charcoal text-brand-green shadow-sm"
-                : "text-neutral-500 hover:text-olive dark:hover:text-off-white"
-            )}
-          >
-            <MapPin className="w-4 h-4" />
-            In-Person Visit
-          </button>
+      {/* Session Type Toggle - Hidden for Discovery Calls (virtual only) */}
+      {selectedServiceId !== "discovery-call" ? (
+        <div className="flex justify-center">
+          <div className="inline-flex bg-neutral-100 dark:bg-white/5 p-1 rounded-xl">
+            <button
+              onClick={() => setSessionType("virtual")}
+              className={cn(
+                "flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all duration-300",
+                sessionType === "virtual" 
+                  ? "bg-white dark:bg-charcoal text-brand-green shadow-sm" 
+                  : "text-neutral-500 hover:text-olive dark:hover:text-off-white"
+              )}
+            >
+              <Globe className="w-4 h-4" />
+              Virtual Session
+            </button>
+            <button
+              onClick={() => setSessionType("in-person")}
+              className={cn(
+                "flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all duration-300",
+                sessionType === "in-person"
+                  ? "bg-white dark:bg-charcoal text-brand-green shadow-sm"
+                  : "text-neutral-500 hover:text-olive dark:hover:text-off-white"
+              )}
+            >
+              <MapPin className="w-4 h-4" />
+              In-Person Visit
+            </button>
+          </div>
         </div>
-      </div>
+      ) : (
+        <div className="flex justify-center">
+          <div className="inline-flex items-center gap-2 bg-brand-green/10 text-brand-green px-6 py-3 rounded-xl font-medium">
+            <Globe className="w-4 h-4" />
+            Virtual Session Only
+          </div>
+        </div>
+      )}
 
       {/* Pricing Display */}
       <div className="text-center space-y-2">
