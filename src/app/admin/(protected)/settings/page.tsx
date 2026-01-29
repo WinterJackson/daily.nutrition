@@ -45,7 +45,7 @@ const calendlySetupSteps = [
   {
     step: 4,
     title: "Create Event Types",
-    description: "Create events for: Discovery Call (15 min, free), Virtual Consultation (60 min), In-Person (60 min).",
+    description: "Create events for: Discovery Call (5 min, free), Virtual Consultation (60 min), In-Person (60 min).",
   },
   {
     step: 5,

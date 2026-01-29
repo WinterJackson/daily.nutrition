@@ -64,7 +64,7 @@ export function ServiceSelection({ onServiceSelect, selectedServiceId, activeSer
         </p>
         <p className="text-neutral-500 dark:text-neutral-400">
           {selectedServiceId === "discovery-call"
-            ? "15-minute complimentary consultation"
+            ? "5-minute complimentary consultation"
             : `per 45-60 minute ${sessionType} consultation`
           }
         </p>

@@ -6,11 +6,11 @@ export const services = [
         title: "Free Discovery Call",
         slug: "discovery-call",
         icon: Phone,
-        shortDescription: "A complimentary 15-minute chat to discuss your goals and see if we're a fit.",
-        fullDescription: "Not sure where to start? Book a free 15-minute discovery call with our nutritionists. We'll discuss your health history, goals, and helps you choose the right plan for your journey.",
+        shortDescription: "A complimentary 5-minute chat to discuss your goals and see if we're a fit.",
+        fullDescription: "Not sure where to start? Book a free 5-minute discovery call with our nutritionists. We'll briefly discuss your health goals and help you choose the right plan for your journey.",
         features: [
-            "15-minute duration",
-            "Discuss your health goals",
+            "5-minute duration",
+            "Available Mon-Fri, 1:30 - 2:30 PM",
             "Plan recommendation",
             "No obligation"
         ],
@@ -139,7 +139,7 @@ export const processSteps = [
 export const faqs = [
     {
         question: "Do you accept insurance?",
-        answer: "We currently operate as a self-pay practice. However, we can provide a superbill (medical receipt) that you can submit to your insurance provider for potential reimbursement, depending on your plan's out-of-network benefits."
+        answer: "At this time, we operate as a self-pay practice and do not accept insurance. However, as we continue to grow, we are actively working towards establishing partnerships with insurance providers in the future to make our services more accessible. We appreciate your understanding and are happy to discuss payment options that work for you."
     },
     {
         question: "Is it virtual or in-person?",
@@ -147,7 +147,7 @@ export const faqs = [
     },
     {
         question: "What is your cancellation policy?",
-        answer: "We ask for at least 24 hours' notice for cancellations or rescheduling. This allows us to offer the appointment slot to another client who may need it. Late cancellations may incur a fee."
+        answer: "We kindly request at least 12 hours' notice for cancellations or rescheduling. This allows us to offer the appointment slot to another client who may need it. We understand that life happens, and we're happy to work with you to find a suitable alternative time."
     },
     {
         question: "Can I get support between sessions?",
