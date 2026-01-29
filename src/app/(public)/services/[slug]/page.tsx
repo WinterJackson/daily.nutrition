@@ -69,6 +69,16 @@ export default function ServicePage({ params }: Props) {
                 {service.targetAudience}
               </p>
             </div>
+
+            {/* Footer Note for specific services */}
+            {["cancer-nutrition", "general-counselling", "gut-health"].includes(service.id) && (
+              <div className="bg-gradient-to-br from-orange/5 to-orange/10 dark:from-orange/10 dark:to-orange/5 rounded-2xl p-8 mb-12 border border-orange/20">
+                <h3 className="text-xl font-semibold text-olive dark:text-off-white mb-4">Pricing Note</h3>
+                <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
+                  Extra charges apply for individualized meal plans.
+                </p>
+              </div>
+            )}
           </div>
 
           {/* Sidebar / Enhanced Booking */}
