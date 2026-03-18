@@ -40,7 +40,7 @@ export function BookingClient({ activeServiceIds }: BookingClientProps) {
   }
 
   return (
-    <div className="min-h-screen bg-off-white dark:bg-charcoal pt-24 pb-16 relative overflow-hidden">
+    <div className="min-h-screen bg-off-white dark:bg-charcoal pt-36 pb-16 relative overflow-hidden">
       {/* Animated Background */}
       <AnimatedBackground variant="nutrition" />
 
@@ -93,6 +93,8 @@ export function BookingClient({ activeServiceIds }: BookingClientProps) {
           onServiceSelect={handleServiceSelect} 
           selectedServiceId={selectedService} 
           activeServiceIds={activeServiceIds}
+          sessionType={sessionType}
+          onSessionTypeChange={setSessionType}
         />
       </section>
 

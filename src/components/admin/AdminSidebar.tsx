@@ -1,5 +1,6 @@
 "use client"
 
+import { getSidebarNotificationCounts } from "@/app/actions/notifications"
 import { Button } from "@/components/ui/Button"
 import { cn } from "@/lib/utils"
 import { AnimatePresence, motion } from "framer-motion"
@@ -10,9 +11,12 @@ import {
     Laptop,
     LayoutDashboard,
     LogOut,
+    Mail,
     Menu,
+    MonitorPlay,
     Moon,
     Settings,
+    Shield,
     Star,
     Sun,
     User,
@@ -28,10 +32,14 @@ import { useEffect, useState } from "react"
 const adminLinks = [
   { name: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { name: "Bookings", href: "/admin/bookings", icon: Calendar },
+  { name: "Calendar", href: "/admin/bookings/calendar", icon: Calendar },
   { name: "Services", href: "/admin/services", icon: Files },
   { name: "Blog & News", href: "/admin/blog", icon: Files },
   { name: "Inquiries", href: "/admin/inquiries", icon: Users },
   { name: "Testimonials", href: "/admin/testimonials", icon: Star },
+  { name: "Media Library", href: "/admin/media", icon: MonitorPlay },
+  { name: "Newsletter", href: "/admin/newsletter", icon: Mail },
+  { name: "Audit Trail", href: "/admin/audit", icon: Shield },
   { name: "Settings", href: "/admin/settings", icon: Settings },
 ]
 
@@ -41,10 +49,28 @@ export function AdminSidebar() {
   const pathname = usePathname()
   const { theme, setTheme } = useTheme()
   const [mounted, setMounted] = useState(false)
+  const [badges, setBadges] = useState({ bookings: 0, inquiries: 0, testimonials: 0 })
 
-  // Prevent hydration mismatch
+  // Prevent hydration mismatch & fetch badges
   useEffect(() => {
     setMounted(true)
+    
+    let isSubscribed = true
+    const fetchBadges = async () => {
+      try {
+        const counts = await getSidebarNotificationCounts()
+        if (isSubscribed) setBadges(counts)
+      } catch (err) {
+        console.error("Failed to fetch sidebar badges", err)
+      }
+    }
+    
+    fetchBadges()
+    const interval = setInterval(fetchBadges, 30000) // Poll every 30s
+    return () => {
+        isSubscribed = false
+        clearInterval(interval)
+    }
   }, [])
 
   // Close mobile menu on route change
@@ -146,10 +172,34 @@ export function AdminSidebar() {
                 <motion.span 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="whitespace-nowrap font-medium text-sm"
+                  className="whitespace-nowrap font-medium text-sm flex-1 flex justify-between items-center"
                 >
                   {link.name}
+                  {(link.name === "Bookings" && badges.bookings > 0) && (
+                      <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[10px] font-bold text-white bg-red-500 rounded-full shrink-0">
+                          {badges.bookings}
+                      </span>
+                  )}
+                  {(link.name === "Inquiries" && badges.inquiries > 0) && (
+                      <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[10px] font-bold text-white bg-red-500 rounded-full shrink-0">
+                          {badges.inquiries}
+                      </span>
+                  )}
+                  {(link.name === "Testimonials" && badges.testimonials > 0) && (
+                      <span className="flex items-center justify-center min-w-[20px] h-5 px-1.5 text-[10px] font-bold text-white bg-red-500 rounded-full shrink-0">
+                          {badges.testimonials}
+                      </span>
+                  )}
                 </motion.span>
+              )}
+              
+              {/* Collapsed Dot Badge */}
+              {collapsed && !isMobile && (
+                  (link.name === "Bookings" && badges.bookings > 0) ||
+                  (link.name === "Inquiries" && badges.inquiries > 0) ||
+                  (link.name === "Testimonials" && badges.testimonials > 0)
+              ) && (
+                  <span className="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full shadow-[0_0_8px_rgba(239,68,68,0.8)] animate-pulse" />
               )}
               
               {/* Tooltip for collapsed state */}
@@ -230,6 +280,10 @@ export function AdminSidebar() {
             "w-full text-white/70 hover:text-white hover:bg-red-500/20 transition-all duration-200 flex items-center group",
             collapsed && !isMobile ? "justify-center px-0 h-10 w-10 mx-auto rounded-xl" : "justify-start px-3 py-2"
           )}
+          onClick={async () => {
+            const { logoutAction } = await import("@/app/actions/auth")
+            await logoutAction()
+          }}
         >
           <LogOut className="w-5 h-5 shrink-0 group-hover:text-red-300 transition-colors" />
           {(isMobile || !collapsed) && <span className="ml-3 font-medium">Logout</span>}

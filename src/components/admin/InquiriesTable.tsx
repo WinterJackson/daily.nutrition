@@ -1,376 +1,631 @@
 "use client"
 
-import { deleteInquiry, InquiryStatus, updateInquiryStatus } from "@/app/actions/inquiries"
+import {
+    addInquiryNote,
+    archiveInquiry,
+    assignInquiry,
+    deleteInquiry,
+    InquiryStatus,
+    markAsRead,
+    replyToInquiry,
+    toggleStarred,
+    updateInquiryStatus,
+} from "@/app/actions/inquiries"
+import { InquiryNotesDrawer } from "@/components/admin/inquiries/InquiryNotesDrawer"
 import { Button } from "@/components/ui/Button"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/Dialog"
+import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog"
 import { Input } from "@/components/ui/Input"
-import { CheckCircle, ChevronLeft, ChevronRight, Clock, Eye, Mail, Search, Trash2 } from "lucide-react"
-import { useRouter, useSearchParams } from "next/navigation"
+import { Textarea } from "@/components/ui/Textarea"
+import {
+    ArrowLeft,
+    CheckCircle,
+    History,
+    Mail,
+    PanelRight,
+    Search,
+    Send,
+    Star,
+    Trash2
+} from "lucide-react"
 import { useEffect, useState, useTransition } from "react"
+
+// Types matching the Prisma include structure
+interface InquiryNote {
+  id: string
+  content: string
+  userName: string
+  createdAt: Date
+}
+
+interface InquiryReply {
+  id: string
+  content: string
+  sentBy: string | null
+  sentAt: Date
+}
+
+interface AssignedUser {
+  id: string
+  name: string | null
+  email: string
+}
 
 interface Inquiry {
   id: string
   name: string
   email: string
   message: string
-  status: string
+  statusString: string
+  isStarred: boolean
+  isArchived: boolean
+  isRead: boolean
   createdAt: Date
+  notes: InquiryNote[]
+  replies: InquiryReply[]
+  assignedTo: AssignedUser | null
+  assignedToId: string | null
 }
 
 interface InquiriesTableProps {
-  inquiries: Inquiry[]
+  inquiries: Inquiry[] // Passed from server
+  users: { id: string; name: string | null; email: string; role: string }[]
   totalCount: number
   currentPage: number
   pageSize: number
 }
 
-export function InquiriesTable({ inquiries: initialInquiries, totalCount, currentPage, pageSize }: InquiriesTableProps) {
-  const router = useRouter()
-  const searchParams = useSearchParams()
-  const [inquiries, setInquiries] = useState(initialInquiries)
+export function InquiriesTable({
+  inquiries: initialInquiries,
+  users,
+  totalCount,
+}: InquiriesTableProps) {
   const [isPending, startTransition] = useTransition()
-  const [selectedInquiry, setSelectedInquiry] = useState<Inquiry | null>(null)
-  const [inquiryToDelete, setInquiryToDelete] = useState<string | null>(null)
+
+  // Local state for optimistic updates
+  const [inquiries, setInquiries] = useState<Inquiry[]>(initialInquiries)
+  const [selectedId, setSelectedId] = useState<string | null>(null)
+
+  // Filters
   const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState<"ALL" | InquiryStatus>("ALL")
+  const [listFilter, setListFilter] = useState<"ALL" | "UNREAD" | "STARRED">("ALL")
+
+  // Detail Panes
+  const [isNotesDrawerOpen, setIsNotesDrawerOpen] = useState(false)
+  const [replyText, setReplyText] = useState("")
+  const [inquiryToDelete, setInquiryToDelete] = useState<string | null>(null)
 
   useEffect(() => {
     setInquiries(initialInquiries)
   }, [initialInquiries])
 
-  // Function to update URL with page
-  const handlePageChange = (newPage: number) => {
-    const params = new URLSearchParams(searchParams)
-    params.set("page", newPage.toString())
-    router.push(`?${params.toString()}`)
+  // Current Selection
+  const selectedInquiry = inquiries.find((i) => i.id === selectedId) || null
+
+  // --------------------------------------------------------
+  // Actions
+  // --------------------------------------------------------
+  const handleSelectInquiry = (inquiry: Inquiry) => {
+    setSelectedId(inquiry.id)
+    if (!inquiry.isRead) {
+      startTransition(async () => {
+        await markAsRead(inquiry.id)
+        setInquiries((prev) =>
+          prev.map((i) => (i.id === inquiry.id ? { ...i, isRead: true } : i))
+        )
+      })
+    }
   }
 
-  const handleStatusChange = (id: string, status: InquiryStatus) => {
+  const handleToggleStar = (e: React.MouseEvent, id: string, current: boolean) => {
+    e.stopPropagation()
     startTransition(async () => {
+      // Optimistic
+      setInquiries((prev) =>
+        prev.map((i) => (i.id === id ? { ...i, isStarred: !current } : i))
+      )
+      await toggleStarred(id)
+    })
+  }
+
+  const handleMarkAsReadIcon = (e: React.MouseEvent, id: string) => {
+    e.stopPropagation()
+    startTransition(async () => {
+        setInquiries((prev) =>
+          prev.map((i) => (i.id === id ? { ...i, isRead: true } : i))
+        )
+        await markAsRead(id)
+    })
+  }
+
+  const handleUpdateStatus = (id: string, status: InquiryStatus) => {
+    startTransition(async () => {
+      setInquiries((prev) =>
+        prev.map((i) => (i.id === id ? { ...i, statusString: status } : i))
+      )
       await updateInquiryStatus(id, status)
-      setInquiries(inquiries.map(i => i.id === id ? { ...i, status } : i))
+    })
+  }
+
+  const handleAssign = (id: string, userId: string | null) => {
+    startTransition(async () => {
+      const assignedUser = userId ? users.find((u) => u.id === userId) || null : null
+      
+      // We process the server action first to get the generated system note text
+      const res = await assignInquiry(id, userId)
+
+      if (res.success) {
+        setInquiries((prev) =>
+          prev.map((i) => {
+            if (i.id !== id) return i
+            
+            return {
+              ...i,
+              assignedToId: userId,
+              assignedTo: assignedUser as any,
+              isRead: true, // Assigning auto-reads
+              notes: [
+                {
+                  id: "temp-assign-" + Date.now(),
+                  content: `Assigned to ${res.assignedUserName || "System"} by You`,
+                  userName: "System",
+                  createdAt: new Date(),
+                },
+                ...i.notes,
+              ],
+            }
+          })
+        )
+      }
+    })
+  }
+
+  const handleArchive = (id: string) => {
+    startTransition(async () => {
+      setInquiries((prev) => prev.filter((i) => i.id !== id))
+      setSelectedId(null)
+      await archiveInquiry(id)
     })
   }
 
   const handleDelete = () => {
     if (!inquiryToDelete) return
     startTransition(async () => {
-        const res = await deleteInquiry(inquiryToDelete)
-        if (res.success) {
-            setInquiries(inquiries.filter(i => i.id !== inquiryToDelete))
-            setInquiryToDelete(null)
-            if (selectedInquiry?.id === inquiryToDelete) setSelectedInquiry(null)
-            router.refresh()
-        }
+      await deleteInquiry(inquiryToDelete)
+      setInquiries((prev) => prev.filter((i) => i.id !== inquiryToDelete))
+      if (selectedId === inquiryToDelete) setSelectedId(null)
+      setInquiryToDelete(null)
     })
   }
 
-  // Client-side filtering for current page data
-  const filteredInquiries = inquiries.filter(inquiry => {
-    const matchesSearch = 
-        inquiry.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-        inquiry.email.toLowerCase().includes(searchQuery.toLowerCase())
-    
-    const matchesStatus = statusFilter === "ALL" || inquiry.status === statusFilter
-    
-    return matchesSearch && matchesStatus
-  })
+  const handleSendReply = () => {
+    if (!selectedInquiry || !replyText.trim()) return
+    const text = replyText
+    startTransition(async () => {
+      const res = await replyToInquiry(selectedInquiry.id, text)
+      if (res.success) {
+        setReplyText("")
+        setInquiries((prev) =>
+          prev.map((i) => {
+            if (i.id !== selectedInquiry.id) return i
+            return {
+              ...i,
+              statusString: "CONTACTED",
+              replies: [
+                ...i.replies,
+                {
+                  id: "temp-" + Date.now(),
+                  content: text,
+                  sentBy: "Me", // Mock
+                  sentAt: new Date(),
+                },
+              ],
+            }
+          })
+        )
+      } else {
+        alert("Failed to send reply. Please try again.")
+      }
+    })
+  }
 
-  // Generate Gmail compose URL with prefilled details
+  const handleAddNote = (text: string) => {
+    if (!selectedInquiry || !text.trim()) return
+    startTransition(async () => {
+      const res = await addInquiryNote(selectedInquiry.id, text)
+      if (res.success) {
+        setInquiries((prev) =>
+          prev.map((i) => {
+            if (i.id !== selectedInquiry.id) return i
+            return {
+              ...i,
+              notes: [
+                {
+                  id: "temp-" + Date.now(),
+                  content: text,
+                  userName: "System",
+                  createdAt: new Date(),
+                },
+                ...i.notes,
+              ],
+            }
+          })
+        )
+      }
+    })
+  }
+
+  const copyToClipboard = (text: string) => {
+      navigator.clipboard.writeText(text)
+  }
+
+  // --------------------------------------------------------
+  // Utilities & Rendering
+  // --------------------------------------------------------
   const getGmailReplyUrl = (inquiry: Inquiry) => {
     const subject = encodeURIComponent(`Re: Your Inquiry to Daily Nutrition`)
     const body = encodeURIComponent(
-      `Hi ${inquiry.name},\n\nThank you for reaching out to Daily Nutrition regarding:\n\n"${inquiry.message.substring(0, 200)}${inquiry.message.length > 200 ? '...' : ''}"\n\n---\n\nBest regards,\nDaily Nutrition Team`
+      `Hi \${inquiry.name},\\n\\nThank you for reaching out to Daily Nutrition.\\n\\n---\\n\\nBest regards,\\nDaily Nutrition Team`
     )
-    return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(inquiry.email)}&su=${subject}&body=${body}`
+    return `https://mail.google.com/mail/?view=cm&fs=1&to=\${encodeURIComponent(
+      inquiry.email
+    )}&su=\${subject}&body=\${body}`
   }
 
-  const getStatusBadge = (status: string) => {
+  const filteredInquiries = inquiries
+    .filter((i) => !i.isArchived)
+    .filter((i) => {
+      const matchesSearch =
+        i.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        i.email.toLowerCase().includes(searchQuery.toLowerCase())
+
+      if (listFilter === "UNREAD") return matchesSearch && !i.isRead
+      if (listFilter === "STARRED") return matchesSearch && i.isStarred
+      return matchesSearch
+    })
+
+  const getStatusColor = (status: string) => {
     switch (status) {
-      case "NEW":
-        return (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ring-inset bg-orange/5 text-orange ring-orange/20">
-            <span className="w-1.5 h-1.5 rounded-full mr-1.5 bg-orange animate-pulse"></span>
-            New
-          </span>
-        )
-      case "CONTACTED":
-        return (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ring-inset bg-blue-50 text-blue-600 ring-blue-200 dark:bg-blue-900/20 dark:text-blue-400 dark:ring-blue-800">
-            <Clock className="w-3 h-3 mr-1" />
-            Contacted
-          </span>
-        )
-      case "CLOSED":
-        return (
-          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ring-inset bg-brand-green/5 text-brand-green ring-brand-green/20">
-            <CheckCircle className="w-3 h-3 mr-1" />
-            Closed
-          </span>
-        )
-      default:
-        return status
+      case "NEW": return "border-orange text-orange"
+      case "CONTACTED": return "border-blue-500 text-blue-500"
+      case "CLOSED": return "border-brand-green text-brand-green"
+      default: return "border-neutral-300 text-neutral-500"
     }
   }
 
-  const totalPages = Math.ceil(totalCount / pageSize)
-
   return (
-    <>
-      <div className="p-4 border-b border-neutral-100 dark:border-white/5 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white/50 dark:bg-white/[0.02]">
-         <div className="relative w-full sm:w-auto">
-            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-neutral-500" />
+    <div className="flex flex-1 gap-4 md:gap-6 min-h-0 relative h-full w-full">
+      {/* ----------------------------------------------------- */}
+      {/* LEFT PANE: LEAD LIST / INBOX */}
+      {/* ----------------------------------------------------- */}
+      <div className={`w-full lg:w-80 xl:w-96 flex flex-col shrink-0 bg-white/90 dark:bg-[#121212]/90 backdrop-blur-md rounded-[10px] border border-neutral-200 dark:border-white/10 shadow-xl overflow-hidden transition-all duration-300 \${selectedId ? 'hidden lg:flex' : 'flex'}`}>
+        
+        {/* Header / Search */}
+        <div className="p-4 border-b border-neutral-100 dark:border-white/5 space-y-4 shrink-0 bg-neutral-50/50 dark:bg-white/[0.02]">
+          <div className="relative">
+            <Search className="absolute left-3 top-2.5 h-4 w-4 text-neutral-400" />
             <Input
-              placeholder="Search by name or email (current page)..."
-              className="pl-9 w-full sm:w-64 bg-white dark:bg-black/20 border-neutral-200 dark:border-white/10"
+              placeholder="Search leads..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-9 bg-white dark:bg-black/40 border-neutral-200 dark:border-white/10 rounded-full h-9 shadow-sm"
             />
-         </div>
-         <div className="flex items-center gap-3 w-full sm:w-auto">
-             <span className="text-sm text-neutral-500 whitespace-nowrap hidden sm:inline">Filter by:</span>
-             <select
-                className="h-10 rounded-md border border-neutral-200 dark:border-white/10 bg-white dark:bg-black/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green w-full sm:w-auto"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value as any)}
-             >
-                <option value="ALL">All Statuses</option>
-                <option value="NEW">New</option>
-                <option value="CONTACTED">Contacted</option>
-                <option value="CLOSED">Closed</option>
-             </select>
-         </div>
-      </div>
+          </div>
+          <div className="flex gap-1 bg-neutral-100 dark:bg-black/40 p-1 rounded-lg">
+            <button
+              onClick={() => setListFilter("ALL")}
+              className={`flex-1 text-[11px] font-bold uppercase tracking-wider py-1.5 rounded-md transition-all \${
+                listFilter === "ALL"
+                  ? "bg-white text-charcoal dark:bg-white/10 dark:text-white shadow-sm"
+                  : "text-neutral-500 hover:text-charcoal dark:hover:text-white"
+              }`}
+            >
+              All
+            </button>
+            <button
+              onClick={() => setListFilter("UNREAD")}
+              className={`flex-1 text-[11px] font-bold uppercase tracking-wider py-1.5 rounded-md transition-all \${
+                listFilter === "UNREAD"
+                  ? "bg-white text-brand-green dark:bg-brand-green/20 dark:text-brand-green shadow-sm"
+                  : "text-neutral-500 hover:text-charcoal dark:hover:text-white"
+              }`}
+            >
+              Unread
+            </button>
+            <button
+              onClick={() => setListFilter("STARRED")}
+              className={`flex-1 flex justify-center items-center gap-1 text-[11px] font-bold uppercase tracking-wider py-1.5 rounded-md transition-all \${
+                listFilter === "STARRED"
+                  ? "bg-white text-yellow-500 dark:bg-yellow-500/20 dark:text-yellow-400 shadow-sm"
+                  : "text-neutral-500 hover:text-charcoal dark:hover:text-white"
+              }`}
+            >
+              <Star className="w-3 h-3" />
+              Starred
+            </button>
+          </div>
+        </div>
 
-      <div className="overflow-x-auto scrollbar-thin-1px lg:overflow-visible">
-        <table className="w-full text-sm text-left">
-          <thead className="bg-neutral-50/50 dark:bg-white/[0.02] text-neutral-500 dark:text-neutral-400 font-medium">
-            <tr>
-              <th className="px-6 py-4 font-semibold">Status</th>
-              <th className="px-6 py-4 font-semibold">Client</th>
-              <th className="px-6 py-4 font-semibold">Message</th>
-              <th className="px-6 py-4 font-semibold">Date</th>
-              <th className="px-6 py-4 text-right font-semibold">Actions</th>
-            </tr>
-          </thead>
-          <tbody className="divide-y divide-neutral-100 dark:divide-white/5">
-            {filteredInquiries.length === 0 ? (
-                <tr>
-                    <td colSpan={5} className="px-6 py-12 text-center text-neutral-500">
-                        {inquiries.length === 0 ? "No inquiries found." : "No inquiries match your filters."}
-                    </td>
-                </tr>
-            ) : (
-                filteredInquiries.map((inquiry) => (
-                <tr key={inquiry.id} className="group hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
-                    <td className="px-6 py-4">
-                    {getStatusBadge(inquiry.status)}
-                    </td>
-                    <td className="px-6 py-4">
-                    <div className="font-semibold text-olive dark:text-off-white">{inquiry.name}</div>
-                    <div className="text-xs text-neutral-400 font-normal">{inquiry.email}</div>
-                    </td>
-                    <td className="px-6 py-4 text-neutral-600 dark:text-neutral-300 max-w-xs truncate cursor-pointer" onClick={() => setSelectedInquiry(inquiry)}>
-                    {inquiry.message.substring(0, 60)}...
-                    </td>
-                    <td className="px-6 py-4 text-neutral-500 font-mono text-xs">
-                    {new Date(inquiry.createdAt).toLocaleDateString()}
-                    </td>
-                    <td className="px-6 py-4 text-right">
-                    <div className="flex items-center justify-end gap-1">
-                        <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-neutral-400 hover:text-blue-500 hover:bg-blue-500/10 rounded-full"
-                        onClick={() => setSelectedInquiry(inquiry)}
-                        disabled={isPending}
-                        data-tooltip="View Details"
-                        >
-                        <Eye className="w-4 h-4" />
-                        </Button>
-                        <a
-                          href={getGmailReplyUrl(inquiry)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          onClick={() => handleStatusChange(inquiry.id, "CONTACTED")}
-                        >
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-neutral-400 hover:text-orange hover:bg-orange/10 rounded-full"
-                            data-tooltip="Reply via Gmail"
-                          >
-                            <Mail className="w-4 h-4" />
-                          </Button>
-                        </a>
-                        {inquiry.status === "NEW" && (
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-neutral-400 hover:text-brand-green hover:bg-brand-green/10 rounded-full"
-                            onClick={() => handleStatusChange(inquiry.id, "CONTACTED")}
-                            disabled={isPending}
-                            data-tooltip="Mark as Contacted"
-                        >
-                            <Clock className="w-4 h-4" />
-                        </Button>
-                        )}
-                        {inquiry.status === "CONTACTED" && (
-                        <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-8 w-8 text-neutral-400 hover:text-brand-green hover:bg-brand-green/10 rounded-full"
-                            onClick={() => handleStatusChange(inquiry.id, "CLOSED")}
-                            disabled={isPending}
-                            data-tooltip="Close Inquiry"
-                        >
-                            <CheckCircle className="w-4 h-4" />
-                        </Button>
-                        )}
-                        <Button
-                        variant="ghost"
-                        size="icon"
-                        className="h-8 w-8 text-neutral-400 hover:text-red-500 hover:bg-red-500/10 rounded-full"
-                        onClick={() => setInquiryToDelete(inquiry.id)}
-                        disabled={isPending}
-                        data-tooltip="Delete Inquiry"
-                        >
-                        <Trash2 className="w-4 h-4" />
-                        </Button>
+        {/* Lead List Scroll */}
+        <div className="flex-1 overflow-y-auto custom-scrollbar">
+          {filteredInquiries.length === 0 ? (
+            <div className="p-8 text-center text-neutral-400 text-sm">
+              No leads found matching your criteria.
+            </div>
+          ) : (
+            <div className="divide-y divide-neutral-100 dark:divide-white/5">
+              {filteredInquiries.map((inquiry) => (
+                <div
+                  key={inquiry.id}
+                  onClick={() => handleSelectInquiry(inquiry)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                      e.preventDefault()
+                      handleSelectInquiry(inquiry)
+                    }
+                  }}
+                  tabIndex={0}
+                  className={`w-full text-left p-4 hover:bg-neutral-50 dark:hover:bg-white/[0.04] transition-all group relative cursor-pointer \${
+                    selectedId === inquiry.id
+                      ? "bg-neutral-50 dark:bg-white/[0.06] shadow-inner"
+                      : ""
+                  } \${!inquiry.isRead ? "border-l-2 border-brand-green" : "border-l-2 border-transparent"}`}
+                >
+                  <div className="flex justify-between items-start mb-1 gap-2">
+                    <div className={`text-sm truncate pr-4 relative \${!inquiry.isRead ? 'font-bold text-charcoal dark:text-white' : 'font-medium text-neutral-700 dark:text-neutral-300'}`}>
+                      {inquiry.name}
                     </div>
-                    </td>
-                </tr>
-                ))
-            )}
-          </tbody>
-        </table>
-      </div>
-      
-      {/* Pagination Controls */}
-      <div className="p-4 border-t border-neutral-100 dark:border-white/5 bg-neutral-50/30 dark:bg-white/[0.01] flex items-center justify-between">
-        <span className="text-xs text-neutral-400">
-            Showing {(currentPage - 1) * pageSize + 1} to {Math.min(currentPage * pageSize, totalCount)} of {totalCount} results
-        </span>
-        <div className="flex items-center gap-2">
-            <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange(currentPage - 1)}
-                disabled={currentPage <= 1}
-                className="h-8 px-2"
-            >
-                <ChevronLeft className="w-4 h-4" />
-            </Button>
-            <span className="text-sm text-neutral-600 dark:text-neutral-400">
-                Page {currentPage} of {totalPages}
-            </span>
-            <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handlePageChange(currentPage + 1)}
-                disabled={currentPage >= totalPages}
-                className="h-8 px-2"
-            >
-                <ChevronRight className="w-4 h-4" />
-            </Button>
+                    <span className="text-[10px] uppercase font-bold tracking-widest text-neutral-400 whitespace-nowrap flex-shrink-0 mt-0.5">
+                      {new Date(inquiry.createdAt).toLocaleDateString([], {
+                        month: "short",
+                        day: "numeric",
+                      })}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-start gap-2 h-5">
+                    <div className="text-xs text-neutral-500 truncate flex-1">
+                      {inquiry.message}
+                    </div>
+                    {inquiry.isStarred && (
+                      <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500 flex-shrink-0 mt-0.5" />
+                    )}
+                  </div>
+
+                  {/* Absolute Quick Actions (Xinteck CRM Pattern) */}
+                  <div className="absolute right-2 bottom-2 opacity-0 group-hover:opacity-100 transition-opacity bg-white/90 dark:bg-[#121212]/90 backdrop-blur-sm px-2 py-1 flex items-center gap-2 rounded-md shadow-sm border border-neutral-200 dark:border-white/10">
+                      <button 
+                         className="text-neutral-400 hover:text-yellow-500 transition-colors p-1"
+                         onClick={(e) => handleToggleStar(e, inquiry.id, inquiry.isStarred)}
+                      >
+                         <Star className={`w-3.5 h-3.5 \${inquiry.isStarred ? 'fill-yellow-500 text-yellow-500' : ''}`} />
+                      </button>
+                      {!inquiry.isRead && (
+                          <button 
+                            className="text-neutral-400 hover:text-brand-green transition-colors p-1"
+                            onClick={(e) => handleMarkAsReadIcon(e, inquiry.id)}
+                            title="Mark as Read"
+                          >
+                             <CheckCircle className="w-3.5 h-3.5" />
+                          </button>
+                      )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
       </div>
 
-      {/* Detail Modal */}
-      <Dialog open={!!selectedInquiry} onOpenChange={(open) => !open && setSelectedInquiry(null)}>
-        <DialogContent className="sm:max-w-xl">
-          {/* Header with Status Badge */}
-          <div className="pr-8"> {/* Padding to avoid X button */}
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1 min-w-0">
-                <DialogTitle className="text-xl font-bold truncate">
-                  {selectedInquiry?.name}
-                </DialogTitle>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
-                  {selectedInquiry?.email}
-                </p>
-              </div>
-              {selectedInquiry && (
-                <div className="shrink-0 mt-1">
-                  {getStatusBadge(selectedInquiry.status)}
-                </div>
-              )}
+      {/* ----------------------------------------------------- */}
+      {/* RIGHT PANE: DETAIL VIEWER */}
+      {/* ----------------------------------------------------- */}
+      <div
+        className={`flex-1 flex bg-white/90 dark:bg-[#121212]/90 backdrop-blur-md rounded-[10px] border border-neutral-200 dark:border-white/10 shadow-xl overflow-hidden relative transition-all duration-300 \${
+          !selectedId ? "hidden lg:flex" : "flex"
+        }`}
+      >
+        {!selectedInquiry ? (
+          <div className="flex-1 flex flex-col items-center justify-center text-neutral-400 p-8 text-center shrink-0 w-full h-full">
+            <div className="w-16 h-16 rounded-full bg-neutral-100 dark:bg-white/5 flex items-center justify-center mb-4 border border-neutral-200 dark:border-white/10 shadow-sm">
+              <Mail className="w-8 h-8 text-neutral-300" />
             </div>
-          </div>
-
-          {/* Message Content */}
-          <div className="bg-neutral-50 dark:bg-white/5 rounded-xl p-4 border border-neutral-100 dark:border-white/5">
-            <p className="text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap text-sm leading-relaxed">
-              {selectedInquiry?.message}
+            <p className="text-lg font-medium text-neutral-600 dark:text-neutral-300">
+              Zero Inbox
+            </p>
+            <p className="text-sm mt-1 max-w-sm">
+              Select a lead from the left pane to view details, assign staff, and collaborate.
             </p>
           </div>
+        ) : (
+          <>
+            {/* The Main Content Body */}
+            <div className="flex-1 flex flex-col min-w-0 bg-transparent relative z-0 h-full overflow-hidden">
+                {/* Fixed Sticky Toolbar */}
+                <div className="sticky top-0 z-10 bg-neutral-50/80 dark:bg-white/[0.02] backdrop-blur-md px-4 py-3 border-b border-neutral-200 dark:border-white/10 flex items-center justify-between shrink-0">
+                    <div className="flex items-center gap-2">
+                        <button
+                          className="lg:hidden p-2 text-neutral-500 hover:text-charcoal dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-white/10 rounded-md transition-colors"
+                          onClick={() => setSelectedId(null)}
+                        >
+                          <ArrowLeft className="w-5 h-5" />
+                        </button>
+                        
+                        {/* Status Select */}
+                        <select 
+                            title="Change Status"
+                            className="bg-transparent text-[11px] uppercase tracking-wider font-bold text-neutral-600 dark:text-neutral-300 outline-none cursor-pointer hover:bg-neutral-100 dark:hover:bg-white/10 py-1.5 px-2 rounded-md transition-colors disabled:opacity-50"
+                            value={selectedInquiry.statusString}
+                            onChange={(e) => handleUpdateStatus(selectedInquiry.id, e.target.value as InquiryStatus)}
+                            disabled={isPending}
+                        >
+                            <option value="NEW">Status: New</option>
+                            <option value="CONTACTED">Status: Contacted</option>
+                            <option value="CLOSED">Status: Closed</option>
+                        </select>
+                    </div>
 
-          {/* Footer with Actions */}
-          <div className="flex flex-col gap-4 pt-2 border-t border-neutral-100 dark:border-white/10">
-            <span className="text-xs text-neutral-400 flex items-center gap-1">
-              <Clock className="w-3 h-3" />
-              Received: {selectedInquiry && new Date(selectedInquiry.createdAt).toLocaleString()}
-            </span>
-            <div className="flex flex-wrap gap-2">
-              {selectedInquiry && (
-                <a
-                  href={getGmailReplyUrl(selectedInquiry)}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onClick={() => {
-                    handleStatusChange(selectedInquiry.id, "CONTACTED")
-                    setSelectedInquiry(null)
-                  }}
-                >
-                  <Button size="sm" className="bg-orange hover:bg-orange/90 text-white">
-                    <Mail className="w-4 h-4 mr-2" />
-                    Reply via Gmail
-                  </Button>
-                </a>
-              )}
-              {selectedInquiry?.status !== "CLOSED" && (
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  className="border-brand-green/50 text-brand-green hover:bg-brand-green/10"
-                  onClick={() => {
-                    if (selectedInquiry) handleStatusChange(selectedInquiry.id, "CLOSED")
-                    setSelectedInquiry(null)
-                  }}
-                >
-                  <CheckCircle className="w-4 h-4 mr-2" />
-                  Mark Closed
-                </Button>
-              )}
-              <Button variant="outline" size="sm" onClick={() => setSelectedInquiry(null)}>
-                Close
-              </Button>
+                    <div className="flex items-center gap-1">
+                        <Button
+                           variant="ghost"
+                           size="sm"
+                           onClick={() => setInquiryToDelete(selectedInquiry.id)}
+                           className="text-neutral-500 hover:text-red-500 disabled:opacity-50 h-8 font-medium text-xs px-3"
+                           disabled={isPending}
+                        >
+                            <Trash2 className="w-3.5 h-3.5 mr-1.5" />
+                            Delete
+                        </Button>
+                        <Button
+                           variant="ghost"
+                           size="sm"
+                           onClick={() => setIsNotesDrawerOpen(!isNotesDrawerOpen)}
+                           className={`h-8 font-medium text-xs px-3 transition-colors \${isNotesDrawerOpen ? 'bg-olive/10 text-olive dark:bg-olive/20' : 'text-neutral-500 hover:text-charcoal dark:hover:text-white'}`}
+                        >
+                            <PanelRight className="w-3.5 h-3.5 mr-1.5" />
+                            Notes
+                            {selectedInquiry.notes.length > 0 && (
+                                <span className="ml-1.5 bg-neutral-200 dark:bg-white/20 px-1.5 py-[1px] rounded-full text-[10px] font-bold">
+                                    {selectedInquiry.notes.length}
+                                </span>
+                            )}
+                        </Button>
+                    </div>
+                </div>
+
+                {/* Massive Scrollable Detail Feed */}
+                <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-10">
+                    
+                    {/* Rich Header */}
+                    <div className="flex gap-5 mb-8">
+                        <div className={`w-14 h-14 rounded-full border-2 flex items-center justify-center shrink-0 \${getStatusColor(selectedInquiry.statusString)} bg-white dark:bg-black/50 shadow-md`}>
+                            <span className="text-xl font-black uppercase text-inherit">
+                                {selectedInquiry.name.charAt(0)}
+                            </span>
+                        </div>
+                        <div className="flex-1 min-w-0 pt-1">
+                            <h2 className="text-2xl md:text-3xl font-black text-charcoal dark:text-white leading-tight tracking-tight truncate mb-3">
+                                {selectedInquiry.name}
+                            </h2>
+                            <div className="flex flex-wrap items-center gap-2">
+                                <button
+                                    onClick={() => copyToClipboard(selectedInquiry.email)}
+                                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-neutral-100 dark:bg-white/5 hover:bg-brand-green/10 hover:text-brand-green border border-neutral-200 dark:border-white/10 hover:border-brand-green/30 text-xs font-semibold text-neutral-600 dark:text-neutral-300 transition-all"
+                                >
+                                    <Mail className="w-3.5 h-3.5" />
+                                    {selectedInquiry.email}
+                                </button>
+                                <a 
+                                    href={getGmailReplyUrl(selectedInquiry)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-neutral-100 dark:bg-white/5 hover:bg-orange/10 hover:text-orange border border-neutral-200 dark:border-white/10 hover:border-orange/30 text-xs font-semibold text-neutral-600 dark:text-neutral-300 transition-all"
+                                    onClick={() => handleUpdateStatus(selectedInquiry.id, "CONTACTED")}
+                                >
+                                    Open in Gmail
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Metadata Grid */}
+                    <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 border-y border-neutral-100 dark:border-white/5 py-6 mb-8">
+                        <div>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-1">Received</p>
+                            <p className="text-sm font-semibold text-charcoal dark:text-white">
+                                {new Date(selectedInquiry.createdAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}
+                            </p>
+                        </div>
+                        <div>
+                            <p className="text-[10px] font-bold uppercase tracking-widest text-neutral-400 mb-1">Assignee</p>
+                            <select
+                                value={selectedInquiry.assignedToId || ""}
+                                onChange={(e) => handleAssign(selectedInquiry.id, e.target.value || null)}
+                                className="w-full bg-transparent font-semibold text-sm text-charcoal dark:text-white outline-none cursor-pointer disabled:opacity-50"
+                                disabled={isPending}
+                            >
+                                <option value="">+ Assign Staff</option>
+                                {users.map((u) => (
+                                <option key={u.id} value={u.id}>
+                                    {u.name || u.email}
+                                </option>
+                                ))}
+                            </select>
+                        </div>
+                    </div>
+
+                    {/* The Message Body */}
+                    <div className="max-w-3xl mb-12">
+                         <p className="text-sm font-semibold uppercase tracking-widest text-neutral-400 mb-4">Original Message</p>
+                         <p className="text-neutral-700 dark:text-neutral-300 whitespace-pre-wrap leading-relaxed">
+                            {selectedInquiry.message}
+                         </p>
+                    </div>
+
+                    {/* Replies Thread */}
+                    {selectedInquiry.replies.length > 0 && (
+                        <div className="max-w-3xl space-y-4 mb-12">
+                            <p className="text-sm font-semibold uppercase tracking-widest text-neutral-400 mb-2 border-b border-neutral-200 dark:border-white/10 pb-2">Reply Thread / History</p>
+                            {selectedInquiry.replies.map((reply) => (
+                            <div key={reply.id} className="bg-brand-green/5 p-4 flex gap-4 border border-brand-green/20 rounded-xl relative">
+                                <div className="mt-1">
+                                    <History className="w-5 h-5 text-brand-green/60" />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                    <div className="text-[11px] uppercase tracking-wider font-bold text-brand-green/80 flex items-center justify-between mb-2">
+                                        <span>Sent via Dashboard by {reply.sentBy || "System"}</span>
+                                        <span>{new Date(reply.sentAt).toLocaleString([], { dateStyle: "medium", timeStyle: "short" })}</span>
+                                    </div>
+                                    <div className="text-sm text-neutral-800 dark:text-neutral-200 whitespace-pre-wrap leading-relaxed">{reply.content}</div>
+                                </div>
+                            </div>
+                            ))}
+                        </div>
+                    )}
+
+                    {/* Dashboard Composer */}
+                    <div className="max-w-3xl bg-neutral-50 dark:bg-black/20 p-4 rounded-xl border border-neutral-200 dark:border-white/10">
+                        <Textarea
+                            placeholder="Draft an official email reply (Uses Resend API)..."
+                            className="min-h-[140px] resize-y mb-4 bg-white dark:bg-black/40 border-neutral-200 dark:border-white/10 focus-visible:ring-brand-green"
+                            value={replyText}
+                            onChange={(e) => setReplyText(e.target.value)}
+                            disabled={isPending}
+                        />
+                        <div className="flex justify-end">
+                            <Button
+                                onClick={handleSendReply}
+                                disabled={!replyText.trim() || isPending}
+                                className="bg-olive hover:bg-olive/90 text-white gap-2 px-6 disabled:opacity-50 disabled:grayscale transition-all shadow-md"
+                            >
+                                <Send className="w-4 h-4" />
+                                {isPending ? "Sending..." : "Send Reply"}
+                            </Button>
+                        </div>
+                    </div>
+                </div>
             </div>
-          </div>
-        </DialogContent>
-      </Dialog>
 
-      {/* Delete Confirmation Modal */}
-      <Dialog open={!!inquiryToDelete} onOpenChange={(open) => !open && setInquiryToDelete(null)}>
-        <DialogContent>
-            <DialogHeader>
-                <DialogTitle>Delete Inquiry</DialogTitle>
-                <DialogDescription>
-                    Are you sure you want to delete this message? This action cannot be undone.
-                </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-                <Button variant="outline" onClick={() => setInquiryToDelete(null)}>Cancel</Button>
-                <Button 
-                    className="bg-red-500 hover:bg-red-600 text-white" 
-                    onClick={handleDelete}
-                    disabled={isPending}
-                >
-                    {isPending ? "Deleting..." : "Delete Permanently"}
-                </Button>
-            </DialogFooter>
-        </DialogContent>
-      </Dialog>
-    </>
+            {/* Slide Out Notes Drawer */}
+            <InquiryNotesDrawer 
+                isOpen={isNotesDrawerOpen} 
+                onClose={() => setIsNotesDrawerOpen(false)} 
+                notes={selectedInquiry.notes} 
+                onAddNote={handleAddNote}
+                isPending={isPending} 
+            />
+          </>
+        )}
+      </div>
+
+      <ConfirmationDialog
+        open={!!inquiryToDelete}
+        onOpenChange={(open) => !open && setInquiryToDelete(null)}
+        title="Delete Inquiry"
+        description="Are you sure you want to delete this message? This action removes tracking data and cannot be fully undone."
+        confirmText="Delete"
+        variant="destructive"
+        onConfirm={handleDelete}
+        isLoading={isPending}
+      />
+    </div>
   )
 }

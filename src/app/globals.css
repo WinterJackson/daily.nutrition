@@ -12,6 +12,34 @@
   --color-off-white: #F8FAF5;
   --color-charcoal: #0E1110;
 
+  /* Semantic UI Tokens - Light Mode Default */
+  --surface-primary: #ffffff;
+  --surface-secondary: #f4f7f1;
+  --surface-elevated: #ffffff;
+  --text-primary: #0E1110;
+  --text-secondary: #4a5568;
+  --text-muted: #718096;
+  --border-default: #e2e8f0;
+  --border-subtle: #edf2f7;
+  --accent-primary: #5C6F2B;
+  --accent-secondary: #E8751A;
+  --status-success: #38a169;
+  --status-warning: #ecc94b;
+  --status-error: #e53e3e;
+  --status-info: #3182ce;
+  --input-bg: #ffffff;
+  --input-border: #cbd5e0;
+  --input-focus: #5C6F2B;
+  --card-bg: #ffffff;
+  --card-border: #e2e8f0;
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+
+  /* Admin Surface System (Glassmorphism Base) */
+  --admin-surface-primary: rgba(255, 255, 255, 0.85);
+  --admin-surface-secondary: rgba(244, 247, 241, 0.6);
+  --admin-surface-floating: rgba(255, 255, 255, 0.95);
+  --admin-surface-input: rgba(255, 255, 255, 0.5);
+
   --font-sans: var(--font-outfit), ui-sans-serif, system-ui, sans-serif;
   --font-serif: var(--font-inter), ui-serif, Georgia, serif;
   
@@ -20,6 +48,9 @@
   --animate-float: float 6s ease-in-out infinite;
   --animate-pulse-slow: pulse-slow 4s ease-in-out infinite;
   --animate-gradient: gradient 8s ease infinite;
+  --animate-brand-pulse: brand-pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+  --animate-marquee-left: marquee-left 30s linear infinite;
+  --animate-marquee-right: marquee-right 30s linear infinite;
   
   @keyframes fade-in {
     from { opacity: 0; }
@@ -50,6 +81,21 @@
   @keyframes shimmer {
     100% { transform: translateX(100%); }
   }
+
+  @keyframes brand-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: .5; }
+  }
+
+  @keyframes marquee-left {
+    from { transform: translateX(0); }
+    to { transform: translateX(-50%); }
+  }
+
+  @keyframes marquee-right {
+    from { transform: translateX(-50%); }
+    to { transform: translateX(0); }
+  }
 }
 
 /* Light Mode Base (Default) */
@@ -58,14 +104,9 @@
     @apply scroll-smooth;
   }
   
-/* Light Mode Base (Default) */
-@layer base {
-  html {
-    @apply scroll-smooth;
-  }
-  
   body {
     @apply bg-white text-charcoal antialiased transition-colors duration-300;
+    color: var(--text-primary);
     background-image: 
       radial-gradient(circle at 15% 85%, rgba(92, 111, 43, 0.08) 0%, transparent 50%),
       radial-gradient(circle at 85% 15%, rgba(232, 117, 26, 0.07) 0%, transparent 50%),
@@ -73,12 +114,8 @@
   }
   
   h1, h2, h3, h4, h5, h6 {
-    @apply text-olive font-semibold tracking-tight;
-  }
-}
-  
-  h1, h2, h3, h4, h5, h6 {
-    @apply text-olive font-semibold tracking-tight;
+    color: var(--color-olive);
+    @apply font-semibold tracking-tight;
   }
 }
 
@@ -177,33 +214,102 @@ html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark 
   box-shadow: 0 0 80px rgba(232, 117, 26, 0.2);
 }
 
-/* Custom Scrollbar */
-/* Custom Scrollbar */
-*::-webkit-scrollbar {
-  width: 1px !important; 
-  height: 1px !important;
+/* Xinteck Pattern: Semantic Surface Utilities */
+/* Use these classes for consistent token-based styling across components */
+.surface-primary {
+  background-color: var(--surface-primary);
+  color: var(--text-primary);
 }
 
-*::-webkit-scrollbar-track {
+.surface-card {
+  background-color: var(--card-bg);
+  border-color: var(--card-border);
+  box-shadow: var(--card-shadow);
+}
+
+.surface-elevated {
+  background-color: var(--surface-elevated);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+.surface-input {
+  background-color: var(--input-bg);
+  border-color: var(--input-border);
+}
+
+.surface-input:focus,
+.surface-input:focus-within {
+  border-color: var(--input-focus);
+  box-shadow: 0 0 0 2px rgba(92, 111, 43, 0.15);
+}
+
+.text-body {
+  color: var(--text-primary);
+}
+
+.text-label {
+  color: var(--text-secondary);
+}
+
+.text-caption {
+  color: var(--text-muted);
+}
+
+.border-default {
+  border-color: var(--border-default);
+}
+
+.border-subtle {
+  border-color: var(--border-subtle);
+}
+
+/* Dark mode token overrides */
+.dark {
+  --surface-primary: #0E1110;
+  --surface-secondary: #141a15;
+  --surface-elevated: #1a2118;
+  --text-primary: #F8FAF5;
+  --text-secondary: #a0aec0;
+  --text-muted: #718096;
+  --border-default: rgba(255, 255, 255, 0.1);
+  --border-subtle: rgba(255, 255, 255, 0.05);
+  --input-bg: rgba(255, 255, 255, 0.05);
+  --input-border: rgba(255, 255, 255, 0.1);
+  --card-bg: rgba(255, 255, 255, 0.05);
+  --card-border: rgba(255, 255, 255, 0.1);
+  --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.2), 0 2px 4px -1px rgba(0, 0, 0, 0.15);
+  --admin-surface-primary: rgba(14, 17, 16, 0.85);
+  --admin-surface-secondary: rgba(20, 26, 21, 0.6);
+  --admin-surface-floating: rgba(26, 33, 24, 0.95);
+  --admin-surface-input: rgba(255, 255, 255, 0.05);
+}
+
+/* Custom Scrollbar Injection (Desktop CRM Emulation) */
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px !important;
+  height: 6px !important;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
   background: transparent !important;
 }
 
-*::-webkit-scrollbar-thumb {
-  background: var(--color-orange) !important;
-  border-radius: 999px !important;
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: var(--border-default) !important;
+  border-radius: 10px !important;
 }
 
-*::-webkit-scrollbar-thumb:hover {
-  background: #C2410C !important;
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted) !important;
 }
 
 /* Firefox Support */
-html {
+.custom-scrollbar {
   scrollbar-width: thin;
-  scrollbar-color: var(--color-orange) transparent;
+  scrollbar-color: var(--border-default) transparent;
 }
 
-/* Explicit Utility for 1px Scrollbar */
+/* Explicit Utility for 1px Scrollbar (Legacy overrides) */
 .scrollbar-thin-1px::-webkit-scrollbar {
   width: 1px !important;
   height: 1px !important;
@@ -449,5 +555,54 @@ html {
 /* Max width overrides */
 .prose.max-w-none {
   max-width: none;
+}
+
+/* Xinteck Glassmorphism Utilities */
+@layer utilities {
+  .glass {
+    background: var(--admin-surface-primary);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.05);
+  }
+
+  .dark .glass {
+    background: rgba(14, 17, 16, 0.75);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.2);
+  }
+
+  .glass-panel {
+    background: var(--admin-surface-secondary);
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    border: 1px solid var(--border-default);
+  }
+
+  .dark .glass-panel {
+    background: rgba(20, 26, 21, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .glass-card {
+    background: var(--admin-surface-floating);
+    backdrop-filter: blur(24px);
+    -webkit-backdrop-filter: blur(24px);
+    border: 1px solid rgba(255, 255, 255, 0.4);
+    box-shadow: var(--card-shadow);
+  }
+
+  .dark .glass-card {
+    background: rgba(26, 33, 24, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+  }
+
+  .text-gradient {
+    background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
 }
 

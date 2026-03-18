@@ -1,13 +1,18 @@
 "use server"
 
+import { logAudit } from "@/lib/audit"
+import { verifySession } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { testimonialSchema } from "@/lib/validations"
 import { revalidatePath } from "next/cache"
 
-export type TestimonialStatus = "PENDING" | "APPROVED" | "ARCHIVED"
+export type TestimonialStatus = "IN_REVIEW" | "PUBLISHED" | "ARCHIVED"
 
 export async function getTestimonials(status?: TestimonialStatus, page = 1, pageSize = 10) {
     try {
-        const where = status ? { status } : undefined
+        const where: any = { deletedAt: null }
+        if (status) where.contentStatus = status
+
         const [testimonials, totalCount] = await Promise.all([
             prisma.testimonial.findMany({
                 where,
@@ -25,7 +30,7 @@ export async function getTestimonials(status?: TestimonialStatus, page = 1, page
 }
 
 export async function getApprovedTestimonials() {
-    const result = await getTestimonials("APPROVED")
+    const result = await getTestimonials("PUBLISHED")
     return result.testimonials
 }
 
@@ -45,6 +50,15 @@ export async function createTestimonial(data: {
     serviceId?: string
     status?: TestimonialStatus
 }) {
+    const session = await verifySession()
+    if (!session) return { success: false, error: "Unauthorized" }
+
+    // Zod validation
+    const validated = testimonialSchema.partial().safeParse(data)
+    if (!validated.success) {
+        return { success: false, error: validated.error.issues.map(e => e.message).join(", ") }
+    }
+
     try {
         const testimonial = await prisma.testimonial.create({
             data: {
@@ -52,9 +66,17 @@ export async function createTestimonial(data: {
                 rating: data.rating,
                 content: data.content,
                 serviceId: data.serviceId || null,
-                status: data.status || "PENDING",
+                contentStatus: data.status || "IN_REVIEW",
             },
         })
+
+        logAudit({
+            action: "TESTIMONIAL_CREATED",
+            entity: "Testimonial",
+            entityId: testimonial.id,
+            metadata: { authorName: data.authorName },
+        })
+
         revalidatePath("/admin/testimonials")
         revalidatePath("/")
         return { success: true, testimonial }
@@ -71,11 +93,26 @@ export async function updateTestimonial(id: string, data: {
     serviceId?: string
     status?: TestimonialStatus
 }) {
+    const session = await verifySession()
+    if (!session) return { success: false, error: "Unauthorized" }
+
     try {
+        const { status, ...rest } = data
+        const updateData: any = { ...rest }
+        if (status) updateData.contentStatus = status
+
         const testimonial = await prisma.testimonial.update({
             where: { id },
-            data,
+            data: updateData,
         })
+
+        logAudit({
+            action: "TESTIMONIAL_UPDATED",
+            entity: "Testimonial",
+            entityId: id,
+            metadata: { status },
+        })
+
         revalidatePath("/admin/testimonials")
         revalidatePath("/")
         return { success: true, testimonial }
@@ -85,9 +122,23 @@ export async function updateTestimonial(id: string, data: {
     }
 }
 
+// Soft-delete
 export async function deleteTestimonial(id: string) {
+    const session = await verifySession()
+    if (!session) return { success: false, error: "Unauthorized" }
+
     try {
-        await prisma.testimonial.delete({ where: { id } })
+        await prisma.testimonial.update({
+            where: { id },
+            data: { deletedAt: new Date() }
+        })
+
+        logAudit({
+            action: "TESTIMONIAL_DELETED",
+            entity: "Testimonial",
+            entityId: id,
+        })
+
         revalidatePath("/admin/testimonials")
         revalidatePath("/")
         return { success: true }

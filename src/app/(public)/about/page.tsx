@@ -13,7 +13,7 @@ export default async function AboutPage() {
        {/* Animated Background */}
        <AnimatedBackground variant="nutrition" />
        
-       <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+       <div className="container max-w-7xl mx-auto mt-15 px-4 sm:px-6 lg:px-8 relative z-10">
           
           {/* Header Section */}
           <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-center mb-24">

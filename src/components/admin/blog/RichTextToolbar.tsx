@@ -14,7 +14,7 @@ import {
     ListOrdered,
     Quote,
     RotateCcw,
-    Type,
+    Type
 } from "lucide-react"
 import { useState } from "react"
 
@@ -33,6 +33,9 @@ const TEXT_SIZES = [
 
 export function RichTextToolbar({ onInsert, onUndo, canUndo }: RichTextToolbarProps) {
   const [showSizeMenu, setShowSizeMenu] = useState(false)
+  const [showAlignMenu, setShowAlignMenu] = useState(false)
+  const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false)
+  const [pendingImageUrl, setPendingImageUrl] = useState<string | null>(null)
 
   const handleTextSize = (size: typeof TEXT_SIZES[0]) => {
     // Using HTML span with class for size (will render in preview with proper styling)
@@ -50,6 +53,7 @@ export function RichTextToolbar({ onInsert, onUndo, canUndo }: RichTextToolbarPr
           size="sm"
           onClick={onUndo}
           disabled={!canUndo}
+          onMouseDown={(e) => e.preventDefault()}
           title="Undo"
           className="h-8 w-8 p-0 rounded-full hover:bg-neutral-100 dark:hover:bg-white/10 text-neutral-600 dark:text-neutral-400 disabled:opacity-30"
         >
@@ -63,6 +67,7 @@ export function RichTextToolbar({ onInsert, onUndo, canUndo }: RichTextToolbarPr
           variant="ghost"
           size="sm"
           onClick={() => onInsert('wrap', '**', '**')}
+          onMouseDown={(e) => e.preventDefault()}
           title="Bold"
           className="h-8 w-8 p-0 rounded-full hover:bg-neutral-100 dark:hover:bg-white/10 text-neutral-600 dark:text-neutral-400"
         >
@@ -72,6 +77,7 @@ export function RichTextToolbar({ onInsert, onUndo, canUndo }: RichTextToolbarPr
           variant="ghost"
           size="sm"
           onClick={() => onInsert('wrap', '*', '*')}
+          onMouseDown={(e) => e.preventDefault()}
           title="Italic"
           className="h-8 w-8 p-0 rounded-full hover:bg-neutral-100 dark:hover:bg-white/10 text-neutral-600 dark:text-neutral-400"
         >
@@ -87,6 +93,7 @@ export function RichTextToolbar({ onInsert, onUndo, canUndo }: RichTextToolbarPr
           variant="ghost"
           size="sm"
           onClick={() => setShowSizeMenu(!showSizeMenu)}
+          onMouseDown={(e) => e.preventDefault()}
           title="Text Size"
           className="h-8 px-2 rounded-full hover:bg-neutral-100 dark:hover:bg-white/10 text-neutral-600 dark:text-neutral-400 flex items-center gap-1"
         >
@@ -100,6 +107,7 @@ export function RichTextToolbar({ onInsert, onUndo, canUndo }: RichTextToolbarPr
               <button
                 key={size.value}
                 onClick={() => handleTextSize(size)}
+                onMouseDown={(e) => e.preventDefault()}
                 className={`w-full px-3 py-1.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-white/10 ${size.class}`}
               >
                 {size.label}
@@ -117,6 +125,7 @@ export function RichTextToolbar({ onInsert, onUndo, canUndo }: RichTextToolbarPr
           variant="ghost"
           size="sm"
           onClick={() => onInsert('block', '# ')}
+          onMouseDown={(e) => e.preventDefault()}
           title="Heading 1"
           className="h-8 w-8 p-0 rounded-full hover:bg-neutral-100 dark:hover:bg-white/10 text-neutral-600 dark:text-neutral-400"
         >
@@ -126,6 +135,7 @@ export function RichTextToolbar({ onInsert, onUndo, canUndo }: RichTextToolbarPr
           variant="ghost"
           size="sm"
           onClick={() => onInsert('block', '## ')}
+          onMouseDown={(e) => e.preventDefault()}
           title="Heading 2"
           className="h-8 w-8 p-0 rounded-full hover:bg-neutral-100 dark:hover:bg-white/10 text-neutral-600 dark:text-neutral-400"
         >
@@ -135,6 +145,7 @@ export function RichTextToolbar({ onInsert, onUndo, canUndo }: RichTextToolbarPr
           variant="ghost"
           size="sm"
           onClick={() => onInsert('block', '### ')}
+          onMouseDown={(e) => e.preventDefault()}
           title="Heading 3"
           className="h-8 w-8 p-0 rounded-full hover:bg-neutral-100 dark:hover:bg-white/10 text-neutral-600 dark:text-neutral-400"
         >
@@ -150,6 +161,7 @@ export function RichTextToolbar({ onInsert, onUndo, canUndo }: RichTextToolbarPr
           variant="ghost"
           size="sm"
           onClick={() => onInsert('block', '- ')}
+          onMouseDown={(e) => e.preventDefault()}
           title="Bullet List"
           className="h-8 w-8 p-0 rounded-full hover:bg-neutral-100 dark:hover:bg-white/10 text-neutral-600 dark:text-neutral-400"
         >
@@ -159,6 +171,7 @@ export function RichTextToolbar({ onInsert, onUndo, canUndo }: RichTextToolbarPr
           variant="ghost"
           size="sm"
           onClick={() => onInsert('block', '1. ')}
+          onMouseDown={(e) => e.preventDefault()}
           title="Numbered List"
           className="h-8 w-8 p-0 rounded-full hover:bg-neutral-100 dark:hover:bg-white/10 text-neutral-600 dark:text-neutral-400"
         >
@@ -168,6 +181,7 @@ export function RichTextToolbar({ onInsert, onUndo, canUndo }: RichTextToolbarPr
           variant="ghost"
           size="sm"
           onClick={() => onInsert('block', '> ')}
+          onMouseDown={(e) => e.preventDefault()}
           title="Quote"
           className="h-8 w-8 p-0 rounded-full hover:bg-neutral-100 dark:hover:bg-white/10 text-neutral-600 dark:text-neutral-400"
         >
@@ -183,20 +197,59 @@ export function RichTextToolbar({ onInsert, onUndo, canUndo }: RichTextToolbarPr
           variant="ghost"
           size="sm"
           onClick={() => onInsert('insert', '[Link text](url)')}
+          onMouseDown={(e) => e.preventDefault()}
           title="Link"
           className="h-8 w-8 p-0 rounded-full hover:bg-neutral-100 dark:hover:bg-white/10 text-neutral-600 dark:text-neutral-400"
         >
           <LinkIcon className="w-4 h-4" />
         </Button>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => onInsert('insert', '![Alt text](image_url)')}
-          title="Image"
-          className="h-8 w-8 p-0 rounded-full hover:bg-neutral-100 dark:hover:bg-white/10 text-neutral-600 dark:text-neutral-400"
-        >
-          <ImageIcon className="w-4 h-4" />
-        </Button>
+
+        {/* Image Upload Button */}
+        <div className="relative">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsMediaPickerOpen(true)}
+            onMouseDown={(e) => e.preventDefault()}
+            title="Insert Media"
+            className="h-8 w-8 p-0 rounded-full hover:bg-neutral-100 dark:hover:bg-white/10 text-neutral-600 dark:text-neutral-400"
+          >
+            <ImageIcon className="w-4 h-4" />
+          </Button>
+
+          {/* Alignment Picker Dropdown */}
+          {showAlignMenu && pendingImageUrl && (
+            <div className="absolute top-full right-0 mt-1 bg-white dark:bg-charcoal border border-neutral-200 dark:border-white/10 rounded-lg shadow-lg py-1 min-w-[140px] z-50">
+              <p className="px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-neutral-400 border-b border-neutral-100 dark:border-white/5">Image Alignment</p>
+              {[
+                { label: "Left", align: "left" },
+                { label: "Center", align: "center" },
+                { label: "Right", align: "right" },
+                { label: "Full Width", align: "full" },
+              ].map(opt => (
+                <button
+                  key={opt.align}
+                  onMouseDown={(e) => e.preventDefault()}
+                  onClick={() => {
+                    const url = pendingImageUrl
+                    setPendingImageUrl(null)
+                    setShowAlignMenu(false)
+                    if (!url) return
+
+                    if (opt.align === "full") {
+                      onInsert('insert', `\n![image](${url})\n`)
+                    } else {
+                      onInsert('insert', `\n<figure style="text-align: ${opt.align}">\n  <img src="${url}" alt="image" style="max-width: 100%; display: inline-block;" />\n</figure>\n`)
+                    }
+                  }}
+                  className="w-full px-3 py-1.5 text-left text-sm hover:bg-neutral-100 dark:hover:bg-white/10 text-neutral-700 dark:text-neutral-300"
+                >
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
       </div>
     </div>
   )

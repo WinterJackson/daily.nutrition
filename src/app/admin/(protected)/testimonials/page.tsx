@@ -19,12 +19,12 @@ export default async function AdminTestimonialsPage({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold font-serif text-olive dark:text-off-white">Testimonials</h1>
-          <p className="text-neutral-500 dark:text-neutral-400 mt-1">Manage customer reviews and success stories.</p>
+          <p className="text-caption mt-1">Manage customer reviews and success stories.</p>
         </div>
       </div>
 
-      <Card className="border-none shadow-xl shadow-neutral-200/50 dark:shadow-black/20 bg-white/90 dark:bg-white/5 backdrop-blur-md overflow-hidden">
-        <CardHeader className="border-b border-neutral-100 dark:border-white/5 pb-4">
+      <Card className="surface-card overflow-hidden">
+        <CardHeader className="border-b border-subtle pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
             <Star className="h-5 w-5 text-gold" />
             All Reviews ({totalCount})
@@ -32,7 +32,7 @@ export default async function AdminTestimonialsPage({
         </CardHeader>
         <CardContent className="p-0">
           <TestimonialsManager 
-            testimonials={testimonials} 
+            testimonials={testimonials as any} 
             totalCount={totalCount}
             currentPage={page}
             pageSize={pageSize}

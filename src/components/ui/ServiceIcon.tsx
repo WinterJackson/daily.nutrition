@@ -1,4 +1,4 @@
-import { Activity, AlertCircle, Apple, HeartPulse, Phone, Scale, Sparkles } from "lucide-react"
+import { Activity, AlertCircle, Apple, HeartPulse, Phone, Pill, Scale, Scissors, Sparkles } from "lucide-react"
 
 export const iconMap: Record<string, any> = {
   "Phone": Phone,
@@ -6,7 +6,9 @@ export const iconMap: Record<string, any> = {
   "HeartPulse": HeartPulse,
   "Apple": Apple,
   "Scale": Scale,
-  "Sparkles": Sparkles
+  "Sparkles": Sparkles,
+  "Scissors": Scissors,
+  "Pill": Pill
 }
 
 interface ServiceIconProps {

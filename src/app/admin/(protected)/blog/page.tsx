@@ -12,7 +12,11 @@ export default async function AdminBlogPage({
   const page = typeof params.page === 'string' ? parseInt(params.page) : 1
   const pageSize = 10
   
-  const { posts, totalCount } = await getPosts(false, page, pageSize)
+  const query = typeof params.q === 'string' ? params.q : undefined
+  const category = typeof params.category === 'string' ? params.category : undefined
+  const status = typeof params.status === 'string' ? params.status : undefined
+  
+  const { posts, totalCount } = await getPosts(false, page, pageSize, query, category, status)
 
   return <BlogListClient initialPosts={posts} totalCount={totalCount} currentPage={page} pageSize={pageSize} />
 }

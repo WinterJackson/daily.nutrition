@@ -4,7 +4,7 @@ import { DashboardStats } from "@/app/actions/dashboard"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { ScrollReveal3D } from "@/components/ui/ScrollReveal3D"
-import { Calendar, FileText, TrendingUp, Users } from "lucide-react"
+import { Calendar, DollarSign, FileText, Mail, Percent, TrendingUp, Users } from "lucide-react"
 import Link from "next/link"
 
 interface DashboardClientProps {
@@ -45,6 +45,30 @@ export function DashboardClient({ stats }: DashboardClientProps) {
       color: "text-gold",
       bgColor: "bg-gold/10",
     },
+    {
+      title: "Est. Revenue",
+      value: `KES ${(stats.revenue.estimated).toLocaleString()}`,
+      change: `${stats.revenue.completedBookings} completed`,
+      icon: DollarSign,
+      color: "text-brand-green",
+      bgColor: "bg-brand-green/10",
+    },
+    {
+      title: "Newsletter",
+      value: stats.newsletter.subscribers.toString(),
+      change: "active subscribers",
+      icon: Mail,
+      color: "text-purple-600",
+      bgColor: "bg-purple-100",
+    },
+    {
+      title: "Conversion Rate",
+      value: `${stats.conversionRate}%`,
+      change: "inquiries → bookings",
+      icon: Percent,
+      color: "text-orange",
+      bgColor: "bg-orange/10",
+    },
   ]
 
   return (
@@ -54,10 +78,10 @@ export function DashboardClient({ stats }: DashboardClientProps) {
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
             <h1 className="text-3xl font-bold font-serif text-olive dark:text-off-white">Dashboard Overview</h1>
-            <p className="text-neutral-500 dark:text-neutral-400 mt-1">Welcome back, get a bird's eye view of your platform.</p>
+            <p className="text-caption mt-1">Welcome back, get a bird's eye view of your platform.</p>
             </div>
             <div className="flex items-center gap-3">
-                <span className="text-sm text-neutral-500 bg-white/50 dark:bg-white/5 px-3 py-1.5 rounded-full border border-neutral-200 dark:border-white/10">
+                <span className="text-sm text-caption surface-secondary px-3 py-1.5 rounded-full border border-default">
                 Last updated: Just now
                 </span>
             </div>
@@ -68,10 +92,10 @@ export function DashboardClient({ stats }: DashboardClientProps) {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((stat, index) => (
           <ScrollReveal3D key={index} delay={index * 0.1}>
-            <Card className="border-none shadow-lg shadow-neutral-200/50 dark:shadow-black/20 bg-white/90 dark:bg-white/5 backdrop-blur-md overflow-hidden relative h-full group hover:-translate-y-1 transition-all duration-300">
+            <Card className="surface-card shadow-lg overflow-hidden relative h-full group hover:-translate-y-1 transition-all duration-300">
                 <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${stat.bgColor} rounded-full blur-2xl -mr-8 -mt-8 opacity-50 group-hover:opacity-100 transition-opacity`} />
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-                <CardTitle className="text-sm font-semibold text-neutral-600 dark:text-neutral-300">
+                <CardTitle className="text-sm font-semibold text-caption">
                     {stat.title}
                 </CardTitle>
                 <div className={`p-2.5 rounded-xl ${stat.bgColor} ${stat.color} shadow-sm group-hover:scale-110 transition-transform`}>
@@ -80,7 +104,7 @@ export function DashboardClient({ stats }: DashboardClientProps) {
                 </CardHeader>
                 <CardContent className="relative z-10">
                 <div className="text-3xl font-bold text-olive dark:text-off-white mb-1">{stat.value}</div>
-                <p className="text-xs font-medium text-neutral-500 dark:text-neutral-400 flex items-center gap-1.5">
+                <p className="text-xs font-medium text-caption flex items-center gap-1.5">
                     <span className="text-brand-green bg-brand-green/10 px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wide">
                         Status
                     </span>

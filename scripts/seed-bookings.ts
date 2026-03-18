@@ -3,7 +3,7 @@
  * Run with: npx ts-node --compiler-options '{"module":"CommonJS"}' scripts/seed-bookings.ts
  */
 
-import { PrismaClient } from "@prisma/client"
+import { BookingStatus, PrismaClient } from "@prisma/client"
 
 const prisma = new PrismaClient()
 
@@ -14,9 +14,10 @@ const testBookings = [
         clientPhone: "+254 712 345 678",
         serviceName: "Diabetes Management",
         sessionType: "virtual",
-        scheduledAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000), // 2 days from now
+        scheduledAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
         duration: 60,
-        status: "CONFIRMED",
+        statusString: "CONFIRMED",
+        bookingStatus: "CONFIRMED" as BookingStatus,
         notes: "New patient, referred by Dr. Smith"
     },
     {
@@ -27,7 +28,8 @@ const testBookings = [
         sessionType: "in-person",
         scheduledAt: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // Tomorrow
         duration: 45,
-        status: "CONFIRMED",
+        statusString: "CONFIRMED",
+        bookingStatus: "CONFIRMED" as BookingStatus,
         notes: null
     },
     {
@@ -38,7 +40,8 @@ const testBookings = [
         sessionType: "virtual",
         scheduledAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000), // 3 days ago
         duration: 60,
-        status: "COMPLETED",
+        statusString: "COMPLETED",
+        bookingStatus: "COMPLETED" as BookingStatus,
         notes: "Follow-up scheduled for next month"
     },
     {
@@ -48,7 +51,8 @@ const testBookings = [
         sessionType: "virtual",
         scheduledAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // Yesterday
         duration: 30,
-        status: "NO_SHOW",
+        statusString: "NO_SHOW",
+        bookingStatus: "NO_SHOW" as BookingStatus,
         notes: "Did not attend, tried calling - no answer"
     },
     {
@@ -59,7 +63,8 @@ const testBookings = [
         sessionType: "in-person",
         scheduledAt: new Date(), // Today
         duration: 60,
-        status: "CONFIRMED",
+        statusString: "CONFIRMED",
+        bookingStatus: "CONFIRMED" as BookingStatus,
         notes: "First consultation"
     }
 ]

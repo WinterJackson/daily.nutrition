@@ -1,13 +1,14 @@
 import { getServices } from "@/app/actions/services"; // Assuming this exists or I will verify
-import { getSettings } from "@/app/actions/settings"
-import { Facebook, Instagram, Mail, MapPin, Phone, Twitter } from "lucide-react"
-import Image from "next/image"
-import Link from "next/link"
+import { getSettings } from "@/app/actions/settings";
+import { Facebook, Instagram, Linkedin, Mail, MapPin, Phone, Twitter } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
 
 export async function Footer() {
   const settings = await getSettings()
   const services = await getServices()
-  const displayedServices = services.slice(0, 4)
+  // User requested all services to be displayed without omitting any
+  const displayedServices = services
 
   const currentYear = new Date().getFullYear()
 
@@ -23,9 +24,9 @@ export async function Footer() {
               <Image 
                 src="/logo.jpg" 
                 alt={`${settings.businessName} Logo`} 
-                width={280} 
-                height={100} 
-                className="h-28 w-auto object-contain bg-white/10 rounded-xl p-2"
+                width={480} 
+                height={200} 
+                className="h-50 w-auto object-contain bg-white/10 rounded-xl p-2"
               />
             </Link>
             <p className="text-white/80 text-sm leading-relaxed max-w-xs">
@@ -35,7 +36,7 @@ export async function Footer() {
 
           {/* Quick Links */}
           <div className="space-y-4 text-center md:text-left">
-            <h4 className="font-semibold text-lg text-gold">Quick Links</h4>
+            <h4 className="font-semibold text-lg text-white">Quick Links</h4>
             <ul className="space-y-2 text-sm text-white/80">
               <li><Link href="/services" className="hover:text-orange transition-colors">Our Services</Link></li>
               <li><Link href="/about" className="hover:text-orange transition-colors">About Us</Link></li>
@@ -46,7 +47,7 @@ export async function Footer() {
 
           {/* Services */}
           <div className="space-y-4 text-center md:text-left">
-            <h4 className="font-semibold text-lg text-gold">Specialties</h4>
+            <h4 className="font-semibold text-lg text-white">Specialties</h4>
             <ul className="space-y-2 text-sm text-white/80">
               {displayedServices.length > 0 ? (
                 displayedServices.map(service => (
@@ -64,8 +65,8 @@ export async function Footer() {
 
           {/* Contact */}
           <div className="space-y-4 text-center md:text-left">
-            <h4 className="font-semibold text-lg text-gold">Contact Us</h4>
-            <ul className="space-y-3 text-sm text-white/80 flex flex-col items-center md:items-start">
+            <h4 className="font-semibold text-lg text-white">Contact Us</h4>
+            <ul className="space-y-3 mb-14 text-sm text-white/80 flex flex-col items-center md:items-start">
               <li className="flex items-start gap-3">
                 <MapPin className="h-5 w-5 text-orange shrink-0" />
                 <span>
@@ -81,15 +82,31 @@ export async function Footer() {
                 <span>{settings.contactEmail}</span>
               </li>
             </ul>
+
+            {/* Social Icons — Orange, directly under Contact Us */}
+            <div className="flex gap-3 justify-center md:justify-start pt-2">
+              <Link href={settings.facebookUrl || "#"} target={settings.facebookUrl ? "_blank" : undefined} rel="noopener noreferrer" className="text-orange hover:text-orange/80 transition-colors">
+                <Facebook className="h-5 w-5" />
+              </Link>
+              <Link href={settings.instagramUrl || "#"} target={settings.instagramUrl ? "_blank" : undefined} rel="noopener noreferrer" className="text-orange hover:text-orange/80 transition-colors">
+                <Instagram className="h-5 w-5" />
+              </Link>
+              <Link href={settings.twitterUrl || "#"} target={settings.twitterUrl ? "_blank" : undefined} rel="noopener noreferrer" className="text-orange hover:text-orange/80 transition-colors">
+                <Twitter className="h-5 w-5" />
+              </Link>
+              <Link href={settings.linkedinUrl || "#"} target={settings.linkedinUrl ? "_blank" : undefined} rel="noopener noreferrer" className="text-orange hover:text-orange/80 transition-colors">
+                <Linkedin className="h-5 w-5" />
+              </Link>
+            </div>
           </div>
         </div>
 
         <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-white/60">
           <p>© {currentYear} {settings.businessName}. All rights reserved.</p>
-          <div className="flex gap-4">
-            <Link href="#" className="hover:text-white transition-colors"><Facebook className="h-5 w-5" /></Link>
-            <Link href="#" className="hover:text-white transition-colors"><Instagram className="h-5 w-5" /></Link>
-            <Link href="#" className="hover:text-white transition-colors"><Twitter className="h-5 w-5" /></Link>
+          <div className="flex items-center gap-4">
+            <Link href="/privacy" className="hover:text-white transition-colors">Privacy Policy</Link>
+            <Link href="/terms" className="hover:text-white transition-colors">Terms of Service</Link>
+            <Link href="/cookies" className="hover:text-white transition-colors">Cookie Policy</Link>
           </div>
         </div>
       </div>

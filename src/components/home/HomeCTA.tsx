@@ -40,7 +40,7 @@ export function HomeCTA() {
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold mb-6"
+          className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-white mb-6"
         >
           Ready to Take Control of Your Health?
         </motion.h2>

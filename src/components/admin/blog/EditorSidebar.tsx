@@ -1,54 +1,46 @@
 "use client"
 
-import { uploadImage } from "@/app/actions/upload"
+import { MediaPickerModal } from "@/components/admin/MediaPickerModal"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
+import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog"
 import { Input } from "@/components/ui/Input"
-import { Calendar, Upload, X } from "lucide-react"
+import { Calendar, ImageIcon, X } from "lucide-react"
 import Image from "next/image"
-import { useRef, useTransition } from "react"
+import { useState } from "react"
 
 interface EditorSidebarProps {
   status: "Draft" | "Published"
   category: string
   date: string
   image: string | null
+  metaTitle: string
+  metaDescription: string
   onChange: (key: string, value: string) => void
-  onSave: () => void
+  onSave: (publishAction?: "publish" | "review") => void
   isSaving: boolean
+  userRole?: string
 }
 
 const categories = ["Education", "Announcement", "Nutrition Tips", "Research", "Recipe"]
 
-export function EditorSidebar({ status, category, date, image, onChange, onSave, isSaving }: EditorSidebarProps) {
-  const [isUploading, startTransition] = useTransition()
-  const fileInputRef = useRef<HTMLInputElement>(null)
+export function EditorSidebar({ status, category, date, image, metaTitle, metaDescription, onChange, onSave, isSaving, userRole = "ADMIN" }: EditorSidebarProps) {
+  const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false)
 
-  const handleUploadClick = () => {
-    fileInputRef.current?.click()
+  const handleMediaSelect = (url: string) => {
+    onChange("image", url)
   }
 
-  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
 
-    startTransition(async () => {
-        const formData = new FormData()
-        formData.append("file", file)
-        
-        const res = await uploadImage(formData)
-        if (res.success && res.url) {
-            onChange("image", res.url)
-        } else {
-            console.error("Upload failed", res.error)
-            // Ideally show a toast here
-        }
-    })
-  }
-
-  const removeImage = (e: React.MouseEvent) => {
+  const handleRemoveImageClick = (e: React.MouseEvent) => {
     e.stopPropagation()
+    setShowRemoveConfirm(true)
+  }
+
+  const handleConfirmRemoveImage = () => {
     onChange("image", "")
+    setShowRemoveConfirm(false)
   }
 
   return (
@@ -84,14 +76,37 @@ export function EditorSidebar({ status, category, date, image, onChange, onSave,
              </div>
           </div>
 
-          <Button 
-            variant="accent" 
-            className="w-full mt-2" 
-            onClick={onSave}
-            disabled={isSaving}
-          >
-             {isSaving ? "Saving..." : "Save Post"}
-          </Button>
+          {/* RBAC: Role-aware save buttons */}
+          <div className="space-y-2 mt-2">
+            <Button 
+              variant="accent" 
+              className="w-full" 
+              onClick={() => onSave()}
+              disabled={isSaving}
+            >
+               {isSaving ? "Saving..." : "Save Draft"}
+            </Button>
+
+            {userRole === "SUPER_ADMIN" ? (
+              <Button 
+                variant="accent" 
+                className="w-full bg-green-600 hover:bg-green-700" 
+                onClick={() => onSave("publish")}
+                disabled={isSaving}
+              >
+                 {isSaving ? "Publishing..." : "Publish Now"}
+              </Button>
+            ) : (
+              <Button 
+                variant="accent" 
+                className="w-full" 
+                onClick={() => onSave("review")}
+                disabled={isSaving}
+              >
+                 {isSaving ? "Submitting..." : "Submit for Review"}
+              </Button>
+            )}
+          </div>
         </CardContent>
       </Card>
 
@@ -123,19 +138,11 @@ export function EditorSidebar({ status, category, date, image, onChange, onSave,
         </CardHeader>
         <CardContent className="pt-4">
            <div 
-             onClick={handleUploadClick}
-             className={`relative border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center transition-colors cursor-pointer overflow-hidden ${
-               isUploading ? "opacity-50 pointer-events-none" : "hover:bg-neutral-50 dark:hover:bg-white/5"
-             } ${image ? "border-solid border-transparent p-0" : "border-neutral-200 dark:border-white/10"}`}
+             onClick={() => !image && setIsMediaPickerOpen(true)}
+             className={`relative border-2 border-dashed rounded-xl p-6 flex flex-col items-center justify-center text-center transition-colors overflow-hidden ${
+               image ? "border-solid border-transparent p-0 cursor-default" : "border-neutral-200 dark:border-white/10 cursor-pointer hover:bg-neutral-50 dark:hover:bg-white/5"
+             }`}
            >
-               <input 
-                 ref={fileInputRef}
-                 type="file" 
-                 accept="image/*" 
-                 className="hidden" 
-                 onChange={handleFileChange}
-               />
-               
                {image ? (
                  <div className="relative w-full aspect-video group">
                     <Image 
@@ -144,11 +151,11 @@ export function EditorSidebar({ status, category, date, image, onChange, onSave,
                       fill 
                       className="object-cover" 
                     />
-                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                       <p className="text-white text-xs font-medium">Click to change</p>
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                       <Button size="sm" variant="secondary" onClick={() => setIsMediaPickerOpen(true)}>Change Media</Button>
                     </div>
                     <button 
-                      onClick={removeImage}
+                      onClick={handleRemoveImageClick}
                       className="absolute top-2 right-2 p-1 bg-white/20 backdrop-blur-md rounded-full hover:bg-red-500 hover:text-white transition-colors text-white"
                     >
                        <X className="w-4 h-4" />
@@ -157,12 +164,9 @@ export function EditorSidebar({ status, category, date, image, onChange, onSave,
                ) : (
                  <>
                    <div className="w-10 h-10 rounded-full bg-neutral-100 dark:bg-white/10 flex items-center justify-center mb-3">
-                      {isUploading ? <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-brand-green"></div> : <Upload className="w-5 h-5 text-neutral-400" />}
+                      <ImageIcon className="w-5 h-5 text-neutral-400" />
                    </div>
-                   <p className="text-xs text-neutral-500 font-medium">
-                      {isUploading ? "Uploading..." : "Click to upload"}
-                   </p>
-                   <p className="text-[10px] text-neutral-400 mt-1">PNG, JPG up to 2MB</p>
+                   <p className="text-xs text-neutral-500 font-medium">Click to choose media</p>
                  </>
                )}
            </div>
@@ -177,14 +181,41 @@ export function EditorSidebar({ status, category, date, image, onChange, onSave,
         <CardContent className="pt-4 space-y-3">
            <div className="space-y-1">
               <label className="text-xs font-semibold text-neutral-600 dark:text-neutral-300">Meta Title</label>
-              <Input placeholder="SEO Title" className="text-xs" />
+              <Input 
+                placeholder="SEO Title" 
+                className="text-xs" 
+                value={metaTitle}
+                onChange={(e) => onChange("metaTitle", e.target.value)}
+              />
            </div>
            <div className="space-y-1">
               <label className="text-xs font-semibold text-neutral-600 dark:text-neutral-300">Meta Description</label>
-              <textarea className="w-full rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs h-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-green dark:border-white/10 dark:bg-white/5" placeholder="Short summary..." />
+              <textarea 
+                className="w-full rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs h-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-green dark:border-white/10 dark:bg-white/5" 
+                placeholder="Short summary..."
+                value={metaDescription}
+                onChange={(e) => onChange("metaDescription", e.target.value)}
+              />
            </div>
         </CardContent>
       </Card>
+      <ConfirmationDialog 
+        open={showRemoveConfirm} 
+        onOpenChange={setShowRemoveConfirm}
+        title="Remove Featured Image"
+        description="Are you sure you want to remove the featured image?"
+        confirmText="Remove Image"
+        variant="destructive"
+        onConfirm={handleConfirmRemoveImage}
+      />
+
+      <MediaPickerModal 
+        open={isMediaPickerOpen}
+        onOpenChange={setIsMediaPickerOpen}
+        onSelect={handleMediaSelect}
+        folder="daily_nutrition/featured"
+        allowedTypes="image"
+      />
     </div>
   )
 }

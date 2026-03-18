@@ -23,7 +23,7 @@ export function AboutClient({ profileImageUrl }: AboutClientProps) {
           Meet Your Dietitian
         </div>
         <h1 className="text-4xl md:text-5xl font-bold font-serif text-olive dark:text-off-white leading-tight">
-          Edna N.
+          Edna R.
         </h1>
         <h2 className="text-xl text-neutral-500 dark:text-neutral-400 font-medium">
           Registered Dietitian and Nutrition Specialist
@@ -53,14 +53,14 @@ export function AboutClient({ profileImageUrl }: AboutClientProps) {
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.8, delay: 0.2 }}
-        className="flex-1 w-full max-w-md relative"
+        className="flex-1 w-full max-w-lg relative"
       >
-        <div className="aspect-[3/4] rounded-3xl overflow-hidden shadow-2xl shadow-olive/10 relative z-10 border border-neutral-200 dark:border-white/10 glow-green">
+        <div className="aspect-[2/3] rounded-3xl overflow-hidden shadow-2xl shadow-olive/10 relative z-10 border border-neutral-200 dark:border-white/10 glow-green">
            <Image 
              src={profileImageUrl} 
-             alt="Edna N. Portrait" 
+             alt="Edna R. Portrait" 
              fill 
-             className="object-cover"
+             className="object-cover object-top"
            />
         </div>
         {/* Decorative animated elements */}

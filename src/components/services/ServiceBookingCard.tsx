@@ -82,28 +82,35 @@ export function ServiceBookingCard({
                 "p-4 rounded-xl border-2 text-left transition-all",
                 sessionType === "virtual"
                   ? "border-brand-green bg-brand-green/5 ring-1 ring-brand-green"
-                  : "border-neutral-200 dark:border-white/10 hover:border-brand-green/50"
+                  : "border-neutral-200 dark:border-white/10 hover:border-brand-green/50",
+                  // Make it span full width if in-person is hidden
+                  serviceId === "discovery-call" ? "col-span-2" : ""
               )}
             >
               <Video className={cn("w-5 h-5 mb-2", sessionType === "virtual" ? "text-brand-green" : "text-neutral-400")} />
               <p className="text-sm font-semibold text-olive dark:text-off-white">Virtual</p>
               <p className="text-xs text-neutral-500">via Zoom</p>
-              <p className="text-lg font-bold text-brand-green mt-2">Ksh {servicePricing.virtual.toLocaleString()}</p>
+              <p className="text-lg font-bold text-brand-green mt-2">
+                  {serviceId === "discovery-call" ? "Free" : `Ksh ${servicePricing.virtual.toLocaleString()}`}
+              </p>
             </button>
-            <button
-              onClick={() => setSessionType("in-person")}
-              className={cn(
-                "p-4 rounded-xl border-2 text-left transition-all",
-                sessionType === "in-person"
-                  ? "border-brand-green bg-brand-green/5 ring-1 ring-brand-green"
-                  : "border-neutral-200 dark:border-white/10 hover:border-brand-green/50"
-              )}
-            >
-              <MapPin className={cn("w-5 h-5 mb-2", sessionType === "in-person" ? "text-brand-green" : "text-neutral-400")} />
-              <p className="text-sm font-semibold text-olive dark:text-off-white">In-Person</p>
-              <p className="text-xs text-neutral-500">Parklands / South C</p>
-              <p className="text-lg font-bold text-brand-green mt-2">Ksh {servicePricing.inPerson.toLocaleString()}</p>
-            </button>
+            
+            {serviceId !== "discovery-call" && (
+                <button
+                onClick={() => setSessionType("in-person")}
+                className={cn(
+                    "p-4 rounded-xl border-2 text-left transition-all",
+                    sessionType === "in-person"
+                    ? "border-brand-green bg-brand-green/5 ring-1 ring-brand-green"
+                    : "border-neutral-200 dark:border-white/10 hover:border-brand-green/50"
+                )}
+                >
+                <MapPin className={cn("w-5 h-5 mb-2", sessionType === "in-person" ? "text-brand-green" : "text-neutral-400")} />
+                <p className="text-sm font-semibold text-olive dark:text-off-white">In-Person</p>
+                <p className="text-xs text-neutral-500">Karen, Nairobi</p>
+                <p className="text-lg font-bold text-brand-green mt-2">Ksh {servicePricing.inPerson.toLocaleString()}</p>
+                </button>
+            )}
           </div>
         </div>
 
@@ -111,7 +118,7 @@ export function ServiceBookingCard({
         <div className="flex items-center gap-4 text-xs text-neutral-500 border-t border-neutral-100 dark:border-white/5 pt-4">
           <div className="flex items-center gap-1.5">
             <Clock className="w-3.5 h-3.5" />
-            <span>45-60 mins</span>
+            <span>{serviceId === "discovery-call" ? "5-15 Minutes" : "45-60 Minutes"}</span>
           </div>
           <div className="flex items-center gap-1.5">
             <Globe className="w-3.5 h-3.5" />

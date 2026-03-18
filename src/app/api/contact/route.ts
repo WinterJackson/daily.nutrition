@@ -1,18 +1,37 @@
+import { AdminContactAlertEmail } from '@/components/emails/AdminContactAlertEmail';
+import { InquiryReceivedEmail } from '@/components/emails/InquiryReceived';
+import { logAudit } from '@/lib/audit';
+import { getResendClient, sendReactEmail } from '@/lib/email';
 import { prisma } from '@/lib/prisma';
+import { NotificationService } from '@/lib/services/notification-service';
 import { NextResponse } from 'next/server';
-import { Resend } from 'resend';
+import { z } from 'zod';
+
+const contactSchema = z.object({
+  name: z.string().min(2, "Name must be at least 2 characters"),
+  email: z.string().email("Invalid email address"),
+  phone: z.string().optional(),
+  service: z.string().optional(),
+  message: z.string().min(10, "Message must be at least 10 characters")
+});
 
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { name, email, phone, service, message } = body;
+    const validatedData = contactSchema.parse(body);
+    const { name, email, phone, service, message } = validatedData;
 
-    // Validate input
-    if (!name || !email || !message) {
+    // Rate limit by IP address
+    const ip = request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() || "unknown"
+    const userAgent = request.headers.get("user-agent") || "unknown"
+    const { contactLimiter } = await import("@/lib/rate-limit")
+    const rateCheck = await contactLimiter(ip)
+
+    if (!rateCheck.success) {
       return NextResponse.json(
-        { error: 'Name, email, and message are required' },
-        { status: 400 }
-      );
+        { error: 'Too many requests. Please wait a few minutes before trying again.' },
+        { status: 429 }
+      )
     }
 
     // PHASE 2: Save inquiry to database FIRST (before email)
@@ -22,108 +41,91 @@ export async function POST(request: Request) {
         name,
         email,
         message: `${service ? `[${service}] ` : ''}${message}${phone ? `\n\nPhone: ${phone}` : ''}`,
-        status: 'NEW',
+        statusString: 'NEW',
+        ipAddress: ip,
+        userAgent: userAgent
       },
     });
-    console.log('Inquiry saved to database:', inquiry.id);
 
-    // Now attempt to send email (optional - won't lose data if this fails)
-    const apiKey = process.env.RESEND_API_KEY;
-    if (!apiKey) {
-      console.warn('RESEND_API_KEY is missing - inquiry saved but email not sent');
-      return NextResponse.json({ success: true, id: inquiry.id, emailSent: false });
-    }
-
-    const resend = new Resend(apiKey);
-
-    // Send email to the business
-    const { data, error } = await resend.emails.send({
-      from: 'Daily Nutrition <noreply@dailynutrition.com>',
-      to: ['info@dailynutrition.com'],
-      replyTo: email,
-      subject: `New Inquiry: ${service || 'General'} - ${name}`,
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #4A5D23 0%, #6B8E23 100%); padding: 24px; border-radius: 12px 12px 0 0;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">New Consultation Inquiry</h1>
-          </div>
-          
-          <div style="background: #f9fafb; padding: 24px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
-            <table style="width: 100%; border-collapse: collapse;">
-              <tr>
-                <td style="padding: 8px 0; color: #6b7280; width: 120px;">Name:</td>
-                <td style="padding: 8px 0; font-weight: 600; color: #4A5D23;">${name}</td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0; color: #6b7280;">Email:</td>
-                <td style="padding: 8px 0;"><a href="mailto:${email}" style="color: #6B8E23;">${email}</a></td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0; color: #6b7280;">Phone:</td>
-                <td style="padding: 8px 0;">${phone || 'Not provided'}</td>
-              </tr>
-              <tr>
-                <td style="padding: 8px 0; color: #6b7280;">Service:</td>
-                <td style="padding: 8px 0;">${service || 'General Inquiry'}</td>
-              </tr>
-            </table>
-            
-            <hr style="border: none; border-top: 1px solid #e5e7eb; margin: 16px 0;" />
-            
-            <div style="background: white; padding: 16px; border-radius: 8px; border: 1px solid #e5e7eb;">
-              <p style="color: #6b7280; margin: 0 0 8px 0; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Message</p>
-              <p style="color: #374151; margin: 0; line-height: 1.6;">${message.replace(/\n/g, '<br/>')}</p>
-            </div>
-            
-            <p style="color: #9ca3af; font-size: 12px; margin-top: 24px; text-align: center;">
-              This inquiry was submitted via the Daily Nutrition website contact form.
-            </p>
-          </div>
-        </div>
-      `,
+    // Fire off audit log
+    logAudit({
+      action: "INQUIRY_CREATED",
+      entity: "Inquiry",
+      entityId: inquiry.id,
+      metadata: { service, sourceIp: ip }
     });
 
-    if (error) {
-      console.error('Resend error:', error);
-      return NextResponse.json({ error: 'Failed to send email' }, { status: 500 });
+    // PHASE 3: Notification Broadcast (The Link)
+    // Creates an in-app alert (bell icon) for all Admins that deep-links directly to the new lead.
+    await NotificationService.broadcastToRoles({
+      roles: ["SUPER_ADMIN", "ADMIN"],
+      type: "INFO",
+      title: "New Contact Inquiry",
+      message: `${name} has sent a new inquiry.`,
+      priority: "HIGH",
+      link: `/admin/inquiries?filter=NEW`
+    }).catch(console.error);
+
+    // PHASE 4: Resend Alert (Redundancy)
+    try {
+      const { resend, fromEmail } = await getResendClient();
+
+      const settings = await prisma.siteSettings.findUnique({
+        where: { id: "default" },
+        include: { EmailBranding: true }
+      });
+      const supportEmail = settings?.EmailBranding?.supportEmail || "info@edwaknutrition.co.ke";
+
+      // Send email to the business
+      await sendReactEmail(
+        [supportEmail], // Dynamic admin alert email
+        `New Inquiry: ${service || 'General'} - ${name}`,
+        AdminContactAlertEmail({
+          name,
+          email,
+          phone,
+          service,
+          message,
+          branding: {
+            logoUrl: settings?.EmailBranding?.logoUrl || null,
+            primaryColor: settings?.EmailBranding?.primaryColor || "#556B2F",
+            accentColor: settings?.EmailBranding?.accentColor || "#E87A1E",
+            footerText: settings?.EmailBranding?.footerText || "Edwak Nutrition",
+            websiteUrl: settings?.EmailBranding?.websiteUrl || "https://edwaknutrition.co.ke",
+            supportEmail: supportEmail
+          }
+        })
+      );
+
+      // Send confirmation email to the client
+      await resend.emails.send({
+        from: `Edwak Nutrition <${fromEmail}>`,
+        to: [email],
+        replyTo: supportEmail, // Dynamic support email routing
+        subject: 'Thank you for contacting Edwak Nutrition',
+        react: InquiryReceivedEmail({
+          clientName: name,
+          service,
+          branding: {
+            logoUrl: settings?.EmailBranding?.logoUrl || null,
+            primaryColor: settings?.EmailBranding?.primaryColor || "#556B2F",
+            accentColor: settings?.EmailBranding?.accentColor || "#E87A1E",
+            footerText: settings?.EmailBranding?.footerText || "Edwak Nutrition",
+            websiteUrl: settings?.EmailBranding?.websiteUrl || "https://edwaknutrition.co.ke",
+            supportEmail: supportEmail
+          }
+        }),
+      });
+    } catch (emailError) {
+      console.error("Email dispatch failed, but inquiry saved:", emailError);
+      // Do NOT return error here, the lead is safely in the DB!
     }
 
-    // Send confirmation email to the client
-    await resend.emails.send({
-      from: 'Daily Nutrition <noreply@dailynutrition.com>',
-      to: [email],
-      subject: 'Thank you for contacting Daily Nutrition',
-      html: `
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
-          <div style="background: linear-gradient(135deg, #4A5D23 0%, #6B8E23 100%); padding: 24px; border-radius: 12px 12px 0 0; text-align: center;">
-            <h1 style="color: white; margin: 0; font-size: 24px;">Thank You, ${name}!</h1>
-          </div>
-          
-          <div style="background: #f9fafb; padding: 24px; border: 1px solid #e5e7eb; border-top: none; border-radius: 0 0 12px 12px;">
-            <p style="color: #374151; line-height: 1.6;">
-              We have received your inquiry and will get back to you within 24-48 hours.
-            </p>
-            <p style="color: #374151; line-height: 1.6;">
-              In the meantime, feel free to explore our services or follow us on social media for nutrition tips.
-            </p>
-            
-            <div style="background: #FFF7ED; border: 1px solid #FDBA74; padding: 16px; border-radius: 8px; margin-top: 16px;">
-              <p style="color: #C2410C; margin: 0; font-size: 14px;">
-                <strong>Need urgent assistance?</strong><br/>
-                Call us directly at <a href="tel:+254700000000" style="color: #C2410C;">+254 700 000 000</a>
-              </p>
-            </div>
-            
-            <p style="color: #9ca3af; font-size: 12px; margin-top: 24px; text-align: center;">
-              - The Daily Nutrition Team
-            </p>
-          </div>
-        </div>
-      `,
-    });
-
-    return NextResponse.json({ success: true, id: data?.id });
+    return NextResponse.json({ success: true, id: inquiry.id });
   } catch (error) {
+    if (error instanceof z.ZodError) {
+      return NextResponse.json({ error: (error as any).errors[0].message }, { status: 400 });
+    }
     console.error('API error:', error);
     return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
   }

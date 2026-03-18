@@ -1,12 +1,15 @@
 "use server"
 
+import { logAudit } from "@/lib/audit"
+import { verifySession } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { serviceSchema } from "@/lib/validations"
 import { revalidatePath } from "next/cache"
 
 export async function getServices(includeHidden = false) {
     try {
         return await prisma.service.findMany({
-            where: includeHidden ? undefined : { isVisible: true },
+            where: includeHidden ? { deletedAt: null } : { isVisible: true, deletedAt: null },
             orderBy: { displayOrder: 'asc' },
         })
     } catch (error) {
@@ -47,12 +50,34 @@ export async function updateService(id: string, data: {
     isVisible?: boolean
     image?: string | null
     displayOrder?: number
+    version?: number
 }) {
+    const session = await verifySession()
+    if (!session) return { success: false, error: "Unauthorized" }
+
     try {
+        // Optimistic locking
+        if (data.version !== undefined) {
+            const current = await prisma.service.findUnique({ where: { id }, select: { version: true } })
+            if (current && current.version !== data.version) {
+                return { success: false, error: "This service was modified by another user. Please refresh and try again." }
+            }
+        }
+
+        const { version: _v, ...updateData } = data
         const service = await prisma.service.update({
             where: { id },
-            data,
+            data: { ...updateData, version: { increment: 1 } },
         })
+
+        logAudit({
+            action: "SERVICE_UPDATED",
+            entity: "Service",
+            entityId: service.id,
+            userId: (session?.user?.id),
+            metadata: { title: service.title },
+        })
+
         revalidatePath("/admin/services")
         revalidatePath("/services")
         revalidatePath("/")
@@ -64,6 +89,9 @@ export async function updateService(id: string, data: {
 }
 
 export async function toggleServiceVisibility(id: string) {
+    const session = await verifySession()
+    if (!session) return { success: false, error: "Unauthorized" }
+
     try {
         const service = await prisma.service.findUnique({ where: { id } })
         if (!service) return { success: false, error: "Service not found" }
@@ -72,6 +100,15 @@ export async function toggleServiceVisibility(id: string) {
             where: { id },
             data: { isVisible: !service.isVisible },
         })
+
+        logAudit({
+            action: "SERVICE_VISIBILITY_TOGGLED",
+            entity: "Service",
+            entityId: id,
+            userId: (session?.user?.id),
+            metadata: { isVisible: updated.isVisible },
+        })
+
         revalidatePath("/admin/services")
         revalidatePath("/services")
         revalidatePath("/")
@@ -92,19 +129,28 @@ export async function createService(data: {
     priceInPerson?: number
     isVisible?: boolean
 }) {
-    try {
-        const slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || `service-${Date.now()}`
+    const session = await verifySession()
+    if (!session) return { success: false, error: "Unauthorized" }
 
-        // Check if slug exists
-        const existing = await prisma.service.findUnique({ where: { slug } })
-        if (existing) {
-            // Append random string to make unique
-            return { success: false, error: "A service with this title already exists" }
+    // Zod validation
+    let slug = data.title.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '') || `service-${Date.now()}`
+    const validated = serviceSchema.partial().safeParse({ ...data, slug })
+    if (!validated.success) {
+        return { success: false, error: validated.error.issues.map(e => e.message).join(", ") }
+    }
+
+    try {
+        // Auto-increment slug to avoid Unique Constraint collisions
+        let baseSlug = slug
+        let suffix = 1
+        while (await prisma.service.findUnique({ where: { slug } })) {
+            suffix++
+            slug = `${baseSlug}-${suffix}`
         }
 
         const service = await prisma.service.create({
             data: {
-                id: slug, // Using slug as ID pattern
+                id: slug,
                 slug,
                 title: data.title,
                 shortDescription: data.shortDescription,
@@ -116,9 +162,19 @@ export async function createService(data: {
                 isVisible: data.isVisible ?? true,
                 icon: "Activity",
                 color: "text-brand-green",
-                bgColor: "bg-brand-green/10"
+                bgColor: "bg-brand-green/10",
+                updatedAt: new Date()
             },
         })
+
+        logAudit({
+            action: "SERVICE_CREATED",
+            entity: "Service",
+            entityId: service.id,
+            userId: (session?.user?.id),
+            metadata: { title: service.title },
+        })
+
         revalidatePath("/admin/services")
         revalidatePath("/services")
         revalidatePath("/")
@@ -129,9 +185,24 @@ export async function createService(data: {
     }
 }
 
+// Soft-delete
 export async function deleteService(id: string) {
+    const session = await verifySession()
+    if (!session) return { success: false, error: "Unauthorized" }
+
     try {
-        await prisma.service.delete({ where: { id } })
+        await prisma.service.update({
+            where: { id },
+            data: { deletedAt: new Date() }
+        })
+
+        logAudit({
+            action: "SERVICE_DELETED",
+            entity: "Service",
+            entityId: id,
+            userId: (session?.user?.id),
+        })
+
         revalidatePath("/admin/services")
         revalidatePath("/services")
         revalidatePath("/")

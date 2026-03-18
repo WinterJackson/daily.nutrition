@@ -14,5 +14,11 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     notFound()
   }
 
-  return <BlogEditor initialData={post} />
+  const serializedPost = {
+    ...post,
+    category: post.category?.name || "General",
+    content: post.content || ""
+  }
+
+  return <BlogEditor initialData={serializedPost} />
 }

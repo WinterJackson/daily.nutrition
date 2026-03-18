@@ -33,8 +33,8 @@ export function ThemeToggle() {
       className="relative"
       aria-label={`Switch to ${isDark ? "light" : "dark"} mode`}
     >
-      <Sun className={`h-5 w-5 transition-all duration-300 text-olive dark:text-off-white ${isDark ? "rotate-90 scale-0 absolute" : "rotate-0 scale-100"}`} />
-      <Moon className={`h-5 w-5 transition-all duration-300 text-olive dark:text-off-white ${isDark ? "rotate-0 scale-100" : "-rotate-90 scale-0 absolute"}`} />
+      <Sun className={`h-5 w-5 transition-all duration-300 text-white dark:text-off-white ${isDark ? "rotate-90 scale-0 absolute" : "rotate-0 scale-100"}`} />
+      <Moon className={`h-5 w-5 transition-all duration-300 text-white dark:text-off-white ${isDark ? "rotate-0 scale-100" : "-rotate-90 scale-0 absolute"}`} />
     </Button>
   )
 }

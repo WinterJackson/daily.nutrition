@@ -12,7 +12,7 @@ export default function ContactPage() {
        {/* Animated Background */}
        <AnimatedBackground variant="nutrition" />
        
-       <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+       <div className="container max-w-7xl mx-auto mt-15 px-4 sm:px-6 lg:px-8 relative z-10">
           
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -51,16 +51,10 @@ export default function ContactPage() {
                         </div>
                         <div className="space-y-4">
                            <div>
-                              <p className="font-semibold text-gold mb-1">Parklands Branch</p>
+                              <p className="font-semibold text-white mb-1">Karen Branch</p>
                               <p className="text-white/70 text-sm leading-relaxed">
-                                 3rd Parklands Avenue, PMC Plaza<br/>
-                                 6th Floor, Suite 609
-                              </p>
-                           </div>
-                           <div>
-                              <p className="font-semibold text-gold mb-1">South C Branch</p>
-                              <p className="text-white/70 text-sm leading-relaxed">
-                                 Muhoho Avenue, Nairobi
+                                 One Stop Arcade Mall<br/>
+                                 Karen, Nairobi
                               </p>
                            </div>
                         </div>
@@ -77,7 +71,7 @@ export default function ContactPage() {
                         <div className="p-3 rounded-xl bg-white/10 shrink-0">
                              <Mail className="w-5 h-5" />
                         </div>
-                        <p className="text-white/80 font-medium">info@dailynutrition.com</p>
+                        <p className="text-white/80 font-medium">info@edwaknutrition.co.ke</p>
                      </div>
 
                      <div className="flex items-start gap-4">
@@ -85,8 +79,8 @@ export default function ContactPage() {
                              <Clock className="w-5 h-5" />
                         </div>
                         <div className="text-sm text-white/70 space-y-1">
-                           <p><strong className="text-gold">Virtual:</strong> Tue - Fri, 9AM - 4PM</p>
-                           <p><strong className="text-gold">In-Person:</strong> Mon & Wed, 9AM - 5PM</p>
+                           <p><strong className="text-white">Virtual:</strong> Tue - Fri, 9AM - 4PM</p>
+                           <p><strong className="text-white">In-Person:</strong> Mon & Wed, 9AM - 5PM</p>
                         </div>
                      </div>
                   </div>
@@ -117,14 +111,14 @@ export default function ContactPage() {
             className="mt-16 h-[350px] w-full rounded-2xl overflow-hidden relative border border-neutral-200 dark:border-white/10 shadow-lg"
           >
              <iframe 
-               src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3988.8147679368907!2d36.8112531!3d-1.27058!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x182f17387f97af53%3A0x8c4b6f4b9d8c3e2f!2sPMC%20Plaza%2C%203rd%20Parklands%20Ave%2C%20Nairobi!5e0!3m2!1sen!2ske!4v1700000000000!5m2!1sen!2ske"
+               src="https://maps.google.com/maps?q=One%20Stop%20Arcade%20Mall%20Karen%20Nairobi&t=&z=15&ie=UTF8&iwloc=&output=embed"
                width="100%" 
                height="100%" 
                style={{ border: 0 }} 
                allowFullScreen 
                loading="lazy" 
                referrerPolicy="no-referrer-when-downgrade"
-               title="Daily Nutrition Location - Parklands"
+               title="Edwak Nutrition Location - Karen"
                className="absolute inset-0"
              />
           </motion.div>

@@ -2,7 +2,8 @@
 
 import { BookingStatus, deleteBooking, updateBookingNotes, updateBookingStatus } from "@/app/actions/bookings"
 import { Button } from "@/components/ui/Button"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/Dialog"
+import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/Dialog"
 import { Input } from "@/components/ui/Input"
 import { Calendar, CheckCircle, Clock, Eye, FileText, Search, Trash2, User, Video, XCircle } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
@@ -382,26 +383,16 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
       </Dialog>
 
       {/* Delete Confirmation Modal */}
-      <Dialog open={!!bookingToDelete} onOpenChange={(open) => !open && setBookingToDelete(null)}>
-        <DialogContent>
-          <DialogHeader>
-            <DialogTitle>Delete Booking</DialogTitle>
-            <DialogDescription>
-              Are you sure you want to delete this booking? This action cannot be undone.
-            </DialogDescription>
-          </DialogHeader>
-          <DialogFooter>
-            <Button variant="outline" onClick={() => setBookingToDelete(null)}>Cancel</Button>
-            <Button 
-              className="bg-red-500 hover:bg-red-600 text-white" 
-              onClick={handleDelete}
-              disabled={isPending}
-            >
-              {isPending ? "Deleting..." : "Delete Permanently"}
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmationDialog 
+        open={!!bookingToDelete} 
+        onOpenChange={(open) => !open && setBookingToDelete(null)}
+        title="Delete Booking"
+        description="Are you sure you want to delete this booking? This action cannot be undone."
+        confirmText="Delete Permanently"
+        variant="destructive"
+        onConfirm={handleDelete}
+        isLoading={isPending}
+      />
     </>
   )
 }

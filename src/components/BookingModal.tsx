@@ -63,7 +63,7 @@ export function BookingModal({
                 <Globe className="w-4 h-4 text-gold" />
                 <span className="text-sm font-semibold">In-Person</span>
               </div>
-              <p className="text-xs text-white/70">Parklands or South C clinic</p>
+              <p className="text-xs text-white/70">Karen clinic</p>
               <p className="text-lg font-bold text-gold mt-2">Ksh 3,000</p>
             </div>
           </div>

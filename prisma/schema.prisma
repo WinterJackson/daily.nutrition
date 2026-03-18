@@ -5,7 +5,33 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("POSTGRES_URL")
-  // directUrl = env("POSTGRES_URL_NON_POOLING") // Enable if you have a separate non-pooling URL
+}
+
+enum ContentStatus {
+  DRAFT
+  IN_REVIEW
+  PUBLISHED
+  ARCHIVED
+}
+
+enum BookingType {
+  VIRTUAL
+  IN_PERSON
+}
+
+enum BookingStatus {
+  PENDING
+  CONFIRMED
+  COMPLETED
+  CANCELLED
+  NO_SHOW
+}
+
+enum NotificationPriority {
+  LOW
+  NORMAL
+  HIGH
+  URGENT
 }
 
 model User {
@@ -14,91 +40,513 @@ model User {
   password  String
   name      String?
   role      String   @default("ADMIN")
+  
+  // Xinteck Security Additions
+  twoFactorEnabled Boolean @default(false)
+  twoFactorSecret  String?
+  lastActiveAt     DateTime?
+  
+  sessions         Session[]
+  assignedInquiries Inquiry[]
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  
+  @@index([email])
+  @@index([role])
 }
 
-model Service {
-  id               String   @id
-  slug             String   @unique
-  title            String
-  shortDescription String
-  fullDescription  String?
-  features         String[] // Array of feature strings
-  targetAudience   String?
-  image            String?  // Cloudinary URL
-  icon             String   @default("Activity") // Lucide icon name
-  color            String   @default("text-brand-green")
-  bgColor          String   @default("bg-brand-green/10")
-  priceVirtual     Int?     // Price in KES for virtual consultation
-  priceInPerson    Int?     // Price in KES for in-person consultation
-  isVisible        Boolean  @default(true)
-  displayOrder     Int      @default(0)
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
+model Session {
+  id              String   @id @default(cuid())
+  token           String   @unique
+  userId          String
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt       DateTime
+  userAgent       String?
+  ipAddress       String?
+  twoFactorVerified Boolean @default(false)
+  
+  createdAt       DateTime @default(now())
+  
+  @@index([userId])
+  @@index([token])
+  @@index([expiresAt])
 }
 
-model Testimonial {
-  id         String   @id @default(cuid())
-  authorName String
-  rating     Int
-  content    String
-  status     String   @default("PENDING") // PENDING, APPROVED, ARCHIVED
-  serviceId  String?
-  createdAt  DateTime @default(now())
-}
-
-model Inquiry {
+model PasswordResetToken {
   id        String   @id @default(cuid())
-  name      String
   email     String
-  message   String
-  status    String   @default("NEW") // NEW, CONTACTED, CLOSED
+  token     String   @unique
+  expiresAt DateTime
+  
   createdAt DateTime @default(now())
+  
+  @@index([email])
+  @@index([token])
+}
+
+// ... existing models updated with Xinteck patterns ...
+
+model BlockedDate {
+  id        String   @id @default(cuid())
+  date      DateTime @unique
+  reason    String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([date])
 }
 
 model BlogPost {
   id        String   @id @default(cuid())
   title     String
   slug      String   @unique
-  content   String   // Markdown or HTML
-  image     String?  // Cloudinary URL
-  category  String   @default("General")
+  excerpt   String?  @db.Text
+  content   String
   published Boolean  @default(false)
+  status    ContentStatus @default(DRAFT)
+  views     Int      @default(0)
+  version   Int      @default(0)
+  publishedAt DateTime?
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  
+  categoryId String?
+  category   BlogCategory? @relation(fields: [categoryId], references: [id])
+  
+  image     String?
+  metaTitle String?
+  metaDescription String?
+  
+  // AI workflow relation
+  blogIdea  BlogIdea?
+  
+  @@index([slug])
+  @@index([status])
+  @@index([categoryId])
+  @@index([createdAt])
+}
+
+model BlogCategory {
+  id          String     @id @default(cuid())
+  name        String     @unique
+  slug        String     @unique
+  description String?
+  color       String?
+  posts       BlogPost[]
+  
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  
+  @@index([slug])
+}
+
+model BlogIdea {
+  id              String    @id @default(cuid())
+  title           String
+  angle           String    @db.Text
+  keywords        String[]
+  score           Int       @default(0)
+  reasoning       String?   @db.Text
+  sources         String[]
+  status          String    @default("NEW") // NEW, APPROVED, REJECTED, DRAFTED
+  generatedPostId String?   @unique
+  generatedPost   BlogPost? @relation(fields: [generatedPostId], references: [id])
+  
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+  
+  @@index([status])
+  @@index([score])
+  @@index([createdAt])
+}
+
+model SecretConfig {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String   @db.Text
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([key])
+}
+
+model Booking {
+  id                String   @id @default(cuid())
+  calendlyId        String?  @unique // Kept for backwards compat
+  clientName        String
+  clientEmail       String
+  clientPhone       String?
+  serviceId         String?
+  service           Service?  @relation(fields: [serviceId], references: [id])
+  serviceName       String    // Kept for backwards compat
+  sessionType       String   @default("virtual") // Kept for backwards compat
+  type              BookingType @default(VIRTUAL)
+  
+  scheduledAt       DateTime // Kept for backwards compat
+  date              DateTime?
+  time              String?
+  duration          Int      @default(60)
+  
+  statusString      String   @default("CONFIRMED") @map("status") // Kept for backwards compat
+  bookingStatus     BookingStatus @default(PENDING) @map("booking_status")
+  
+  notes             String?  @db.Text
+  googleEventId     String?  @unique
+  encryptedMeetLink String?
+  clientTimezone    String   @default("Africa/Nairobi")
+  referenceCode     String?  @unique
+  reminder1hSent    Boolean  @default(false)
+  reminder6hSent    Boolean  @default(false)
+  
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  deletedAt         DateTime?
+  
+  @@index([date])
+  @@index([statusString])
+  @@index([bookingStatus])
+  @@index([serviceId])
+  @@index([clientEmail])
+  @@index([scheduledAt])
+}
+
+model Service {
+  id               String   @id @default(cuid())
+  slug             String   @unique
+  title            String
+  shortDescription String
+  fullDescription  String?
+  features         String[]
+  targetAudience   String?
+  icon             String   @default("Activity")
+  color            String   @default("text-brand-green")
+  bgColor          String   @default("bg-brand-green/10")
+  priceVirtual     Int?
+  priceInPerson    Int?
+  isVisible        Boolean  @default(true) // Kept for backwards compat
+  status           ContentStatus @default(PUBLISHED)
+  displayOrder     Int      @default(0)
+  version          Int      @default(0)
+  image            String?
+  
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  deletedAt        DateTime?
+  
+  bookings         Booking[]
+  testimonials     Testimonial[]
+  
+  @@index([slug])
+  @@index([status])
+  @@index([displayOrder])
+}
+
+model Inquiry {
+  id        String   @id @default(cuid())
+  name      String
+  email     String
+  message   String   @db.Text
+  statusString String @default("NEW") @map("status") // Kept for backwards compat
+  isStarred Boolean  @default(false)
+  isArchived Boolean @default(false)
+  isRead    Boolean  @default(false)
+  
+  preferredDate DateTime?
+  ipAddress     String?
+  userAgent     String?
+  
+  // RBAC: Lead assignment
+  assignedToId String?
+  assignedTo   User?    @relation(fields: [assignedToId], references: [id])
+  
+  // Relations
+  notes     InquiryNote[]
+  replies   InquiryReply[]
+  
+  createdAt DateTime @default(now())
+  deletedAt DateTime?
+  
+  @@index([email])
+  @@index([isStarred])
+  @@index([isArchived])
+  @@index([isRead])
+  @@index([assignedToId])
+  @@index([createdAt])
+}
+
+model InquiryNote {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  
+  inquiryId String
+  inquiry   Inquiry  @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  
+  userId    String
+  userName  String   // Denormalized for display without joins
+  
+  createdAt DateTime @default(now())
+  
+  @@index([inquiryId])
+}
+
+model InquiryReply {
+  id        String   @id @default(cuid())
+  content   String   @db.Text
+  
+  inquiryId String
+  inquiry   Inquiry  @relation(fields: [inquiryId], references: [id], onDelete: Cascade)
+  
+  sentBy    String?  // userId of admin who sent
+  sentAt    DateTime @default(now())
+  
+  @@index([inquiryId])
+}
+
+model Testimonial {
+  id         String   @id @default(cuid())
+  authorName String
+  rating     Int      @default(5)
+  content    String   @db.Text
+  statusString String  @default("PENDING") @map("status") // Kept for backwards compat
+  contentStatus ContentStatus @default(IN_REVIEW) @map("content_status")
+  
+  serviceId  String?
+  service    Service? @relation(fields: [serviceId], references: [id])
+  
+  createdAt  DateTime @default(now())
+  deletedAt  DateTime?
+  
+  @@index([statusString])
+  @@index([contentStatus])
+  @@index([serviceId])
+}
+
+model NewsletterSubscriber {
+  id             String   @id @default(cuid())
+  email          String   @unique
+  isActive       Boolean  @default(true)
+  source         String?
+  unsubscribedAt DateTime?
+  deletedAt      DateTime?
+  
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  @@index([email])
+  @@index([isActive])
+}
+
+enum CampaignStatus {
+  DRAFT
+  SENDING
+  SENT
+}
+
+enum CampaignTarget {
+  ALL
+  ACTIVE_ONLY
+}
+
+model NewsletterCampaign {
+  id              String         @id @default(cuid())
+  subject         String
+  previewText     String?
+  content         String         @db.Text
+  status          CampaignStatus @default(DRAFT)
+  targetAudience  CampaignTarget @default(ACTIVE_ONLY)
+  sentCount       Int            @default(0)
+  
+  sentAt          DateTime?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+  
+  @@index([status])
+  @@index([createdAt])
+  @@index([sentAt])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  action    String
+  entity    String
+  entityId  String
+  userId    String?
+  metadata  Json?
+  ipAddress String?
+  
+  createdAt DateTime @default(now())
+  
+  @@index([action])
+  @@index([entity, entityId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String
+  title     String
+  message   String   @db.Text
+  priority  NotificationPriority @default(NORMAL)
+  link      String?
+  isRead    Boolean  @default(false)
+  metadata  Json?
+  
+  readAt    DateTime?
+  expiresAt DateTime?
+  createdAt DateTime @default(now())
+  
+  @@index([userId, isRead])
+  @@index([expiresAt])
+}
+
+model MediaFolder {
+  id        String   @id @default(cuid())
+  name      String
+  parentId  String?
+  parent    MediaFolder?  @relation("FolderHierarchy", fields: [parentId], references: [id])
+  children  MediaFolder[] @relation("FolderHierarchy")
+  files     MediaFile[]
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@index([parentId])
+}
+
+model MediaFile {
+  id        String   @id @default(cuid())
+  publicId  String   @unique
+  url       String
+  filename  String
+  size      Int
+  mimeType  String
+  folderId  String?
+  folder    MediaFolder? @relation(fields: [folderId], references: [id])
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  
+  @@index([folderId])
+}
+
+// Settings Models (Keeping existing structure for backwards compatibility)
+model CloudinaryConfig {
+  id                 String       @id @default(cuid())
+  settingsId         String       @unique
+  cloudName          String
+  apiKey             String
+  encryptedApiSecret String
+  uploadPreset       String?
+  createdAt          DateTime     @default(now())
+  updatedAt          DateTime     @updatedAt
+  SiteSettings       SiteSettings @relation(fields: [settingsId], references: [id], onDelete: Cascade)
+}
+
+model EmailBranding {
+  id           String       @id @default(cuid())
+  settingsId   String       @unique
+  logoUrl      String?
+  primaryColor String       @default("#556B2F")
+  accentColor  String       @default("#E87A1E")
+  footerText   String       @default("Daily Nutrition, Nairobi, Kenya")
+  websiteUrl   String       @default("https://dailynutrition.com")
+  supportEmail String       @default("support@dailynutrition.com")
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+  SiteSettings SiteSettings @relation(fields: [settingsId], references: [id], onDelete: Cascade)
+}
+
+model GoogleCalendarConfig {
+  id                   String       @id @default(cuid())
+  settingsId           String       @unique
+  eventDuration        Int          @default(30)
+  bufferTime           Int          @default(15)
+  minNotice            Int          @default(120)
+  availability         Json         @default("{}")
+  encryptedClientEmail String?
+  encryptedPrivateKey  String?
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+  SiteSettings         SiteSettings @relation(fields: [settingsId], references: [id], onDelete: Cascade)
+}
+
+model ResendConfig {
+  id              String       @id @default(cuid())
+  settingsId      String       @unique
+  encryptedApiKey String?
+  fromEmail       String       @default("onboarding@resend.dev")
+  createdAt       DateTime     @default(now())
+  updatedAt       DateTime     @updatedAt
+  SiteSettings    SiteSettings @relation(fields: [settingsId], references: [id], onDelete: Cascade)
+}
+
+model NotificationPreferences {
+  id                   String       @id @default("default")
+  settingsId           String       @unique
+  emailOnNewBooking    Boolean      @default(true)
+  emailOnCancellation  Boolean      @default(true)
+  emailOnReschedule    Boolean      @default(true)
+  emailDailyAgenda     Boolean      @default(false)
+  agendaTime           String       @default("08:00")
+  createdAt            DateTime     @default(now())
+  updatedAt            DateTime     @updatedAt
+  SiteSettings         SiteSettings @relation(fields: [settingsId], references: [id], onDelete: Cascade)
 }
 
 model SiteSettings {
-  id              String   @id @default("default") // Singleton pattern
-  businessName    String   @default("Daily Nutrition")
-  contactEmail    String   @default("info@dailynutrition.com")
-  phoneNumber     String   @default("+254 700 000 000")
-  address         String   @default("Nairobi, Kenya")
-  pageTitle       String   @default("Daily Nutrition | Professional Nutrition Consultancy")
-  metaDescription String   @default("Expert nutrition advice.")
-  keywords        String   @default("nutrition, health, diet")
-  // Calendly Integration
-  calendlyUrl     String   @default("")
-  profileImageUrl String?  @default("")
-  themePreference String   @default("light") // 'light', 'dark', 'system'
-  updatedAt       DateTime @updatedAt
+  id                   String                @id @default("default")
+  businessName         String                @default("Daily Nutrition")
+  contactEmail         String                @default("info@dailynutrition.com")
+  phoneNumber          String                @default("+254 700 000 000")
+  address              String                @default("Nairobi, Kenya")
+  pageTitle            String                @default("Daily Nutrition | Professional Nutrition Consultancy")
+  metaDescription      String                @default("Expert nutrition advice.")
+  keywords             String                @default("nutrition, health, diet")
+  version              Int                   @default(0)
+  updatedAt            DateTime              @updatedAt
+  calendlyUrl          String                @default("")
+  profileImageUrl      String?               @default("")
+  themePreference      String                @default("light")
+  calendarProvider     String                @default("calendly")
+  savvycalUrl          String                @default("")
+  googleCalendarId     String                @default("")
+  CloudinaryConfig     CloudinaryConfig?
+  EmailBranding        EmailBranding?
+  GoogleCalendarConfig GoogleCalendarConfig?
+  ResendConfig         ResendConfig?
+  NotificationPreferences NotificationPreferences?
+
+  instagramUrl       String                @default("")
+  linkedinUrl        String                @default("")
+  twitterUrl         String                @default("")
+  facebookUrl        String                @default("")
+
+  privacyPolicyContent String              @default("")
+  termsContent         String              @default("")
 }
 
-// Booking model for tracking appointments (synced from Calendly)
-model Booking {
-  id            String   @id @default(cuid())
-  calendlyId    String?  @unique // External ID from Calendly webhook
-  clientName    String
-  clientEmail   String
-  clientPhone   String?
-  serviceId     String?
-  serviceName   String   // Denormalized for quick display
-  sessionType   String   @default("virtual") // virtual | in-person
-  scheduledAt   DateTime
-  duration      Int      @default(60) // Duration in minutes
-  status        String   @default("CONFIRMED") // CONFIRMED, COMPLETED, CANCELLED, NO_SHOW
-  notes         String?  // Admin notes
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+model EmailLog {
+  id          String   @id @default(cuid())
+  recipientEmail String
+  subject     String
+  status      String   @default("PENDING") // PENDING, SENT, FAILED
+  errorMessage String?
+  context     String   // e.g. "BOOKING_CANCELLATION", "INQUIRY_REPLY", "BOOKING_CONFIRMATION"
+  entityId    String?  // referenceCode or inquiryId
+  retryCount  Int      @default(0)
+  sentAt      DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([status])
+  @@index([context])
+  @@index([recipientEmail])
+  @@index([createdAt])
 }

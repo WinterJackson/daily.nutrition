@@ -1,6 +1,9 @@
 "use server"
 
+import { logAudit } from "@/lib/audit"
+import { verifySession } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
+import { bookingLimiter } from "@/lib/rate-limit"
 import { revalidatePath } from "next/cache"
 
 export type BookingStatus = "CONFIRMED" | "COMPLETED" | "CANCELLED" | "NO_SHOW"
@@ -50,104 +53,23 @@ export async function getBookings(filter?: "all" | "upcoming" | "past" | "today"
                 break
         }
 
-        const bookings = await prisma.booking.findMany({
+        const bookingsData = await prisma.booking.findMany({
             where,
             orderBy: { scheduledAt: "desc" },
         })
 
-        if (bookings.length === 0) {
-            console.log("No bookings found in DB, triggering mock data fallback")
-            throw new Error("Force mock data")
-        }
+        // Normalize bookingStatus to status for the UI
+        const bookings = bookingsData.map(b => ({
+            ...b,
+            status: b.bookingStatus
+        }))
 
         return { bookings, error: null }
     } catch (error) {
-        console.warn("Failed to fetch bookings (using mock data):", error instanceof Error ? error.message : String(error))
-        // Return mock data so the admin UI is populated as requested
+        console.error("Failed to fetch bookings:", error instanceof Error ? error.message : String(error))
         return {
-            bookings: [
-                {
-                    id: "mock-1",
-                    calendlyId: "evt_1",
-                    clientName: "Sarah Johnson",
-                    clientEmail: "sarah.j@example.com",
-                    clientPhone: "+254 712 345 678",
-                    serviceId: "s1",
-                    serviceName: "Diabetes Management",
-                    sessionType: "virtual",
-                    scheduledAt: new Date(Date.now() + 2 * 24 * 60 * 60 * 1000),
-                    duration: 60,
-                    status: "CONFIRMED",
-                    notes: "New patient, referred by Dr. Smith",
-                    createdAt: new Date(),
-                    updatedAt: new Date()
-                },
-                {
-                    id: "mock-2",
-                    calendlyId: "evt_2",
-                    clientName: "Michael Ochieng",
-                    clientEmail: "michael.o@example.com",
-                    clientPhone: "+254 723 456 789",
-                    serviceName: "Weight Management",
-                    sessionType: "in-person",
-                    scheduledAt: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
-                    duration: 45,
-                    status: "CONFIRMED",
-                    notes: null,
-                    serviceId: null,
-                    createdAt: new Date(),
-                    updatedAt: new Date()
-                },
-                {
-                    id: "mock-3",
-                    calendlyId: "evt_3",
-                    clientName: "Jane Wanjiku",
-                    clientEmail: "jane.w@example.com",
-                    clientPhone: "+254 734 567 890",
-                    serviceName: "Cancer Support Nutrition",
-                    sessionType: "virtual",
-                    scheduledAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000),
-                    duration: 60,
-                    status: "COMPLETED",
-                    notes: "Follow-up scheduled for next month",
-                    serviceId: null,
-                    createdAt: new Date(),
-                    updatedAt: new Date()
-                },
-                {
-                    id: "mock-4",
-                    calendlyId: "evt_4",
-                    clientName: "Peter Kamau",
-                    clientEmail: "peter.k@example.com",
-                    clientPhone: null,
-                    serviceId: null,
-                    serviceName: "Free Discovery Call",
-                    sessionType: "virtual",
-                    scheduledAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-                    duration: 30,
-                    status: "NO_SHOW",
-                    notes: "Did not attend, tried calling - no answer",
-                    createdAt: new Date(),
-                    updatedAt: new Date()
-                },
-                {
-                    id: "mock-5",
-                    calendlyId: "evt_5",
-                    clientName: "Grace Akinyi",
-                    clientEmail: "grace.a@example.com",
-                    clientPhone: "+254 756 789 012",
-                    serviceId: null,
-                    serviceName: "Gut Health Program",
-                    sessionType: "in-person",
-                    scheduledAt: new Date(),
-                    duration: 60,
-                    status: "CONFIRMED",
-                    notes: "First consultation",
-                    createdAt: new Date(),
-                    updatedAt: new Date()
-                }
-            ] as any,
-            error: "Failed to fetch bookings (showing mock data)"
+            bookings: [],
+            error: "Failed to fetch bookings"
         }
     }
 }
@@ -172,6 +94,12 @@ export async function getBooking(id: string) {
  */
 export async function createBooking(data: BookingData) {
     try {
+        // Rate limit by client email to prevent booking spam
+        const rateCheck = await bookingLimiter(data.clientEmail.toLowerCase())
+        if (!rateCheck.success) {
+            return { success: false, error: "Too many booking requests. Please wait before trying again." }
+        }
+
         const booking = await prisma.booking.create({
             data: {
                 clientName: data.clientName,
@@ -182,13 +110,21 @@ export async function createBooking(data: BookingData) {
                 sessionType: data.sessionType,
                 scheduledAt: data.scheduledAt,
                 duration: data.duration || 60,
-                status: data.status || "CONFIRMED",
+                bookingStatus: data.status || "CONFIRMED",
                 notes: data.notes,
                 calendlyId: data.calendlyId,
             }
         })
 
         revalidatePath("/admin/bookings")
+
+        logAudit({
+            action: "BOOKING_CREATED",
+            entity: "Booking",
+            entityId: booking.id,
+            metadata: { clientName: data.clientName, serviceName: data.serviceName },
+        })
+
         return { success: true, booking }
     } catch (error) {
         console.warn("Failed to create booking:", error instanceof Error ? error.message : String(error))
@@ -200,13 +136,24 @@ export async function createBooking(data: BookingData) {
  * Update booking status
  */
 export async function updateBookingStatus(id: string, status: BookingStatus) {
+    const session = await verifySession()
+    if (!session) return { success: false, error: "Unauthorized" }
+
     try {
         const booking = await prisma.booking.update({
             where: { id },
-            data: { status }
+            data: { bookingStatus: status }
         })
 
         revalidatePath("/admin/bookings")
+
+        logAudit({
+            action: "BOOKING_STATUS_UPDATED",
+            entity: "Booking",
+            entityId: id,
+            metadata: { newStatus: status },
+        })
+
         return { success: true, booking }
     } catch (error) {
         console.warn("Failed to update booking status:", error instanceof Error ? error.message : String(error))
@@ -218,6 +165,9 @@ export async function updateBookingStatus(id: string, status: BookingStatus) {
  * Update booking notes
  */
 export async function updateBookingNotes(id: string, notes: string) {
+    const session = await verifySession()
+    if (!session) return { success: false, error: "Unauthorized" }
+
     try {
         const booking = await prisma.booking.update({
             where: { id },
@@ -236,9 +186,19 @@ export async function updateBookingNotes(id: string, notes: string) {
  * Delete a booking
  */
 export async function deleteBooking(id: string) {
+    const session = await verifySession()
+    if (!session) return { success: false, error: "Unauthorized" }
+
     try {
-        await prisma.booking.delete({
-            where: { id }
+        await prisma.booking.update({
+            where: { id },
+            data: { deletedAt: new Date() }
+        })
+
+        logAudit({
+            action: "BOOKING_DELETED",
+            entity: "Booking",
+            entityId: id,
         })
 
         revalidatePath("/admin/bookings")
@@ -264,7 +224,7 @@ export async function upsertBookingFromCalendly(calendlyId: string, data: Omit<B
                 sessionType: data.sessionType,
                 scheduledAt: data.scheduledAt,
                 duration: data.duration || 60,
-                status: data.status || "CONFIRMED",
+                bookingStatus: data.status || "CONFIRMED",
             },
             create: {
                 calendlyId,
@@ -276,11 +236,19 @@ export async function upsertBookingFromCalendly(calendlyId: string, data: Omit<B
                 sessionType: data.sessionType,
                 scheduledAt: data.scheduledAt,
                 duration: data.duration || 60,
-                status: data.status || "CONFIRMED",
+                bookingStatus: data.status || "CONFIRMED",
             }
         })
 
         revalidatePath("/admin/bookings")
+
+        logAudit({
+            action: "BOOKING_UPSERTED",
+            entity: "Booking",
+            entityId: booking.id,
+            metadata: { calendlyId, clientName: data.clientName },
+        })
+
         return { success: true, booking }
     } catch (error) {
         console.warn("Failed to upsert booking from Calendly:", error instanceof Error ? error.message : String(error))
@@ -299,20 +267,14 @@ export async function getBookingStats() {
 
         const [total, upcoming, today, completed] = await Promise.all([
             prisma.booking.count(),
-            prisma.booking.count({ where: { scheduledAt: { gte: now }, status: "CONFIRMED" } }),
+            prisma.booking.count({ where: { scheduledAt: { gte: now }, bookingStatus: "CONFIRMED" } }),
             prisma.booking.count({ where: { scheduledAt: { gte: startOfToday, lt: endOfToday } } }),
-            prisma.booking.count({ where: { status: "COMPLETED" } }),
+            prisma.booking.count({ where: { bookingStatus: "COMPLETED" } }),
         ])
-
-        if (total === 0) {
-            throw new Error("Force mock stats")
-        }
 
         return { total, upcoming, today, completed }
     } catch (error) {
-
-        console.warn("Failed to fetch booking stats (using mock data):", error instanceof Error ? error.message : String(error))
-        // Return mock stats
-        return { total: 5, upcoming: 2, today: 1, completed: 1 }
+        console.error("Failed to fetch booking stats:", error instanceof Error ? error.message : String(error))
+        return { total: 0, upcoming: 0, today: 0, completed: 0 }
     }
 }

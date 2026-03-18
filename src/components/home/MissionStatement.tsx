@@ -27,7 +27,7 @@ export function MissionStatement() {
               "Our mission is to empower individuals with the knowledge and support they need to make lasting, positive changes in their health through evidence-based nutrition."
             </blockquote>
             <cite className="block mt-6 pl-8 text-neutral-500 dark:text-neutral-400 not-italic">
-              — Edna N., Founder
+              — Edna R., Founder
             </cite>
           </motion.div>
           

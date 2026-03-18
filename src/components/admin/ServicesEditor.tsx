@@ -1,13 +1,14 @@
 "use client"
 
 import { createService, deleteService, toggleServiceVisibility, updateService } from "@/app/actions/services"
-import { uploadImage } from "@/app/actions/upload"
+import { MediaPickerModal } from "@/components/admin/MediaPickerModal"
 import { Button } from "@/components/ui/Button"
+import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog"
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/Dialog"
 import { Input } from "@/components/ui/Input"
-import { DollarSign, Edit, Eye, EyeOff, Plus, Save, Trash2, Upload, X } from "lucide-react"
+import { DollarSign, Edit, Eye, EyeOff, ImageIcon, Plus, Save, Trash2, X } from "lucide-react"
 import Image from "next/image"
-import { useRef, useState, useTransition } from "react"
+import { useState, useTransition } from "react"
 
 interface Service {
   id: string
@@ -36,8 +37,9 @@ export function ServicesEditor({ services }: ServicesEditorProps) {
   const [editingService, setEditingService] = useState<Service | null>(null)
   const [isCreating, setIsCreating] = useState(false)
   const [formData, setFormData] = useState<Partial<Service>>({})
-  const [isUploading, setIsUploading] = useState(false)
-  const fileInputRef = useRef<HTMLInputElement>(null)
+  const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false)
+
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)
 
   const handleCreate = () => {
     setIsCreating(true)
@@ -69,32 +71,21 @@ export function ServicesEditor({ services }: ServicesEditorProps) {
     })
   }
 
-  const handleDelete = (id: string) => {
-    if (confirm("Are you sure you want to delete this service? This action cannot be undone.")) {
+  const handleDeleteClick = (id: string) => {
+    setPendingDeleteId(id)
+  }
+
+  const handleConfirmDelete = () => {
+    if (pendingDeleteId) {
         startTransition(async () => {
-            await deleteService(id)
+            await deleteService(pendingDeleteId)
+            setPendingDeleteId(null)
         })
     }
   }
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
-
-    setIsUploading(true)
-    try {
-        const data = new FormData()
-        data.append("file", file)
-        const res = await uploadImage(data)
-        if (res.success && res.url) {
-            setFormData(prev => ({ ...prev, image: res.url }))
-        } else {
-            console.error("Upload failed", res.error)
-            alert("Image upload failed")
-        }
-    } finally {
-        setIsUploading(false)
-    }
+  const handleMediaSelect = (url: string) => {
+    setFormData(prev => ({ ...prev, image: url }))
   }
 
   const handleRemoveImage = () => {
@@ -227,7 +218,7 @@ export function ServicesEditor({ services }: ServicesEditorProps) {
                 variant="ghost"
                 size="icon"
                 className="h-9 w-9 text-neutral-400 hover:text-red-500 hover:bg-red-500/10 rounded-full"
-                onClick={() => handleDelete(service.id)}
+                onClick={() => handleDeleteClick(service.id)}
                 disabled={isPending}
                 data-tooltip="Delete Service"
               >
@@ -250,35 +241,22 @@ export function ServicesEditor({ services }: ServicesEditorProps) {
             {/* Image Upload */}
             <div>
                <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2 block">Service Image</label>
-               <input 
-                 type="file" 
-                 accept="image/*" 
-                 className="hidden" 
-                 ref={fileInputRef}
-                 onChange={handleImageUpload}
-               />
                
                {formData.image ? (
                  <div className="relative w-full h-40 rounded-lg overflow-hidden border border-neutral-200 dark:border-white/10 group">
                     <Image src={formData.image} alt="Service preview" fill className="object-cover" />
                     <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                        <Button size="sm" variant="secondary" onClick={() => fileInputRef.current?.click()}>Change</Button>
+                        <Button size="sm" variant="secondary" onClick={() => setIsMediaPickerOpen(true)}>Change Media</Button>
                         <Button size="sm" variant="destructive" onClick={handleRemoveImage}>Remove</Button>
                     </div>
                  </div>
                ) : (
                  <div 
-                   onClick={() => fileInputRef.current?.click()}
+                   onClick={() => setIsMediaPickerOpen(true)}
                    className="w-full h-32 border-2 border-dashed border-neutral-200 dark:border-white/10 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors"
                  >
-                    {isUploading ? (
-                        <div className="animate-spin w-6 h-6 border-2 border-brand-green border-t-transparent rounded-full" />
-                    ) : (
-                        <>
-                            <Upload className="w-6 h-6 text-neutral-400 mb-2" />
-                            <span className="text-xs text-neutral-500">Click to upload image</span>
-                        </>
-                    )}
+                    <ImageIcon className="w-6 h-6 text-neutral-400 mb-2" />
+                    <span className="text-xs text-neutral-500">Click to choose media</span>
                  </div>
                )}
             </div>
@@ -382,6 +360,25 @@ export function ServicesEditor({ services }: ServicesEditorProps) {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <ConfirmationDialog 
+        open={!!pendingDeleteId} 
+        onOpenChange={(open) => !open && setPendingDeleteId(null)}
+        title="Delete Service"
+        description="Are you sure you want to delete this service? This action cannot be undone."
+        confirmText="Delete Service"
+        variant="destructive"
+        onConfirm={handleConfirmDelete}
+        isLoading={isPending}
+      />
+
+      <MediaPickerModal 
+        open={isMediaPickerOpen}
+        onOpenChange={setIsMediaPickerOpen}
+        onSelect={handleMediaSelect}
+        folder="daily_nutrition/services"
+        allowedTypes="image"
+      />
     </>
   )
 }

@@ -18,27 +18,13 @@ const navLinks = [
 ]
 
 export function Navbar() {
-  const [isScrolled, setIsScrolled] = React.useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false)
   const pathname = usePathname()
-
-  React.useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10)
-    }
-    window.addEventListener("scroll", handleScroll)
-    return () => window.removeEventListener("scroll", handleScroll)
-  }, [])
 
   return (
     <>
       <header
-        className={cn(
-          "fixed top-[5px] left-[5px] right-[5px] z-50 transition-all duration-300 border border-transparent rounded-xl",
-          isScrolled
-            ? "bg-white/80 dark:bg-olive/70 backdrop-blur-md shadow-lg border-neutral-200 dark:border-white/10"
-            : "bg-transparent"
-        )}
+        className="fixed top-[5px] left-[5px] right-[5px] z-50 transition-all duration-300 border rounded-xl bg-olive/70 backdrop-blur-md shadow-lg border-white/10"
       >
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
@@ -62,8 +48,11 @@ export function Navbar() {
                     href={link.href}
                     className={cn(
                       "text-sm font-medium transition-colors hover:text-orange relative",
-                      pathname === link.href ? "text-orange" : "text-charcoal dark:text-gray-200"
+                      pathname === link.href 
+                        ? "text-orange" 
+                        : "text-white dark:text-gray-200"
                     )}
+                    data-active={pathname === link.href}
                   >
                     {link.name}
                     {pathname === link.href && (
@@ -95,7 +84,7 @@ export function Navbar() {
               <ThemeToggle />
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="text-olive dark:text-off-white p-2"
+                className="p-2 text-white"
               >
                 {isMobileMenuOpen ? <X /> : <Menu />}
               </button>
@@ -110,7 +99,7 @@ export function Navbar() {
               initial={{ opacity: 0, height: 0 }}
               animate={{ opacity: 1, height: "auto" }}
               exit={{ opacity: 0, height: 0 }}
-              className="md:hidden bg-white dark:bg-olive border-b border-neutral-200 dark:border-white/10 overflow-hidden shadow-lg"
+              className="md:hidden bg-olive border-b border-white/10 overflow-hidden shadow-lg"
             >
               <div className="container mx-auto px-4 py-6 space-y-4 flex flex-col">
                 {navLinks.map((link) => (
@@ -118,7 +107,7 @@ export function Navbar() {
                     key={link.href}
                     href={link.href}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-base font-medium text-charcoal dark:text-gray-200 hover:text-brand-green py-2 border-b border-neutral-100 dark:border-white/5"
+                    className="text-base font-medium text-white dark:text-gray-200 hover:text-brand-green py-2 border-b border-white/5"
                   >
                     {link.name}
                   </Link>

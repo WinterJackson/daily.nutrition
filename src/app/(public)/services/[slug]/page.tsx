@@ -28,7 +28,7 @@ export default function ServicePage({ params }: Props) {
       <AnimatedBackground variant="nutrition" />
       
       {/* Breadcrumb / Back */}
-      <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 relative z-10">
+      <div className="container max-w-7xl mx-auto mt-15 px-4 sm:px-6 lg:px-8 mb-8 relative z-10">
         <Link href="/services" className="inline-flex items-center text-sm font-medium text-neutral-500 hover:text-brand-green transition-colors">
           <ArrowLeft className="mr-2 h-4 w-4" />
           Back to Services

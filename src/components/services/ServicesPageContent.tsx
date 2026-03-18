@@ -32,7 +32,7 @@ export function ServicesPageContent({ services }: { services: Service[] }) {
   const isDiscoveryCallActive = !!discoveryService
 
   return (
-    <div className="min-h-screen bg-off-white dark:bg-charcoal pt-24 pb-24 relative overflow-hidden">
+    <div className="min-h-screen bg-off-white dark:bg-charcoal pt-36 pb-24 relative overflow-hidden">
        
        {/* Animated Background */}
        <AnimatedBackground variant="section" />
@@ -283,7 +283,7 @@ export function ServicesPageContent({ services }: { services: Service[] }) {
                        Not sure where to start?
                     </h2>
                     <p className="text-white/80 text-lg mb-8 leading-relaxed">
-                       Book a free 5-minute discovery call to discuss your health goals and find out which plan is right for you.
+                       Book a free 5-15 Minute discovery call to discuss your health goals and find out which plan is right for you.
                     </p>
                     <Button asChild size="lg" className="bg-white text-olive hover:bg-neutral-100 dark:hover:bg-neutral-200 font-semibold px-8 py-6 h-auto text-base rounded-full shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300">
                        <Link href="/booking?service=discovery-call">

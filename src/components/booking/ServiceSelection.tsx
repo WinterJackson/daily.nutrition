@@ -4,16 +4,16 @@ import { Button } from "@/components/ui/Button"
 import { pricing, services } from "@/lib/data"
 import { cn } from "@/lib/utils"
 import { CheckCircle2, Globe, MapPin, Sparkles } from "lucide-react"
-import { useState } from "react"
 
 interface ServiceSelectionProps {
   onServiceSelect: (serviceId: string) => void
   selectedServiceId?: string
   activeServiceIds?: string[]
+  sessionType: "virtual" | "in-person"
+  onSessionTypeChange: (type: "virtual" | "in-person") => void
 }
 
-export function ServiceSelection({ onServiceSelect, selectedServiceId, activeServiceIds }: ServiceSelectionProps) {
-  const [sessionType, setSessionType] = useState<"virtual" | "in-person">("virtual")
+export function ServiceSelection({ onServiceSelect, selectedServiceId, activeServiceIds, sessionType, onSessionTypeChange }: ServiceSelectionProps) {
 
   const visibleServices = activeServiceIds 
     ? services.filter(s => activeServiceIds.includes(s.id))
@@ -29,7 +29,7 @@ export function ServiceSelection({ onServiceSelect, selectedServiceId, activeSer
         <div className="flex justify-center">
           <div className="inline-flex bg-neutral-100 dark:bg-white/5 p-1 rounded-xl">
             <button
-              onClick={() => setSessionType("virtual")}
+              onClick={() => onSessionTypeChange("virtual")}
               className={cn(
                 "flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all duration-300",
                 sessionType === "virtual" 
@@ -41,7 +41,7 @@ export function ServiceSelection({ onServiceSelect, selectedServiceId, activeSer
               Virtual Session
             </button>
             <button
-              onClick={() => setSessionType("in-person")}
+              onClick={() => onSessionTypeChange("in-person")}
               className={cn(
                 "flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all duration-300",
                 sessionType === "in-person"
@@ -71,12 +71,10 @@ export function ServiceSelection({ onServiceSelect, selectedServiceId, activeSer
             : `Ksh ${sessionType === "virtual" ? pricing.default.virtual.toLocaleString() : pricing.default.inPerson.toLocaleString()}`
           }
         </p>
-        <p className="text-neutral-500 dark:text-neutral-400">
           {selectedServiceId === "discovery-call"
-            ? "5-minute complimentary consultation"
+            ? "5-15 Minute complimentary consultation"
             : `per 45-60 minute ${sessionType} consultation`
           }
-        </p>
       </div>
 
       {/* Featured Service (Discovery Call) */}
@@ -132,14 +130,15 @@ export function ServiceSelection({ onServiceSelect, selectedServiceId, activeSer
         </div>
       )}
 
-      {/* Service Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      {/* Service Cards Flex Layout */}
+      <div className="flex flex-wrap justify-center gap-6">
         {gridServices.map((service) => (
           <div 
             key={service.id}
             onClick={() => onServiceSelect(service.id)}
             className={cn(
-              "relative group cursor-pointer rounded-2xl p-6 border transition-all duration-300 hover:shadow-xl",
+              "w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] xl:w-[calc(25%-18px)]",
+              "relative group cursor-pointer rounded-2xl p-6 border transition-all duration-300 hover:shadow-xl flex flex-col h-full",
               selectedServiceId === service.id
                 ? "bg-white dark:bg-white/5 border-brand-green ring-1 ring-brand-green shadow-lg shadow-brand-green/10"
                 : "bg-white/50 dark:bg-white/[0.02] border-neutral-200 dark:border-white/10 hover:border-brand-green/50"
@@ -178,7 +177,7 @@ export function ServiceSelection({ onServiceSelect, selectedServiceId, activeSer
 
             <Button 
                variant={selectedServiceId === service.id ? "accent" : "outline"} 
-               className="w-full h-10 text-xs"
+               className="w-full h-10 text-xs mt-auto"
             >
                {selectedServiceId === service.id ? "Selected" : "Select Service"}
             </Button>

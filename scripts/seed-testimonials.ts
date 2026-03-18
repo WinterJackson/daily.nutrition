@@ -9,21 +9,24 @@ async function main() {
             authorName: "Sarah M.",
             rating: 5,
             content: "Working with Edna transformed how I manage my diabetes. Her personalized meal plans made blood sugar control so much easier. I've never felt better!",
-            status: "APPROVED",
+            statusString: "APPROVED",
+            contentStatus: "PUBLISHED",
             serviceId: "diabetes-management",
         },
         {
             authorName: "James K.",
             rating: 5,
             content: "During my treatment, Edna's nutritional guidance was invaluable. She helped me maintain my strength and manage side effects through proper nutrition.",
-            status: "APPROVED",
+            statusString: "APPROVED",
+            contentStatus: "PUBLISHED",
             serviceId: "cancer-nutrition",
         },
         {
             authorName: "Mary W.",
             rating: 5,
             content: "After years of digestive issues, the FODMAP guidance I received finally gave me relief. The personalized approach made all the difference.",
-            status: "APPROVED",
+            statusString: "APPROVED",
+            contentStatus: "PUBLISHED",
             serviceId: "gut-health",
         },
     ]
@@ -34,7 +37,8 @@ async function main() {
             authorName: `Happy Patient ${i}`,
             rating: 4 + (i % 2), // 4 or 5 stars
             content: `This is a generated testimonial #${i}. The service was excellent and I saw great results within a few weeks. Highly recommended!`,
-            status: status,
+            statusString: status,
+            contentStatus: status === "APPROVED" ? "PUBLISHED" : "IN_REVIEW",
             serviceId: "general-counselling"
         })
     }

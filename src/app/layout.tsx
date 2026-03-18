@@ -17,19 +17,20 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Daily Nutrition | Professional Nutrition Consultancy",
+  title: "Edwak Nutrition | Professional Nutrition Consultancy",
   description: "Expert nutrition care for cancer, diabetes, and gut health. Virtual and in-person consultations.",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
     statusBarStyle: "default",
-    title: "Daily Nutrition",
+    title: "Edwak Nutrition",
   },
   formatDetection: {
     telephone: true,
   },
   icons: {
     icon: [
+      { url: "/favicon.png", type: "image/png" },
       { url: "/icons/icon-192x192.png", sizes: "192x192", type: "image/png" },
       { url: "/icons/icon-512x512.png", sizes: "512x512", type: "image/png" },
     ],
@@ -58,6 +59,7 @@ export default function RootLayout({
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
+        <link rel="icon" type="image/png" href="/favicon.png" />
         <link rel="apple-touch-icon" href="/icons/icon-152x152.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />

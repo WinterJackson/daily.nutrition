@@ -2,7 +2,7 @@
 
 import { createTestimonial, deleteTestimonial, TestimonialStatus, updateTestimonial } from "@/app/actions/testimonials"
 import { Button } from "@/components/ui/Button"
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/Dialog"
+import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog"
 import { Input } from "@/components/ui/Input"
 import { cn } from "@/lib/utils"
 import { CheckCircle, ChevronLeft, ChevronRight, Clock, Edit, Plus, Star, Trash2, XCircle } from "lucide-react"
@@ -14,7 +14,7 @@ interface Testimonial {
   authorName: string
   rating: number
   content: string
-  status: string
+  contentStatus: string
   serviceId: string | null
   createdAt: Date
 }
@@ -31,7 +31,7 @@ export function TestimonialsManager({ testimonials: initialTestimonials, totalCo
   const searchParams = useSearchParams()
   const [testimonials, setTestimonials] = useState(initialTestimonials)
   const [isPending, startTransition] = useTransition()
-  const [activeTab, setActiveTab] = useState<"ALL" | TestimonialStatus>("PENDING")
+  const [activeTab, setActiveTab] = useState<"ALL" | TestimonialStatus>("IN_REVIEW")
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [testimonialToDelete, setTestimonialToDelete] = useState<string | null>(null)
@@ -53,11 +53,11 @@ export function TestimonialsManager({ testimonials: initialTestimonials, totalCo
   }
 
   // Derive counts for tabs within CURRENT PAGE (Note: True count requires DB aggregation, this is partial UX)
-  const pendingCount = testimonials.filter(t => t.status === "PENDING").length
-  const approvedCount = testimonials.filter(t => t.status === "APPROVED").length
+  const pendingCount = testimonials.filter(t => t.contentStatus === "IN_REVIEW").length
+  const approvedCount = testimonials.filter(t => t.contentStatus === "PUBLISHED").length
 
   const filteredTestimonials = testimonials.filter(t => 
-    activeTab === "ALL" ? true : t.status === activeTab
+    activeTab === "ALL" ? true : t.contentStatus === activeTab
   )
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -70,7 +70,7 @@ export function TestimonialsManager({ testimonials: initialTestimonials, totalCo
         }
         setEditingId(null)
       } else {
-        const res = await createTestimonial({ ...formData, status: "PENDING" })
+        const res = await createTestimonial({ ...formData, status: "IN_REVIEW" })
         if (res.success && res.testimonial) {
             // Optimistic update
             const newT = {
@@ -99,7 +99,7 @@ export function TestimonialsManager({ testimonials: initialTestimonials, totalCo
   const handleStatusChange = (id: string, status: TestimonialStatus) => {
     startTransition(async () => {
       await updateTestimonial(id, { status })
-      setTestimonials(testimonials.map(t => t.id === id ? { ...t, status } : t))
+      setTestimonials(testimonials.map(t => t.id === id ? { ...t, contentStatus: status } : t))
     })
   }
 
@@ -121,7 +121,7 @@ export function TestimonialsManager({ testimonials: initialTestimonials, totalCo
       <div className="border-b border-neutral-100 dark:border-white/5">
          <div className="flex flex-col sm:flex-row items-center justify-between p-4 gap-4">
              <div className="flex bg-neutral-100 dark:bg-white/5 p-1 rounded-lg">
-                {(["PENDING", "APPROVED", "ARCHIVED", "ALL"] as const).map((tab) => (
+                {(["IN_REVIEW", "PUBLISHED", "ARCHIVED", "ALL"] as const).map((tab) => (
                     <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
@@ -132,8 +132,8 @@ export function TestimonialsManager({ testimonials: initialTestimonials, totalCo
                                 : "text-neutral-500 hover:text-neutral-700 dark:hover:text-neutral-300"
                         )}
                     >
-                        {tab.charAt(0) + tab.slice(1).toLowerCase()}
-                        {tab === "PENDING" && pendingCount > 0 && (
+                        {tab === "IN_REVIEW" ? "Pending" : tab === "PUBLISHED" ? "Approved" : tab.charAt(0) + tab.slice(1).toLowerCase()}
+                        {tab === "IN_REVIEW" && pendingCount > 0 && (
                             <span className="ml-2 bg-orange text-white text-[10px] px-1.5 py-0.5 rounded-full">{pendingCount}</span>
                         )}
                     </button>
@@ -216,7 +216,7 @@ export function TestimonialsManager({ testimonials: initialTestimonials, totalCo
         <div className="p-12 text-center text-neutral-500 dark:text-neutral-400">
             {testimonials.length === 0 
                 ? "No testimonials yet." 
-                : activeTab === "PENDING" 
+                : activeTab === "IN_REVIEW" 
                     ? "No pending reviews! All caught up." 
                     : "No reviews found in this category."}
         </div>
@@ -241,11 +241,11 @@ export function TestimonialsManager({ testimonials: initialTestimonials, totalCo
                   {activeTab === "ALL" && (
                        <span className={cn(
                            "text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border",
-                           testimonial.status === "APPROVED" ? "bg-green-100 text-green-700 border-green-200" : 
-                           testimonial.status === "PENDING" ? "bg-orange/10 text-orange border-orange/20" : 
+                           testimonial.contentStatus === "PUBLISHED" ? "bg-green-100 text-green-700 border-green-200" : 
+                           testimonial.contentStatus === "IN_REVIEW" ? "bg-orange/10 text-orange border-orange/20" : 
                            "bg-neutral-100 text-neutral-500 border-neutral-200"
                        )}>
-                           {testimonial.status}
+                           {testimonial.contentStatus === "IN_REVIEW" ? "PENDING" : testimonial.contentStatus === "PUBLISHED" ? "APPROVED" : testimonial.contentStatus}
                        </span>
                   )}
                 </div>
@@ -257,11 +257,11 @@ export function TestimonialsManager({ testimonials: initialTestimonials, totalCo
               </div>
               
               <div className="flex items-center gap-2 shrink-0">
-                {testimonial.status === "PENDING" && (
+                {testimonial.contentStatus === "IN_REVIEW" && (
                   <Button
                     size="sm"
                     className="bg-brand-green/10 text-brand-green hover:bg-brand-green hover:text-white border border-brand-green/20"
-                    onClick={() => handleStatusChange(testimonial.id, "APPROVED")}
+                    onClick={() => handleStatusChange(testimonial.id, "PUBLISHED")}
                     disabled={isPending}
                     data-tooltip="Approve Review"
                   >
@@ -269,12 +269,12 @@ export function TestimonialsManager({ testimonials: initialTestimonials, totalCo
                   </Button>
                 )}
                 
-                {testimonial.status === "APPROVED" && (
+                {testimonial.contentStatus === "PUBLISHED" && (
                     <Button
                         variant="ghost"
                         size="icon"
                         className="h-8 w-8 text-neutral-400 hover:text-orange hover:bg-orange/10 rounded-full"
-                        onClick={() => handleStatusChange(testimonial.id, "PENDING")}
+                        onClick={() => handleStatusChange(testimonial.id, "IN_REVIEW")}
                         disabled={isPending}
                         data-tooltip="Move to Pending"
                     >
@@ -309,26 +309,16 @@ export function TestimonialsManager({ testimonials: initialTestimonials, totalCo
       )}
       
       {/* Delete Confirmation Modal */}
-      <Dialog open={!!testimonialToDelete} onOpenChange={(open) => !open && setTestimonialToDelete(null)}>
-        <DialogContent>
-            <DialogHeader>
-                <DialogTitle>Delete Testimonial</DialogTitle>
-                <DialogDescription>
-                    Are you sure you want to delete this review? This action cannot be undone.
-                </DialogDescription>
-            </DialogHeader>
-            <DialogFooter>
-                <Button variant="outline" onClick={() => setTestimonialToDelete(null)}>Cancel</Button>
-                <Button 
-                    className="bg-red-500 hover:bg-red-600 text-white" 
-                    onClick={handleDelete}
-                    disabled={isPending}
-                >
-                    {isPending ? "Deleting..." : "Delete Permanently"}
-                </Button>
-            </DialogFooter>
-        </DialogContent>
-      </Dialog>
+      <ConfirmationDialog 
+        open={!!testimonialToDelete} 
+        onOpenChange={(open) => !open && setTestimonialToDelete(null)}
+        title="Delete Testimonial"
+        description="Are you sure you want to delete this review? This action cannot be undone."
+        confirmText="Delete Permanently"
+        variant="destructive"
+        onConfirm={handleDelete}
+        isLoading={isPending}
+      />
 
       {/* Pagination Controls */}
       <div className="p-4 border-t border-neutral-100 dark:border-white/5 bg-neutral-50/30 dark:bg-white/[0.01] flex items-center justify-between">
