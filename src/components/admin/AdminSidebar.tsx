@@ -110,10 +110,10 @@ export function AdminSidebar() {
           /* Expanded State: Logo + Collapse Button */
           <>
             <Link href="/admin" className="flex items-center gap-3 flex-1 min-w-0 pointer-events-none">
-              <div className="relative h-12 w-32 shrink-0 bg-gradient-to-br from-white via-white to-olive/20 rounded-[10px] px-1 pointer-events-auto shadow-sm">
+              <div className="relative h-12 w-32 shrink-0 bg-gradient-to-br from-white/30 via-olive to-white/20 rounded-[10px] px-1 pointer-events-auto shadow-sm">
                  <Image 
                    src="/admin-logo.png" 
-                   alt="Daily Nutrition Admin" 
+                   alt="Edwak Nutrition Admin" 
                    fill
                    className="object-contain"
                    priority
