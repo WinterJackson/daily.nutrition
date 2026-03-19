@@ -215,7 +215,8 @@ export async function syncGoogleReviews() {
 
             // Extract unique reviewer ID from Google Maps profile URL to handle review edits gracefully
             const contribIdMatch = review.author_url?.match(/contrib\/([0-9]+)/)
-            const reviewerId = contribIdMatch ? contribIdMatch[1] : (review.author_name || "unknown").replace(/\s+/g, '-').toLowerCase()
+            // Hardened fallback to strip non-alphanumeric chars (e.g., emojis or foreign scripts) safely if contrib ID fails
+            const reviewerId = contribIdMatch ? contribIdMatch[1] : (review.author_name || "unknown").replace(/[^a-zA-Z0-9]/g, '').toLowerCase()
 
             // Deterministic ID to prevent duplicates and allow updates
             const reviewId = `google-${placeId.slice(-8)}-${reviewerId}`
@@ -223,13 +224,15 @@ export async function syncGoogleReviews() {
             const existing = await prisma.testimonial.findUnique({ where: { id: reviewId } })
 
             if (existing) {
-                // If they updated their review on Google, sync the new content/rating
+                // If they updated their review on Google, sync the new content, rating, and updated timestamp
                 if (existing.content !== review.text || existing.rating !== review.rating) {
                     await prisma.testimonial.update({
                         where: { id: reviewId },
                         data: {
                             content: review.text,
                             rating: review.rating || 5,
+                            // Preserve the true original review date (or updated date) if available
+                            ...(review.time ? { createdAt: new Date(review.time * 1000) } : {}),
                             // Intentionally DO NOT modify contentStatus. If it was PUBLISHED, keep it PUBLISHED.
                         }
                     })
@@ -246,6 +249,8 @@ export async function syncGoogleReviews() {
                         rating: review.rating || 5,
                         content: review.text,
                         contentStatus: "IN_REVIEW",
+                        // Sync the EXACT historical date the review was left on Google
+                        ...(review.time ? { createdAt: new Date(review.time * 1000) } : {}),
                     }
                 })
                 synced++
