@@ -56,7 +56,7 @@ export const BookingConfirmationEmail = ({
             Where
         </Text>
         <Text className="m-0 text-lg font-semibold">
-           {isVirtual ? "Google Meet (Video Call)" : "In-Person — One Stop Arcade Mall Karen"}
+           {isVirtual ? "Google Meet (Video Call)" : "In-Person — PMC Park Medical Center, Parklands"}
         </Text>
         
         {referenceCode && (

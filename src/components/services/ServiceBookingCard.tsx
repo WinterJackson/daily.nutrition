@@ -107,7 +107,7 @@ export function ServiceBookingCard({
                 >
                 <MapPin className={cn("w-5 h-5 mb-2", sessionType === "in-person" ? "text-brand-green" : "text-neutral-400")} />
                 <p className="text-sm font-semibold text-olive dark:text-off-white">In-Person</p>
-                <p className="text-xs text-neutral-500">Karen, Nairobi</p>
+                <p className="text-xs text-neutral-500">PMC, Parklands</p>
                 <p className="text-lg font-bold text-brand-green mt-2">Ksh {servicePricing.inPerson.toLocaleString()}</p>
                 </button>
             )}

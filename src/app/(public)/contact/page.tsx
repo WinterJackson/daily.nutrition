@@ -51,10 +51,10 @@ export default function ContactPage() {
                         </div>
                         <div className="space-y-4">
                            <div>
-                              <p className="font-semibold text-white mb-1">Karen Branch</p>
+                              <p className="font-semibold text-white mb-1">Parklands Branch</p>
                               <p className="text-white/70 text-sm leading-relaxed">
-                                 One Stop Arcade Mall<br/>
-                                 Karen, Nairobi
+                                 3rd Parklands Avenue, PMC, 6th Floor<br/>
+                                 Suite 609, Nairobi
                               </p>
                            </div>
                         </div>
@@ -111,14 +111,14 @@ export default function ContactPage() {
             className="mt-16 h-[350px] w-full rounded-2xl overflow-hidden relative border border-neutral-200 dark:border-white/10 shadow-lg"
           >
              <iframe 
-               src="https://maps.google.com/maps?q=One%20Stop%20Arcade%20Mall%20Karen%20Nairobi&t=&z=15&ie=UTF8&iwloc=&output=embed"
+               src="https://maps.google.com/maps?q=-1.26248,36.82234(Edwak%20Nutrition%20-%20Park%20Medical%20Center)&t=&z=16&ie=UTF8&iwloc=&output=embed"
                width="100%" 
                height="100%" 
                style={{ border: 0 }} 
                allowFullScreen 
                loading="lazy" 
                referrerPolicy="no-referrer-when-downgrade"
-               title="Edwak Nutrition Location - Karen"
+               title="Edwak Nutrition Location - Parklands"
                className="absolute inset-0"
              />
           </motion.div>
