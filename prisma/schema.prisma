@@ -530,6 +530,7 @@ model SiteSettings {
 
   privacyPolicyContent String              @default("")
   termsContent         String              @default("")
+  googlePlaceId        String              @default("")
 }
 
 model EmailLog {

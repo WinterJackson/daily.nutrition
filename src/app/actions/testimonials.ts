@@ -147,3 +147,108 @@ export async function deleteTestimonial(id: string) {
         return { success: false, error: "Failed to delete testimonial" }
     }
 }
+
+// --- Google Reviews Sync Engine ---
+
+export async function getGoogleReviewsSyncStatus() {
+    const session = await verifySession()
+    if (!session) return { configured: false, placeId: "" }
+
+    const settings = await prisma.siteSettings.findUnique({ where: { id: "default" }, select: { googlePlaceId: true } })
+    const { INTERNAL_getSecret } = await import("@/lib/ai/secrets")
+    const hasKey = !!(await INTERNAL_getSecret("GOOGLE_MAPS_API_KEY"))
+
+    return {
+        configured: hasKey && !!settings?.googlePlaceId,
+        placeId: settings?.googlePlaceId || ""
+    }
+}
+
+export async function syncGoogleReviews() {
+    const session = await verifySession()
+    if (!session) return { success: false, error: "Unauthorized" }
+
+    try {
+        // 1. Get Place ID from settings
+        const settings = await prisma.siteSettings.findUnique({ where: { id: "default" }, select: { googlePlaceId: true } })
+        if (!settings?.googlePlaceId) {
+            return { success: false, error: "Google Place ID is not configured. Go to Settings → Integrations to set it up." }
+        }
+
+        // 2. Get API key from encrypted secrets
+        const { INTERNAL_getSecret } = await import("@/lib/ai/secrets")
+        const apiKey = await INTERNAL_getSecret("GOOGLE_MAPS_API_KEY")
+        if (!apiKey) {
+            return { success: false, error: "Google Maps API Key is not configured. Go to Settings → Integrations to set it up." }
+        }
+
+        // 3. Fetch reviews from Google Places API
+        const placeId = settings.googlePlaceId
+        const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${encodeURIComponent(placeId)}&fields=reviews&key=${apiKey}`
+
+        const response = await fetch(url, { cache: "no-store" })
+        if (!response.ok) {
+            return { success: false, error: `Google API returned status ${response.status}. Check your API key and Place ID.` }
+        }
+
+        const data = await response.json()
+
+        if (data.status !== "OK") {
+            return { success: false, error: `Google API error: ${data.status}. ${data.error_message || "Check your Place ID and ensure the Places API is enabled."}` }
+        }
+
+        const reviews = data.result?.reviews
+        if (!reviews || reviews.length === 0) {
+            return { success: false, error: "No reviews found for this Place ID. Your business may not have any Google reviews yet." }
+        }
+
+        // 4. Upsert reviews into the Testimonial table
+        let synced = 0
+        let skipped = 0
+
+        for (const review of reviews) {
+            // Create a deterministic ID based on the author name and time
+            const reviewId = `google-${placeId.slice(-8)}-${review.time}`
+
+            const existing = await prisma.testimonial.findUnique({ where: { id: reviewId } })
+
+            if (existing) {
+                skipped++
+                continue
+            }
+
+            await prisma.testimonial.create({
+                data: {
+                    id: reviewId,
+                    authorName: review.author_name || "Google Reviewer",
+                    rating: review.rating || 5,
+                    content: review.text || "",
+                    contentStatus: "IN_REVIEW",
+                }
+            })
+            synced++
+        }
+
+        logAudit({
+            action: "GOOGLE_REVIEWS_SYNCED",
+            entity: "Testimonial",
+            entityId: placeId,
+            userId: session.user.id,
+            metadata: { synced, skipped, totalFromGoogle: reviews.length },
+        })
+
+        revalidatePath("/admin/testimonials")
+        revalidatePath("/")
+
+        return {
+            success: true,
+            message: `Synced ${synced} new review(s). ${skipped} already existed.`,
+            synced,
+            skipped,
+            total: reviews.length
+        }
+    } catch (error) {
+        console.error("Failed to sync Google reviews:", error)
+        return { success: false, error: error instanceof Error ? error.message : "Failed to sync Google reviews" }
+    }
+}

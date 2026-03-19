@@ -1,4 +1,5 @@
-import { getTestimonials } from "@/app/actions/testimonials"
+import { getGoogleReviewsSyncStatus, getTestimonials } from "@/app/actions/testimonials"
+import { GoogleReviewsSyncButton } from "@/components/admin/GoogleReviewsSyncButton"
 import { TestimonialsManager } from "@/components/admin/TestimonialsManager"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Star } from "lucide-react"
@@ -12,7 +13,10 @@ export default async function AdminTestimonialsPage({
   const page = typeof params.page === 'string' ? parseInt(params.page) : 1
   const pageSize = 10
   
-  const { testimonials, totalCount } = await getTestimonials(undefined, page, pageSize)
+  const [{ testimonials, totalCount }, syncStatus] = await Promise.all([
+    getTestimonials(undefined, page, pageSize),
+    getGoogleReviewsSyncStatus()
+  ])
 
   return (
     <div className="space-y-8 max-w-[1600px] mx-auto">
@@ -21,6 +25,7 @@ export default async function AdminTestimonialsPage({
           <h1 className="text-3xl font-bold font-serif text-olive dark:text-off-white">Testimonials</h1>
           <p className="text-caption mt-1">Manage customer reviews and success stories.</p>
         </div>
+        <GoogleReviewsSyncButton isConfigured={syncStatus.configured} />
       </div>
 
       <Card className="surface-card overflow-hidden">

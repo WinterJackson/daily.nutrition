@@ -15,7 +15,8 @@ export default async function AdminSettingsPage() {
     "CLOUDINARY_CLOUD_NAME",
     "CLOUDINARY_API_KEY",
     "CLOUDINARY_API_SECRET",
-    "GEMINI_API_KEY"
+    "GEMINI_API_KEY",
+    "GOOGLE_MAPS_API_KEY"
   ]
   
   const secretStatuses: Record<string, boolean> = {}

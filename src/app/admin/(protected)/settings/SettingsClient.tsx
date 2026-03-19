@@ -15,7 +15,7 @@ import { Button } from "@/components/ui/Button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
 import { getPublicIdFromUrl } from "@/lib/cloudinary-utils"
-import { Calendar, CheckCircle, Clock, Database, ImageIcon, Key, Loader2, Moon, Save, Sparkles, Sun, Trash2, Upload } from "lucide-react"
+import { Calendar, CheckCircle, ChevronDown, Clock, Database, Globe, ImageIcon, Key, Loader2, Moon, Save, Sparkles, Star, Sun, Trash2, Upload } from "lucide-react"
 import Image from "next/image"
 import { useRef, useState, useTransition } from "react"
 
@@ -122,13 +122,40 @@ const geminiSetupSteps = [
   },
   {
     step: 2,
-    title: "Get API Key",
-    description: "Click 'Get API key' on the left sidebar, then click 'Create API key'. You may need to create a new Google Cloud project if you don't have one.",
+    title: "Create an API Key",
+    description: "Click on 'Get API Key', then create a new key or select an existing Google Cloud project.",
   },
   {
     step: 3,
     title: "Secure Your Key",
     description: "Copy the generated API key (it will be a long string of random characters) and paste it into the field below.",
+  }
+]
+
+// Google Reviews (Places API) Setup Steps
+const googleReviewsSetupSteps = [
+  {
+    step: 1,
+    title: "Enable the Places API",
+    description: "Go to the Google Cloud Console APIs Library and search for 'Places API (New)'. Click 'Enable'. If you already have a Google Cloud project from Calendar setup, use that same project.",
+    url: "https://console.cloud.google.com/apis/library/places-backend.googleapis.com"
+  },
+  {
+    step: 2,
+    title: "Create an API Key",
+    description: "Go to APIs & Services → Credentials → '+ CREATE CREDENTIALS' → 'API key'. Restrict this key to only the 'Places API (New)' for security.",
+    url: "https://console.cloud.google.com/apis/credentials"
+  },
+  {
+    step: 3,
+    title: "Find Your Google Place ID",
+    description: "Search for your business on the Place ID Finder tool. Copy the Place ID (it starts with 'ChIJ...'). Paste it into the 'Google Place ID' field below.",
+    url: "https://developers.google.com/maps/documentation/places/web-service/place-id"
+  },
+  {
+    step: 4,
+    title: "Paste Your API Key Below",
+    description: "Copy the API key you generated in Step 2 and paste it into the secure field below. Then click Save.",
   }
 ]
 
@@ -159,7 +186,8 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
       CLOUDINARY_API_SECRET: "",
       GEMINI_API_KEY: "",
       GOOGLE_CALENDAR_CLIENT_EMAIL: "",
-      GOOGLE_CALENDAR_PRIVATE_KEY: ""
+      GOOGLE_CALENDAR_PRIVATE_KEY: "",
+      GOOGLE_MAPS_API_KEY: ""
   })
 
   const handleChange = (key: keyof SettingsData, value: string) => {
@@ -203,7 +231,8 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
               CLOUDINARY_API_SECRET: "",
               GEMINI_API_KEY: "",
               GOOGLE_CALENDAR_CLIENT_EMAIL: "",
-              GOOGLE_CALENDAR_PRIVATE_KEY: ""
+              GOOGLE_CALENDAR_PRIVATE_KEY: "",
+              GOOGLE_MAPS_API_KEY: ""
           })
       }
 
@@ -703,6 +732,96 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                        />
                    </div>
 
+              </CardContent>
+            </Card>
+
+            {/* Google Reviews Integration Card */}
+            <Card className="surface-card overflow-hidden">
+              {/* Header with gradient */}
+              <div className="bg-orange p-6 text-white">
+                <div className="flex items-center gap-3">
+                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                    <Star className="w-6 h-6" />
+                  </div>
+                  <div>
+                    <h2 className="text-xl font-bold text-white">Google Reviews Integration</h2>
+                    <p className="text-white/80 text-sm">Sync your Google Business Profile reviews to display on your website</p>
+                  </div>
+                </div>
+              </div>
+
+              <CardContent className="p-6 space-y-8">
+                {/* Status */}
+                <div className="flex items-center gap-4 p-4 rounded-xl surface-secondary">
+                  <div className={`w-3 h-3 rounded-full ${secretStatuses["GOOGLE_MAPS_API_KEY"] && settings.googlePlaceId ? 'bg-brand-green animate-pulse' : 'surface-elevated'}`} />
+                  <div>
+                    <p className="font-medium text-olive dark:text-off-white">
+                      {secretStatuses["GOOGLE_MAPS_API_KEY"] && settings.googlePlaceId ? 'Connected' : 'Not Connected'}
+                    </p>
+                    <p className="text-sm text-caption">
+                      {secretStatuses["GOOGLE_MAPS_API_KEY"] && settings.googlePlaceId
+                        ? 'Google Reviews sync is ready. Go to Testimonials to fetch reviews.'
+                        : 'Provide your Place ID and API key below to enable review syncing.'}
+                    </p>
+                  </div>
+                </div>
+
+                {/* Setup Guide (Collapsible) */}
+                <div className="space-y-3">
+                  <button
+                    onClick={() => toggleSection('googleReviewsSetup')}
+                    className="flex items-center justify-between w-full text-left font-bold text-body"
+                  >
+                    <span className="flex items-center gap-2">
+                      <Globe className="w-4 h-4 text-orange" />
+                      Setup Guide
+                    </span>
+                    <ChevronDown className={`w-4 h-4 transition-transform ${openSections.googleReviewsSetup ? 'rotate-180' : ''}`} />
+                  </button>
+
+                  {openSections.googleReviewsSetup && (
+                    <div className="space-y-3 pl-6 border-l-2 border-orange/20">
+                      {googleReviewsSetupSteps.map((step) => (
+                        <div key={step.step} className="space-y-1">
+                          <p className="text-sm font-semibold text-body">
+                            {step.step}. {step.title}
+                          </p>
+                          <p className="text-xs text-caption leading-relaxed">{step.description}</p>
+                          {step.url && (
+                            <a href={step.url} target="_blank" rel="noopener noreferrer" className="text-xs text-orange hover:underline inline-flex items-center gap-1">
+                              Open Link →
+                            </a>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {/* Google Place ID Input */}
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase tracking-wider text-caption">Google Place ID</label>
+                  <Input
+                    placeholder="ChIJ... (Find yours at the Place ID Finder link above)"
+                    value={settings.googlePlaceId || ""}
+                    onChange={(e) => handleChange("googlePlaceId", e.target.value)}
+                    className="surface-input font-mono text-sm"
+                  />
+                  <p className="text-xs text-caption">Your unique Google Place ID. Find it using the <a href="https://developers.google.com/maps/documentation/places/web-service/place-id" target="_blank" rel="noopener noreferrer" className="text-orange hover:underline">Place ID Finder</a>.</p>
+                </div>
+
+                {/* Google Maps API Key Secret */}
+                <SecretCard
+                    title="Google Maps API Key"
+                    description="Powers the Google Reviews sync. Must have the Places API enabled."
+                    secretKey="GOOGLE_MAPS_API_KEY"
+                    docsLink="https://console.cloud.google.com/apis/credentials"
+                    docsLabel="Google Cloud Console"
+                    isConfigured={secretStatuses["GOOGLE_MAPS_API_KEY"]}
+                    value={secrets.GOOGLE_MAPS_API_KEY}
+                    onChange={(v) => setSecrets(p => ({ ...p, GOOGLE_MAPS_API_KEY: v }))}
+                    setupSteps={googleReviewsSetupSteps}
+                />
               </CardContent>
             </Card>
 

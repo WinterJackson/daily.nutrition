@@ -48,6 +48,7 @@ export interface GeneralSettingsData {
     googleCalendarId: string
     themePreference: string
     profileImageUrl?: string | null
+    googlePlaceId: string
     // Social & Legal
     instagramUrl: string
     facebookUrl: string
@@ -67,6 +68,7 @@ export interface SettingsData {
     keywords: string
     profileImageUrl?: string | null
     themePreference: string
+    googlePlaceId: string
 
     // Social & Legal
     instagramUrl: string
