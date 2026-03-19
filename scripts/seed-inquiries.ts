@@ -79,11 +79,11 @@ async function main() {
     // Clear existing inquiries to avoid duplicates if re-running (optional, or just append)
     // await prisma.inquiry.deleteMany() 
 
-    for (const inquiry of inquiries) {
-        await prisma.inquiry.create({
-            data: inquiry
-        })
-    }
+    // Using createMany to safely bulk insert without exhausting Vercel DB pool
+    await prisma.inquiry.createMany({
+        data: inquiries,
+        skipDuplicates: true
+    })
 
     console.log('Seeding finished.')
 }
