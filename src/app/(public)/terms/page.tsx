@@ -91,7 +91,7 @@ export default async function TermsOfServicePage() {
           <section>
             <h2 className="text-2xl font-serif text-olive dark:text-brand-green mb-4">9. Third-Party Links and Integrations</h2>
             <p>
-              Our website may contain links to third-party websites or services (e.g., Calendly integrations, payment gateways) that are not owned or controlled by {businessName}. We have no control over, and assume no responsibility for, the content, privacy policies, or practices of any third-party websites or services.
+              Our website may contain links to third-party websites or services (e.g., Google Calendar integrations, payment gateways) that are not owned or controlled by {businessName}. We have no control over, and assume no responsibility for, the content, privacy policies, or practices of any third-party websites or services.
             </p>
           </section>
 

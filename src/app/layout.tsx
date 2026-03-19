@@ -17,8 +17,15 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Edwak Nutrition | Professional Nutrition Consultancy",
-  description: "Expert nutrition care for cancer, diabetes, and gut health. Virtual and in-person consultations.",
+  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://edwaknutrition.co.ke"),
+  title: {
+    default: "Edwak Nutrition | Professional Nutrition Consultancy",
+    template: "%s | Edwak Nutrition",
+  },
+  description: "Expert nutrition care for cancer, diabetes, and gut health. Virtual and in-person consultations with a registered dietitian in Nairobi, Kenya.",
+  keywords: ["nutrition", "dietitian", "Nairobi", "Kenya", "cancer nutrition", "diabetes", "gut health", "weight management", "virtual consultation"],
+  authors: [{ name: "Edwak Nutrition" }],
+  creator: "Edwak Nutrition",
   manifest: "/manifest.json",
   appleWebApp: {
     capable: true,
@@ -27,6 +34,29 @@ export const metadata: Metadata = {
   },
   formatDetection: {
     telephone: true,
+  },
+  openGraph: {
+    type: "website",
+    locale: "en_KE",
+    siteName: "Edwak Nutrition",
+    title: "Edwak Nutrition | Professional Nutrition Consultancy",
+    description: "Expert nutrition care for cancer, diabetes, and gut health. Virtual and in-person consultations.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Edwak Nutrition | Professional Nutrition Consultancy",
+    description: "Expert nutrition care for cancer, diabetes, and gut health. Virtual and in-person consultations.",
+  },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
   },
   icons: {
     icon: [

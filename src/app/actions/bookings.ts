@@ -19,7 +19,6 @@ export interface BookingData {
     duration?: number
     status?: BookingStatus
     notes?: string
-    calendlyId?: string
 }
 
 /**
@@ -112,7 +111,6 @@ export async function createBooking(data: BookingData) {
                 duration: data.duration || 60,
                 bookingStatus: data.status || "CONFIRMED",
                 notes: data.notes,
-                calendlyId: data.calendlyId,
             }
         })
 
@@ -209,52 +207,7 @@ export async function deleteBooking(id: string) {
     }
 }
 
-/**
- * Upsert booking from Calendly webhook
- */
-export async function upsertBookingFromCalendly(calendlyId: string, data: Omit<BookingData, "calendlyId">) {
-    try {
-        const booking = await prisma.booking.upsert({
-            where: { calendlyId },
-            update: {
-                clientName: data.clientName,
-                clientEmail: data.clientEmail,
-                clientPhone: data.clientPhone,
-                serviceName: data.serviceName,
-                sessionType: data.sessionType,
-                scheduledAt: data.scheduledAt,
-                duration: data.duration || 60,
-                bookingStatus: data.status || "CONFIRMED",
-            },
-            create: {
-                calendlyId,
-                clientName: data.clientName,
-                clientEmail: data.clientEmail,
-                clientPhone: data.clientPhone,
-                serviceId: data.serviceId,
-                serviceName: data.serviceName,
-                sessionType: data.sessionType,
-                scheduledAt: data.scheduledAt,
-                duration: data.duration || 60,
-                bookingStatus: data.status || "CONFIRMED",
-            }
-        })
 
-        revalidatePath("/admin/bookings")
-
-        logAudit({
-            action: "BOOKING_UPSERTED",
-            entity: "Booking",
-            entityId: booking.id,
-            metadata: { calendlyId, clientName: data.clientName },
-        })
-
-        return { success: true, booking }
-    } catch (error) {
-        console.warn("Failed to upsert booking from Calendly:", error instanceof Error ? error.message : String(error))
-        return { success: false, error: "Failed to sync booking" }
-    }
-}
 
 /**
  * Get booking statistics for dashboard

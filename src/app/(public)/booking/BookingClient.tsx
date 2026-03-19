@@ -12,7 +12,6 @@ import { useEffect, useState } from "react"
 
 interface BookingClientProps {
   activeServiceIds: string[]
-  calendlyUrl: string // Kept in props interface to avoid breaking parent passing it, even if unused
 }
 
 export function BookingClient({ activeServiceIds }: BookingClientProps) {

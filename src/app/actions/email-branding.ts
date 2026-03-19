@@ -1,5 +1,6 @@
 "use server"
 
+import { verifySession } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { revalidatePath } from "next/cache"
 
@@ -53,6 +54,9 @@ export async function getEmailBranding(): Promise<EmailBrandingData> {
  * Update email branding configuration
  */
 export async function updateEmailBranding(data: EmailBrandingData) {
+    const session = await verifySession()
+    if (!session) return { success: false, error: "Unauthorized" }
+
     try {
         // Ensure default settings exist
         await prisma.siteSettings.upsert({

@@ -2,8 +2,6 @@
 
 import { EnvStatusMap, SettingsData, updateSettings, upsertIntegrationSecrets } from "@/app/actions/settings"
 import { deleteImage, uploadImage } from "@/app/actions/upload"
-import { AiConfig } from "@/components/admin/AiConfig"
-import { CloudinaryConfig } from "@/components/admin/CloudinaryConfig"
 import { DataExport } from "@/components/admin/DataExport"
 import { EmailBrandingEditor } from "@/components/admin/EmailBrandingEditor"
 import { LegalContentConfig } from "@/components/admin/LegalContentConfig"
@@ -17,44 +15,51 @@ import { Button } from "@/components/ui/Button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
 import { getPublicIdFromUrl } from "@/lib/cloudinary-utils"
-import { Calendar, CheckCircle, ChevronRight, Database, ExternalLink, ImageIcon, Key, Loader2, Moon, Save, Sparkles, Sun, Trash2, Upload } from "lucide-react"
+import { Calendar, CheckCircle, Clock, Database, ImageIcon, Key, Loader2, Moon, Save, Sparkles, Sun, Trash2, Upload } from "lucide-react"
 import Image from "next/image"
 import { useRef, useState, useTransition } from "react"
 
-// Calendly setup steps for the admin
-const calendlySetupSteps = [
+// Google Calendar Setup Steps
+const googleCalendarSetupSteps = [
   {
     step: 1,
-    title: "Create a Calendly Account",
-    description: "Sign up for free at calendly.com using your business email.",
-    action: { label: "Go to Calendly", url: "https://calendly.com/signup" }
+    title: "Create a Google Cloud Project",
+    description: "Go to console.cloud.google.com → click the project selector dropdown at the top → 'New Project'. Give it any name (e.g. 'My Booking Calendar') and click Create. Wait ~30 seconds for it to provision.",
+    action: { label: "Open Google Cloud Console", url: "https://console.cloud.google.com/" }
   },
   {
     step: 2,
-    title: "Choose Your Plan",
-    description: "Free plan: 1 event type. Essentials ($10/mo): Unlimited events, custom branding.",
-    action: { label: "View Pricing", url: "https://calendly.com/pricing" }
+    title: "Enable the Google Calendar API",
+    description: "With your new project selected, go to the left sidebar → 'APIs & Services' → 'Library'. In the search bar, type 'Google Calendar API'. Click on the result and press the blue 'Enable' button. This gives your project permission to interact with Google Calendar.",
+    action: { label: "Go to API Library", url: "https://console.cloud.google.com/apis/library/calendar-json.googleapis.com" }
   },
   {
     step: 3,
-    title: "Set Your Username",
-    description: "Go to Account Settings → Profile and set a memorable URL like 'edwaknutrition'.",
+    title: "Create a Service Account",
+    description: "Go to 'APIs & Services' → 'Credentials' in the sidebar. Click '+ Create Credentials' at the top → select 'Service Account'. Enter a name like 'booking-bot'. Leave all other options default and click 'Create and Continue' → 'Done'. You'll see it listed under Service Accounts.",
+    action: { label: "Go to Credentials", url: "https://console.cloud.google.com/apis/credentials" }
   },
   {
     step: 4,
-    title: "Create Event Types",
-    description: "Create events for: Discovery Call (5 min, free), Virtual Consultation (60 min), In-Person (60 min).",
+    title: "Generate a JSON Key File",
+    description: "Click on the Service Account you just created → go to the 'Keys' tab → 'Add Key' → 'Create new key' → select 'JSON' → click 'Create'. A .json file will download automatically. Keep this file safe — it contains your credentials. Open it with any text editor to copy the 'client_email' and 'private_key' values.",
   },
   {
     step: 5,
-    title: "Get Your Embed URL",
-    description: "Click Share on your event → 'Add to website' → Copy the URL shown.",
+    title: "Share Your Calendar with the Service Account",
+    description: "Open Google Calendar (calendar.google.com) → click the ⚙️ gear icon → Settings. In the left sidebar under 'Settings for my calendars', find the calendar you want to use. Click 'Share with specific people or groups' → 'Add people and groups'. Paste the 'client_email' from your JSON file (it looks like booking-bot@project-name.iam.gserviceaccount.com). Set the permission to 'Make changes to events' → Click Send.",
+    action: { label: "Open Google Calendar Settings", url: "https://calendar.google.com/calendar/r/settings" }
   },
   {
     step: 6,
-    title: "Paste URL Below",
-    description: "Enter your Calendly URL in the field below and click Save.",
+    title: "Find Your Calendar ID",
+    description: "Still in Google Calendar Settings, scroll down under your calendar's settings to 'Integrate calendar'. Copy the 'Calendar ID' — for your primary calendar this is usually your Gmail address (e.g. hello@edwaknutrition.co.ke). For other calendars, it will be a long string ending in @group.calendar.google.com.",
   },
+  {
+    step: 7,
+    title: "Paste Everything Below",
+    description: "Enter your Calendar ID in the field above. Then paste your 'client_email' and 'private_key' from the downloaded JSON file into their respective secure fields below. The private key is very long and starts with '-----BEGIN PRIVATE KEY-----'. Make sure you copy the entire value. Click Save when done.",
+  }
 ]
 
 // Resend Email Setup Steps
@@ -152,7 +157,9 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
       CLOUDINARY_CLOUD_NAME: "",
       CLOUDINARY_API_KEY: "",
       CLOUDINARY_API_SECRET: "",
-      GEMINI_API_KEY: ""
+      GEMINI_API_KEY: "",
+      GOOGLE_CALENDAR_CLIENT_EMAIL: "",
+      GOOGLE_CALENDAR_PRIVATE_KEY: ""
   })
 
   const handleChange = (key: keyof SettingsData, value: string) => {
@@ -194,18 +201,15 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
               CLOUDINARY_CLOUD_NAME: "",
               CLOUDINARY_API_KEY: "",
               CLOUDINARY_API_SECRET: "",
-              GEMINI_API_KEY: ""
+              GEMINI_API_KEY: "",
+              GOOGLE_CALENDAR_CLIENT_EMAIL: "",
+              GOOGLE_CALENDAR_PRIVATE_KEY: ""
           })
       }
 
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 3000)
     })
-  }
-
-  const isValidCalendlyUrl = (url: string) => {
-    if (!url) return true // Empty is valid (optional)
-    return url.startsWith("https://calendly.com/")
   }
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -266,7 +270,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
           variant="accent"
           className="shadow-lg shadow-orange/20"
           onClick={handleSave}
-          disabled={isSaving || !isValidCalendlyUrl(settings.calendlyUrl)}
+          disabled={isSaving}
         >
           {isSaving ? (
             <>
@@ -697,35 +701,12 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                            onChange={(v) => setSecrets(p => ({ ...p, CLOUDINARY_API_SECRET: v }))}
                            setupSteps={cloudinarySetupSteps}
                        />
-                       
-                       <div className="pt-4 mt-4 border-t border-subtle">
-                         <h5 className="font-medium text-sm mb-3">Legacy Configuration Manager</h5>
-                         <CloudinaryConfig 
-                             data={{
-                                 cloudName: secrets.CLOUDINARY_CLOUD_NAME,
-                                 apiKey: secrets.CLOUDINARY_API_KEY,
-                                 apiSecret: secrets.CLOUDINARY_API_SECRET
-                             }}
-                             onChange={(field, value) => setSecrets(p => ({ 
-                                 ...p, 
-                                 [field === 'cloudName' ? 'CLOUDINARY_CLOUD_NAME' : field === 'apiKey' ? 'CLOUDINARY_API_KEY' : 'CLOUDINARY_API_SECRET']: value 
-                             }))}
-                             hasSecret={secretStatuses["CLOUDINARY_API_SECRET"]}
-                         />
-                       </div>
                    </div>
 
-                   <div className="pt-6 border-t border-subtle">
-                     <AiConfig 
-                        hasApiKey={secretStatuses["GEMINI_API_KEY"]}
-                        isOpen={openSections.ai ?? false}
-                        onToggle={() => toggleSection('ai')}
-                     />
-                   </div>
               </CardContent>
             </Card>
 
-            {/* Calendly Integration Card */}
+            {/* Google Calendar Integration Card */}
             <Card className="surface-card overflow-hidden">
               {/* Header with gradient */}
               <div className="bg-olive p-6 text-white">
@@ -734,8 +715,8 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                     <Calendar className="w-6 h-6" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white">Calendly Integration</h2>
-                    <p className="text-white/80 text-sm">Allow clients to book consultations directly from your website</p>
+                    <h2 className="text-xl font-bold text-white">Google Calendar Integration</h2>
+                    <p className="text-white/80 text-sm">Two-way sync for live booking availability and events</p>
                   </div>
                 </div>
               </div>
@@ -743,122 +724,113 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
               <CardContent className="p-6 space-y-8">
                 {/* Status */}
                 <div className="flex items-center gap-4 p-4 rounded-xl surface-secondary">
-                  <div className={`w-3 h-3 rounded-full ${settings.calendlyUrl ? 'bg-brand-green animate-pulse' : 'surface-elevated'}`} />
+                  <div className={`w-3 h-3 rounded-full ${settings.googleCalendarConfig?.hasCredentials ? 'bg-brand-green animate-pulse' : 'surface-elevated'}`} />
                   <div>
                     <p className="font-medium text-olive dark:text-off-white">
-                      {settings.calendlyUrl ? 'Connected' : 'Not Connected'}
+                      {settings.googleCalendarConfig?.hasCredentials ? 'Connected' : 'Not Connected'}
                     </p>
                     <p className="text-sm text-caption">
-                      {settings.calendlyUrl 
-                        ? 'Your booking calendar is live on the website' 
+                      {settings.googleCalendarConfig?.hasCredentials 
+                        ? 'Your booking calendar is live and syncing' 
                         : 'Follow the setup guide below to get started'}
                     </p>
                   </div>
                 </div>
 
-                {/* Calendly URL Input */}
-                <div className="space-y-3">
+                {/* Google Calendar ID Input */}
+                <div className="space-y-3 pt-4">
                   <label className="text-xs font-bold uppercase tracking-wider text-caption">
-                    Your Calendly URL
+                    Your Calendar ID
                   </label>
                   <Input
-                    value={settings.calendlyUrl}
-                    onChange={(e) => handleChange("calendlyUrl", e.target.value)}
-                    placeholder="https://calendly.com/your-username/consultation"
-                    className={`surface-input font-mono text-sm ${
-                      !isValidCalendlyUrl(settings.calendlyUrl) ? 'border-red-500 focus:ring-red-500' : ''
-                    }`}
+                    value={settings.googleCalendarId || ""}
+                    onChange={(e) => handleChange("googleCalendarId", e.target.value)}
+                    placeholder="e.g. hello@edwaknutrition.co.ke"
+                    className="surface-input font-mono text-sm"
                   />
-                  {!isValidCalendlyUrl(settings.calendlyUrl) && (
-                    <p className="text-xs text-red-500">URL must start with https://calendly.com/</p>
-                  )}
-                  <p className="text-xs text-caption">
-                    Example: <code className="surface-secondary px-1 py-0.5 rounded">https://calendly.com/edwaknutrition/consultation</code>
+                  <p className="text-xs text-caption leading-relaxed">
+                    Find this in Google Calendar → Settings → Your calendar → 'Integrate calendar' section. For your primary calendar, this is usually your Gmail address. For secondary calendars, it will be a long string ending in <span className="font-mono text-olive dark:text-brand-green">@group.calendar.google.com</span>.
                   </p>
                 </div>
 
-                {/* Setup Guide */}
-                <div className="border-t border-default pt-6">
-                  <div className="flex items-center gap-2 mb-4">
-                    <Sparkles className="w-5 h-5 text-brand-green" />
-                    <h3 className="font-bold text-olive dark:text-off-white">Setup Guide</h3>
-                  </div>
-                  <p className="text-sm text-caption mb-6">
-                    Follow these steps to connect your Calendly account. It only takes a few minutes!
-                  </p>
-
-                  <div className="space-y-3">
-                    {calendlySetupSteps.map((item) => (
-                      <div 
-                        key={item.step}
-                        className="border border-default rounded-xl overflow-hidden"
-                      >
-                        <button
-                          onClick={() => setExpandedStep(expandedStep === item.step ? null : item.step)}
-                          className="w-full flex items-center gap-4 p-4 text-left hover:surface-secondary transition-colors"
-                        >
-                          <div className="w-8 h-8 rounded-full bg-brand-green/10 text-brand-green flex items-center justify-center text-sm font-bold shrink-0">
-                            {item.step}
-                          </div>
-                          <div className="flex-grow">
-                            <p className="font-medium text-olive dark:text-off-white">{item.title}</p>
-                          </div>
-                          <ChevronRight className={`w-5 h-5 text-muted transition-transform ${expandedStep === item.step ? 'rotate-90' : ''}`} />
-                        </button>
-                        
-                        {expandedStep === item.step && (
-                          <div className="px-4 pb-4 pt-0 ml-12 animate-in fade-in slide-in-from-top-2 duration-200">
-                            <p className="text-sm text-caption mb-3">
-                              {item.description}
-                            </p>
-                            {item.action && (
-                              <a
-                                href={item.action.url}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="inline-flex items-center gap-2 text-sm font-medium text-[#006BFF] hover:underline"
-                              >
-                                {item.action.label}
-                                <ExternalLink className="w-3 h-3" />
-                              </a>
-                            )}
-                          </div>
-                        )}
+                {/* Booking Rules */}
+                <div className="pt-6 mt-6 border-t border-subtle">
+                   <h4 className="font-bold text-body flex items-center gap-2 mb-2">
+                       <Clock className="w-4 h-4 text-olive" />
+                       Booking Rules
+                   </h4>
+                   <p className="text-xs text-caption mb-4 leading-relaxed">
+                     These rules control how time slots are generated on your public booking page. <strong>Event Duration</strong> sets the length of each appointment. <strong>Buffer Time</strong> adds a gap between back-to-back slots for preparation. <strong>Min Notice</strong> prevents last-minute bookings by requiring advance notice.
+                   </p>
+                   <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="space-y-3">
+                        <label className="text-xs font-bold uppercase tracking-wider text-caption">
+                          Event Duration (mins)
+                        </label>
+                        <Input
+                          type="number"
+                          value={settings.googleCalendarConfig?.eventDuration || 30}
+                          onChange={(e) => setSettings(p => ({ ...p, googleCalendarConfig: { ...(p.googleCalendarConfig || { eventDuration: 30, bufferTime: 15, minNotice: 120, availability: {} }), eventDuration: parseInt(e.target.value) || 30 } }))}
+                          className="surface-input"
+                        />
                       </div>
-                    ))}
-                  </div>
+                      <div className="space-y-3">
+                        <label className="text-xs font-bold uppercase tracking-wider text-caption">
+                          Buffer Time (mins)
+                        </label>
+                        <Input
+                          type="number"
+                          value={settings.googleCalendarConfig?.bufferTime || 15}
+                          onChange={(e) => setSettings(p => ({ ...p, googleCalendarConfig: { ...(p.googleCalendarConfig || { eventDuration: 30, bufferTime: 15, minNotice: 120, availability: {} }), bufferTime: parseInt(e.target.value) || 15 } }))}
+                          className="surface-input"
+                        />
+                      </div>
+                      <div className="space-y-3">
+                        <label className="text-xs font-bold uppercase tracking-wider text-caption">
+                          Min Notice (hrs)
+                        </label>
+                        <Input
+                          type="number"
+                          value={(settings.googleCalendarConfig?.minNotice || 120) / 60}
+                          onChange={(e) => setSettings(p => ({ ...p, googleCalendarConfig: { ...(p.googleCalendarConfig || { eventDuration: 30, bufferTime: 15, minNotice: 120, availability: {} }), minNotice: (parseInt(e.target.value) || 2) * 60 } }))}
+                          className="surface-input"
+                        />
+                      </div>
+                   </div>
                 </div>
 
-                {/* Quick Links */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4">
-                  <a
-                    href="https://calendly.com/signup"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-4 rounded-xl border border-default hover:border-brand-green hover:bg-brand-green/5 transition-all group"
-                  >
-                    <div className="w-10 h-10 bg-brand-green/10 rounded-lg flex items-center justify-center group-hover:bg-brand-green/20 transition-colors">
-                      <ExternalLink className="w-5 h-5 text-brand-green" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-olive dark:text-off-white">Create Account</p>
-                      <p className="text-xs text-caption">Sign up for Calendly</p>
-                    </div>
-                  </a>
-                  <a
-                    href="https://calendly.com/pricing"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="flex items-center gap-3 p-4 rounded-xl border border-default hover:border-orange hover:bg-orange/5 transition-all group"
-                  >
-                    <div className="w-10 h-10 bg-orange/10 rounded-lg flex items-center justify-center group-hover:bg-orange/20 transition-colors">
-                      <Sparkles className="w-5 h-5 text-orange" />
-                    </div>
-                    <div>
-                      <p className="font-medium text-olive dark:text-off-white">View Pricing</p>
-                      <p className="text-xs text-caption">Compare Calendly plans</p>
-                    </div>
-                  </a>
+                {/* Service Account Credentials */}
+                <div className="space-y-4 pt-6 mt-6 border-t border-subtle">
+                   <h4 className="font-bold text-body flex items-center gap-2">
+                       <Key className="w-4 h-4 text-olive" />
+                       Service Account Credentials
+                   </h4>
+                   <p className="text-sm text-caption mb-2 leading-relaxed">
+                     These credentials allow the platform to securely read your calendar's free/busy status and automatically create events when clients book. They come from the JSON key file that you downloaded from the Google Cloud Console (Step 4 above). All credentials are encrypted before being stored in the database.
+                   </p>
+                   
+                   <SecretCard
+                       title="Client Email"
+                       description="Extract this from your Service Account JSON file."
+                       secretKey="GOOGLE_CALENDAR_CLIENT_EMAIL"
+                       docsLink="https://console.cloud.google.com/"
+                       docsLabel="Google Cloud Console"
+                       isConfigured={secretStatuses["GOOGLE_CALENDAR_CLIENT_EMAIL"]}
+                       value={secrets.GOOGLE_CALENDAR_CLIENT_EMAIL}
+                       onChange={(v) => setSecrets(p => ({ ...p, GOOGLE_CALENDAR_CLIENT_EMAIL: v }))}
+                       setupSteps={googleCalendarSetupSteps}
+                   />
+                   <SecretCard
+                       title="Private Key"
+                       description="The large RSA private key from the JSON file. Ensure you copy the entire string including -----BEGIN PRIVATE KEY-----."
+                       secretKey="GOOGLE_CALENDAR_PRIVATE_KEY"
+                       docsLink="https://console.cloud.google.com/"
+                       docsLabel="Google Cloud Console"
+                       isConfigured={secretStatuses["GOOGLE_CALENDAR_PRIVATE_KEY"]}
+                       value={secrets.GOOGLE_CALENDAR_PRIVATE_KEY}
+                       onChange={(v) => setSecrets(p => ({ ...p, GOOGLE_CALENDAR_PRIVATE_KEY: v }))}
+                       setupSteps={googleCalendarSetupSteps}
+                   />
                 </div>
               </CardContent>
             </Card>

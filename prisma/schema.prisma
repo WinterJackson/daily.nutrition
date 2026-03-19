@@ -177,7 +177,6 @@ model SecretConfig {
 
 model Booking {
   id                String   @id @default(cuid())
-  calendlyId        String?  @unique // Kept for backwards compat
   clientName        String
   clientEmail       String
   clientPhone       String?
@@ -512,11 +511,11 @@ model SiteSettings {
   keywords             String                @default("nutrition, health, diet")
   version              Int                   @default(0)
   updatedAt            DateTime              @updatedAt
-  calendlyUrl          String                @default("")
+  calendlyUrl          String                @default("") // Deprecated, kept for migration compat
   profileImageUrl      String?               @default("")
   themePreference      String                @default("light")
-  calendarProvider     String                @default("calendly")
-  savvycalUrl          String                @default("")
+  calendarProvider     String                @default("google_calendar")
+  savvycalUrl          String                @default("") // Deprecated, kept for migration compat
   googleCalendarId     String                @default("")
   CloudinaryConfig     CloudinaryConfig?
   EmailBranding        EmailBranding?

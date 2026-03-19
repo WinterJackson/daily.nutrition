@@ -125,7 +125,7 @@ export function TestimonialsDisplay({ testimonials }: TestimonialsDisplayProps) 
               ))}
             </div>
             <div className="text-left">
-              <p className="text-sm font-semibold text-olive dark:text-off-white">500+ Patients</p>
+              <p className="text-sm font-semibold text-olive dark:text-off-white">1000+ Patients</p>
               <p className="text-xs text-neutral-500">Transformed Lives</p>
             </div>
           </div>

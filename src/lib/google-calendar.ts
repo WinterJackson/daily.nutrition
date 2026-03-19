@@ -144,7 +144,7 @@ export async function getAvailableSlots(dateStr: string): Promise<string[]> {
         // Note: Some systems do fixed intervals (e.g. every 30 mins) regardless of duration. 
         // Here we use (Start + Duration + Buffer) which is typical for "back-to-back" logic.
         // Alternatively, we could increment by a fixed 'step' (e.g. 15 mins) and check availability.
-        // For now, let's use discrete slots based on duration. To make it more flexible like Calendly,
+        // For now, let's use discrete slots based on duration. To make it more flexible,
         // we usually iterate by a smaller "step" (like 15 or 30 mins) and check if a 'duration' block fits.
         // Let's assume standard behavior: Increment by Duration for now, or 30 mins if duration is long?
         // Let's stick to Duration + Buffer for simplicity of the first version.

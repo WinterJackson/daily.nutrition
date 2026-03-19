@@ -4,12 +4,18 @@ import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/componen
 import { PaginationControl } from "@/components/ui/PaginationControl"
 import { SearchInput } from "@/components/ui/SearchInput"
 import { ArrowRight, Calendar } from "lucide-react"
+import type { Metadata } from "next"
 import Image from "next/image"
 import Link from "next/link"
 
-export const metadata = {
-  title: "Blog | Daily Nutrition",
-  description: "Latest insights, nutrition tips, and success stories."
+export const metadata: Metadata = {
+  title: "Blog | Edwak Nutrition",
+  description: "Evidence-based articles, nutrition tips, recipes, and wellness insights from a registered dietitian. Stay informed on your health journey.",
+  openGraph: {
+    title: "Nutrition Blog | Edwak Nutrition",
+    description: "Evidence-based articles, nutrition tips, and recipes from a registered dietitian.",
+    type: "website",
+  },
 }
 
 interface BlogIndexPageProps {

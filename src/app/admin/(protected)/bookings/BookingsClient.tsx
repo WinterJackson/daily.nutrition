@@ -11,7 +11,6 @@ import { useEffect, useState, useTransition } from "react"
 
 interface Booking {
   id: string
-  calendlyId: string | null
   clientName: string
   clientEmail: string
   clientPhone: string | null
@@ -196,7 +195,7 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
             {filteredBookings.length === 0 ? (
               <tr>
                 <td colSpan={6} className="px-6 py-12 text-center text-neutral-500">
-                  {bookings.length === 0 ? "No bookings found. Bookings will appear here when synced from Calendly." : "No bookings match your filters."}
+                  {bookings.length === 0 ? "No bookings found. Bookings will appear here when clients book consultations." : "No bookings match your filters."}
                 </td>
               </tr>
             ) : (

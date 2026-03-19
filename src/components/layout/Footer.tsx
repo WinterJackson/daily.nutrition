@@ -1,6 +1,6 @@
 import { getServices } from "@/app/actions/services"; // Assuming this exists or I will verify
 import { getSettings } from "@/app/actions/settings";
-import { Facebook, Instagram, Linkedin, Mail, MapPin, Phone, Twitter } from "lucide-react";
+import { Facebook, Instagram, Linkedin, Mail, MapPin, Phone } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -85,18 +85,28 @@ export async function Footer() {
 
             {/* Social Icons — Orange, directly under Contact Us */}
             <div className="flex gap-3 justify-center md:justify-start pt-2">
-              <Link href={settings.facebookUrl || "#"} target={settings.facebookUrl ? "_blank" : undefined} rel="noopener noreferrer" className="text-orange hover:text-orange/80 transition-colors">
-                <Facebook className="h-5 w-5" />
-              </Link>
-              <Link href={settings.instagramUrl || "#"} target={settings.instagramUrl ? "_blank" : undefined} rel="noopener noreferrer" className="text-orange hover:text-orange/80 transition-colors">
-                <Instagram className="h-5 w-5" />
-              </Link>
-              <Link href={settings.twitterUrl || "#"} target={settings.twitterUrl ? "_blank" : undefined} rel="noopener noreferrer" className="text-orange hover:text-orange/80 transition-colors">
-                <Twitter className="h-5 w-5" />
-              </Link>
-              <Link href={settings.linkedinUrl || "#"} target={settings.linkedinUrl ? "_blank" : undefined} rel="noopener noreferrer" className="text-orange hover:text-orange/80 transition-colors">
-                <Linkedin className="h-5 w-5" />
-              </Link>
+              {settings.facebookUrl && (
+                <Link href={settings.facebookUrl} target="_blank" rel="noopener noreferrer" className="text-orange hover:text-orange/80 transition-colors">
+                  <Facebook className="h-5 w-5" />
+                </Link>
+              )}
+              {settings.instagramUrl && (
+                <Link href={settings.instagramUrl} target="_blank" rel="noopener noreferrer" className="text-orange hover:text-orange/80 transition-colors">
+                  <Instagram className="h-5 w-5" />
+                </Link>
+              )}
+              {settings.twitterUrl && (
+                <Link href={settings.twitterUrl} target="_blank" rel="noopener noreferrer" className="text-orange hover:text-orange/80 transition-colors">
+                  <svg viewBox="0 0 24 24" className="h-5 w-5 fill-current" aria-hidden="true">
+                    <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 22.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                  </svg>
+                </Link>
+              )}
+              {settings.linkedinUrl && (
+                <Link href={settings.linkedinUrl} target="_blank" rel="noopener noreferrer" className="text-orange hover:text-orange/80 transition-colors">
+                  <Linkedin className="h-5 w-5" />
+                </Link>
+              )}
             </div>
           </div>
         </div>

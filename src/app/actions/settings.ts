@@ -45,9 +45,6 @@ export interface GeneralSettingsData {
     pageTitle: string
     metaDescription: string
     keywords: string
-    calendarProvider: "calendly" | "savvycal" | "google_calendar" | "none"
-    calendlyUrl: string
-    savvycalUrl: string
     googleCalendarId: string
     themePreference: string
     profileImageUrl?: string | null
@@ -68,9 +65,6 @@ export interface SettingsData {
     pageTitle: string
     metaDescription: string
     keywords: string
-    calendarProvider: "calendly" | "savvycal" | "google_calendar" | "none"
-    calendlyUrl: string
-    savvycalUrl: string
     profileImageUrl?: string | null
     themePreference: string
 
@@ -150,8 +144,8 @@ export async function getSettings() {
                     pageTitle: "Edwak Nutrition | Expert Dietitian",
                     metaDescription: "Professional nutrition consulting and diet planning.",
                     keywords: "nutrition, health, diet, kenya",
-                    calendarProvider: "calendly",
-                    calendlyUrl: "https://calendly.com",
+                    calendarProvider: "google_calendar",
+                    calendlyUrl: "",
                     themePreference: "light",
                     updatedAt: new Date()
                 },
@@ -170,7 +164,6 @@ export async function getSettings() {
 
         const result: SettingsData = {
             ...rest,
-            calendarProvider: settings.calendarProvider as any,
             hasGeminiKey: false, // Not exposed to public
             // Social & Legal
             instagramUrl: settings.instagramUrl,

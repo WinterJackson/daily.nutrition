@@ -1,4 +1,4 @@
-import { getCalendarConfig } from "@/app/actions/calendly"
+import { getCalendarConfig } from "@/app/actions/calendar-config"
 import { Skeleton } from "@/components/ui/Skeleton"
 import { Suspense } from "react"
 import { ScheduleClient } from "./ScheduleClient"
@@ -21,8 +21,7 @@ export default async function SchedulePage() {
         </div>
     }>
       <ScheduleClient 
-        calendarProvider={calendarConfig.provider}
-        calendarUrl={calendarConfig.url} 
+        calendarId={calendarConfig.calendarId}
         googleCalendarConfig={calendarConfig.googleConfig}
       />
     </Suspense>

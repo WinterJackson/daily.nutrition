@@ -1,4 +1,4 @@
-import { Activity, Apple, HeartPulse, Phone, Pill, Scale, Scissors } from "lucide-react"
+import { Activity, Apple, HeartPulse, Phone, Scale } from "lucide-react"
 
 export const services = [
     {
@@ -87,46 +87,12 @@ export const services = [
         color: "text-olive",
         bgColor: "bg-olive/10",
     },
-    {
-        id: "bariatric-nutrition",
-        title: "Bariatric Surgery Nutrition",
-        slug: "bariatric-nutrition",
-        icon: Scissors,
-        shortDescription: "Pre and post-operative nutritional guidance for bariatric surgery candidates and patients.",
-        fullDescription: "Comprehensive nutrition support throughout your bariatric surgery journey. We provide pre-operative dietary preparation to optimize surgical outcomes, post-operative meal progression protocols, and long-term nutritional monitoring to prevent deficiencies and sustain weight loss results.",
-        features: [
-            "Pre-surgery dietary preparation",
-            "Post-op meal progression plans",
-            "Micronutrient deficiency prevention",
-            "Long-term weight maintenance support"
-        ],
-        targetAudience: "Individuals preparing for, recovering from, or maintaining results after bariatric surgery (gastric sleeve, bypass, banding).",
-        color: "text-orange",
-        bgColor: "bg-orange/10",
-    },
-    {
-        id: "glp1-weight-management",
-        title: "GLP-1 Weight Management",
-        slug: "glp1-weight-management",
-        icon: Pill,
-        shortDescription: "Tailored nutrition plans for individuals on GLP-1 receptor agonist medications.",
-        fullDescription: "Specialized dietary guidance designed to maximize the effectiveness of GLP-1 receptor agonist medications (e.g., Wegovy, Ozempic, Saxenda). We help you navigate appetite changes, ensure adequate protein intake to preserve lean muscle mass, and build sustainable eating habits for when medication adjusts or discontinues.",
-        features: [
-            "Medication-synergized meal planning",
-            "Lean muscle preservation strategies",
-            "Managing GI side effects through diet",
-            "Sustainable post-medication transition plans"
-        ],
-        targetAudience: "Individuals currently on or considering GLP-1 medications who want to optimize outcomes and build long-lasting healthy habits.",
-        color: "text-brand-green",
-        bgColor: "bg-brand-green/10",
-    },
 ]
 
 export const pricing = {
     default: {
-        virtual: 2500,
-        inPerson: 3000,
+        virtual: 3000,
+        inPerson: 3500,
     },
     diabetes: {
         virtual: 3000,

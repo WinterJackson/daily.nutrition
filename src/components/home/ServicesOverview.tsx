@@ -136,9 +136,11 @@ export function ServicesOverview({ services }: { services: Service[] }) {
                   <CardDescription className="text-base leading-relaxed mb-6 text-neutral-600 dark:text-neutral-400">
                     {service.shortDescription}
                   </CardDescription>
-                  <Button variant="link" className="p-0 h-auto text-brand-green hover:text-orange group-hover:translate-x-1 transition-all">
-                    Learn More <ArrowRight className="ml-2 w-4 h-4" />
-                  </Button>
+                  <Link href={`/services/${service.slug}`}>
+                    <Button variant="link" className="p-0 h-auto text-brand-green hover:text-orange group-hover:translate-x-1 transition-all">
+                      Learn More <ArrowRight className="ml-2 w-4 h-4" />
+                    </Button>
+                  </Link>
                 </CardContent>
               </Card>
             </motion.div>

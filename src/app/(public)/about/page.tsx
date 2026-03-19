@@ -1,7 +1,18 @@
 import { getSettings } from "@/app/actions/settings"
 import { AnimatedBackground } from "@/components/ui/AnimatedBackground"
 import { CheckCircle2, Quote } from "lucide-react"
+import type { Metadata } from "next"
 import { AboutClient } from "./AboutClient"
+
+export const metadata: Metadata = {
+  title: "About | Edwak Nutrition",
+  description: "Meet Edna Wakio — Registered Dietitian (MSc. Nutrition & Dietetics), Oncology Nutrition Specialist, and Diabetes Educator with 8+ years of clinical experience in Nairobi, Kenya.",
+  openGraph: {
+    title: "About Edwak Nutrition",
+    description: "Meet Edna Wakio — Registered Dietitian with 8+ years of clinical experience specializing in oncology nutrition and diabetes management.",
+    type: "profile",
+  },
+}
 
 export default async function AboutPage() {
   const settings = await getSettings()
