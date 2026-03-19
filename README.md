@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="public/logo.jpg" alt="Edwak Nutrition Logo" width="220" />
+  <img src="public/logo.png" alt="Edwak Nutrition Logo" width="220" />
   <h1>E D W A K &nbsp; N U T R I T I O N</h1>
   <p><strong>Professional Clinical Nutrition & Wellness Platform</strong></p>
   
