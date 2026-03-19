@@ -207,26 +207,49 @@ export async function syncGoogleReviews() {
         let skipped = 0
 
         for (const review of reviews) {
-            // Create a deterministic ID based on the author name and time
-            const reviewId = `google-${placeId.slice(-8)}-${review.time}`
-
-            const existing = await prisma.testimonial.findUnique({ where: { id: reviewId } })
-
-            if (existing) {
+            // Specifically ignore reviews without text as they break the website UI slider
+            if (!review.text || review.text.trim() === "") {
                 skipped++
                 continue
             }
 
-            await prisma.testimonial.create({
-                data: {
-                    id: reviewId,
-                    authorName: review.author_name || "Google Reviewer",
-                    rating: review.rating || 5,
-                    content: review.text || "",
-                    contentStatus: "IN_REVIEW",
+            // Extract unique reviewer ID from Google Maps profile URL to handle review edits gracefully
+            const contribIdMatch = review.author_url?.match(/contrib\/([0-9]+)/)
+            const reviewerId = contribIdMatch ? contribIdMatch[1] : (review.author_name || "unknown").replace(/\s+/g, '-').toLowerCase()
+
+            // Deterministic ID to prevent duplicates and allow updates
+            const reviewId = `google-${placeId.slice(-8)}-${reviewerId}`
+
+            const existing = await prisma.testimonial.findUnique({ where: { id: reviewId } })
+
+            if (existing) {
+                // If they updated their review on Google, sync the new content/rating
+                if (existing.content !== review.text || existing.rating !== review.rating) {
+                    await prisma.testimonial.update({
+                        where: { id: reviewId },
+                        data: {
+                            content: review.text,
+                            rating: review.rating || 5,
+                            // Intentionally DO NOT modify contentStatus. If it was PUBLISHED, keep it PUBLISHED.
+                        }
+                    })
+                    synced++
+                } else {
+                    skipped++
                 }
-            })
-            synced++
+            } else {
+                // Create brand new review entry, requires admin approval
+                await prisma.testimonial.create({
+                    data: {
+                        id: reviewId,
+                        authorName: review.author_name || "Google Reviewer",
+                        rating: review.rating || 5,
+                        content: review.text,
+                        contentStatus: "IN_REVIEW",
+                    }
+                })
+                synced++
+            }
         }
 
         logAudit({
