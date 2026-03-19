@@ -24,7 +24,7 @@ export function Navbar() {
   return (
     <>
       <header
-        className="fixed top-[5px] left-[5px] right-[5px] z-50 transition-all duration-300 border rounded-xl bg-olive/70 backdrop-blur-md shadow-lg border-white/10"
+        className="fixed top-[5px] left-[5px] right-[5px] z-50 transition-all duration-300 border rounded-xl bg-olive/80 backdrop-blur-md shadow-lg border-white/10"
       >
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex items-center justify-between h-20">
