@@ -222,11 +222,15 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
 
   const handleSave = () => {
     startTransition(async () => {
-      // Save traditional settings and CHECK for errors
       const result = await updateSettings(settings)
       if (result && !result.success) {
         alert(`Save failed: ${result.error || "Unknown error"}`)
         return
+      }
+
+      // Critically: Update local state with the newly incremented version integer
+      if (result && result.success) {
+        setSettings(prev => ({ ...prev, version: (prev.version || 0) + 1 }))
       }
 
       // Save integrations encrypted
