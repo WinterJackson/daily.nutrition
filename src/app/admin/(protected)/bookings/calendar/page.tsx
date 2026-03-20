@@ -1,5 +1,6 @@
 "use client"
 
+import { getSettings, SettingsData, updateSettings } from "@/app/actions/settings"
 import { BlockedDatesManager } from "@/components/admin/BlockedDatesManager"
 import { WeeklyAvailabilityEditor, WeeklySchedule } from "@/components/admin/WeeklyAvailabilityEditor"
 import { Button } from "@/components/ui/Button"
@@ -9,21 +10,27 @@ import Link from "next/link"
 import { useEffect, useState, useTransition } from "react"
 
 export default function CalendarManagementPage() {
+    const [fullSettings, setFullSettings] = useState<SettingsData | null>(null)
     const [schedule, setSchedule] = useState<WeeklySchedule | null>(null)
     const [isSaving, startTransition] = useTransition()
     const [saveSuccess, setSaveSuccess] = useState(false)
 
     useEffect(() => {
-        // Load the current schedule from settings
-        async function loadSchedule() {
+        // Load the true global settings down from the server
+        async function loadSettings() {
             try {
-                const res = await fetch("/api/auth?type=settings")
-                // For now, use default schedule — WeeklyAvailabilityEditor handles defaults internally
-            } catch {
-                // Silently use defaults
+                const settings = await getSettings()
+                if (settings) {
+                    setFullSettings(settings)
+                    if (settings.googleCalendarConfig?.availability && Object.keys(settings.googleCalendarConfig.availability).length > 0) {
+                        setSchedule(settings.googleCalendarConfig.availability)
+                    }
+                }
+            } catch (error) {
+                console.error("Failed to load settings:", error)
             }
         }
-        loadSchedule()
+        loadSettings()
     }, [])
 
     const handleScheduleChange = (newSchedule: WeeklySchedule) => {
@@ -31,8 +38,25 @@ export default function CalendarManagementPage() {
     }
 
     const handleSave = () => {
+        if (!fullSettings || !schedule) return
+
         startTransition(async () => {
-            // The schedule and blocked dates are saved individually by their respective components
+            // Merge the updated schedule into the global settings object and save
+            const updatedSettings: SettingsData = {
+                ...fullSettings,
+                googleCalendarConfig: {
+                    ...(fullSettings.googleCalendarConfig || { eventDuration: 30, bufferTime: 15, minNotice: 120, availability: {} }),
+                    availability: schedule
+                }
+            }
+
+            const result = await updateSettings(updatedSettings)
+            if (result && !result.success) {
+                alert(`Save failed: ${result.error || "Unknown error"}`)
+                return
+            }
+
+            setFullSettings(updatedSettings)
             setSaveSuccess(true)
             setTimeout(() => setSaveSuccess(false), 3000)
         })
