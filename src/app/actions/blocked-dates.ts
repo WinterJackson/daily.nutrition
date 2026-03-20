@@ -3,7 +3,7 @@
 import { verifySession } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { endOfDay, startOfDay } from "date-fns"
-import { revalidatePath } from "next/cache"
+import { revalidatePath, unstable_noStore } from "next/cache"
 
 export interface BlockedDateData {
     id?: string
@@ -15,6 +15,7 @@ export interface BlockedDateData {
  * Get all blocked dates
  */
 export async function getBlockedDates() {
+    unstable_noStore()
     try {
         const blockedDates = await prisma.blockedDate.findMany({
             orderBy: { date: 'asc' }
@@ -75,17 +76,19 @@ export async function addBlockedDate(date: Date, reason?: string) {
     if (!session) return { success: false, error: "Unauthorized" }
 
     try {
-        // Normalize to start of day to prevent duplicates
-        const normalizedDate = startOfDay(date)
+        // Force strict UTC Midnight to bypass cross-timezone drifting
+        const dateStr = date.toISOString().split('T')[0]
+        const utcMidnight = new Date(`${dateStr}T00:00:00.000Z`)
 
         const blockedDate = await prisma.blockedDate.create({
             data: {
-                date: normalizedDate,
+                date: utcMidnight,
                 reason: reason || undefined
             }
         })
 
-        revalidatePath("/admin/settings")
+        revalidatePath("/admin/bookings/calendar")
+        revalidatePath("/booking/schedule")
         return { success: true, blockedDate }
     } catch (error: any) {
         // Handle unique constraint violation
@@ -109,7 +112,8 @@ export async function removeBlockedDate(id: string) {
             where: { id }
         })
 
-        revalidatePath("/admin/settings")
+        revalidatePath("/admin/bookings/calendar")
+        revalidatePath("/booking/schedule")
         return { success: true }
     } catch (error) {
         console.error("Failed to remove blocked date:", error)
@@ -136,7 +140,8 @@ export async function removeBlockedDateByDate(date: Date) {
             }
         })
 
-        revalidatePath("/admin/settings")
+        revalidatePath("/admin/bookings/calendar")
+        revalidatePath("/booking/schedule")
         return { success: true }
     } catch (error) {
         console.error("Failed to remove blocked date:", error)
