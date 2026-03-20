@@ -204,7 +204,7 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
                                 <div className="w-8 h-8 rounded-full bg-brand-green/10 text-brand-green flex items-center justify-center font-bold text-sm">1</div>
                                 <h4 className="font-semibold text-neutral-800 dark:text-neutral-200">View Availability</h4>
                                 <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
-                                    Check the calendar below. Days marked with a <span className="inline-block w-2 h-2 rounded-full bg-brand-green mx-1"></span> dot indicate our business hours are open. Click on a date to see specific time slots.
+                                    Check the calendar below. Days marked with an <span className="inline-block w-2 h-2 rounded-full bg-orange mx-1"></span> orange dot indicate our business hours are open. Click on a date to see specific time slots.
                                 </p>
                             </div>
                             
@@ -227,7 +227,7 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
                         
                         <div className="mt-8 pt-6 border-t border-neutral-100 dark:border-white/5 flex flex-wrap gap-4 text-xs text-neutral-500">
                              <div className="flex items-center gap-2">
-                                <span className="w-2 h-2 rounded-full bg-brand-green"></span>
+                                <span className="w-2 h-2 rounded-full bg-orange"></span>
                                 <span>Open for Booking</span>
                              </div>
                              <div className="flex items-center gap-2">
@@ -333,7 +333,7 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
                         {format(day, 'd')}
                         {/* Availability Dot - Adjusted position for larger button */}
                         {isClickable && !isSelected && (
-                            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-[#E8751A]" />
+                            <div className="absolute bottom-2 left-1/2 -translate-x-1/2 w-1.5 h-1.5 rounded-full bg-orange" />
                         )}
                     </button>
                 )
