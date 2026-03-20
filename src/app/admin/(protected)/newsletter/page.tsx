@@ -106,7 +106,7 @@ export default function NewsletterPage() {
 
     return (
         <TooltipProvider>
-            <div className="p-6 md:p-8 max-w-7xl mx-auto space-y-8 animate-in fade-in duration-500">
+            <div className="space-y-8 max-w-[1600px] mx-auto animate-in fade-in duration-500">
                 
                 {/* Header Widget */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-2">
