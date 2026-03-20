@@ -15,6 +15,7 @@ export interface PlatformSettings {
    bufferTime: number
    minNotice: number // minutes from now
    availability: any // WeeklySchedule
+   blockedDates: string[]
    businessName: string
    googleCalendarId: string
 }
@@ -309,7 +310,11 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
                 const dayName = format(day, "EEEE").toLowerCase()
                 const isOpen = settings.availability?.[dayName]?.isOpen ?? false
                 
-                const isClickable = !isPast && isCurrentMonth && isOpen
+                // Check custom blocked dates
+                const dayStr = format(day, 'yyyy-MM-dd')
+                const isBlocked = settings.blockedDates?.includes(dayStr) ?? false
+                
+                const isClickable = !isPast && isCurrentMonth && isOpen && !isBlocked
                 
                 return (
                     <button

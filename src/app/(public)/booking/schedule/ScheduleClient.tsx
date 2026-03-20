@@ -11,6 +11,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 
 interface ScheduleClientProps {
   calendarId: string
+  blockedDates: string[]
   googleCalendarConfig?: {
     eventDuration: number
     bufferTime: number
@@ -46,7 +47,7 @@ const PREP_CHECKLISTS: Record<string, string[]> = {
   ]
 }
 
-export function ScheduleClient({ calendarId, googleCalendarConfig }: ScheduleClientProps) {
+export function ScheduleClient({ calendarId, blockedDates, googleCalendarConfig }: ScheduleClientProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
 
@@ -183,7 +184,8 @@ export function ScheduleClient({ calendarId, googleCalendarConfig }: ScheduleCli
                         minNotice: googleCalendarConfig?.minNotice || 120,
                         availability: googleCalendarConfig?.availability || {},
                         businessName: "Daily Nutrition",
-                        googleCalendarId: calendarId
+                        googleCalendarId: calendarId,
+                        blockedDates: blockedDates
                     }}
                   />
                </div>

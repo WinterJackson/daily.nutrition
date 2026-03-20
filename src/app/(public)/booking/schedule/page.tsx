@@ -1,3 +1,4 @@
+import { getBlockedDates } from "@/app/actions/blocked-dates"
 import { getCalendarConfig } from "@/app/actions/calendar-config"
 import { Skeleton } from "@/components/ui/Skeleton"
 import { Suspense } from "react"
@@ -5,6 +6,12 @@ import { ScheduleClient } from "./ScheduleClient"
 
 export default async function SchedulePage() {
   const calendarConfig = await getCalendarConfig()
+  const blockedRes = await getBlockedDates()
+  
+  // Convert Postgres Date objects to easily comparable YYYY-MM-DD strings
+  const blockedDates = blockedRes.success && blockedRes.blockedDates 
+    ? blockedRes.blockedDates.map(b => b.date.toISOString().split('T')[0]) 
+    : []
 
   return (
     <Suspense fallback={
@@ -23,6 +30,7 @@ export default async function SchedulePage() {
       <ScheduleClient 
         calendarId={calendarConfig.calendarId}
         googleCalendarConfig={calendarConfig.googleConfig}
+        blockedDates={blockedDates}
       />
     </Suspense>
   )
