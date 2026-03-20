@@ -938,6 +938,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                        value={secrets.GOOGLE_CALENDAR_CLIENT_EMAIL}
                        onChange={(v) => setSecrets(p => ({ ...p, GOOGLE_CALENDAR_CLIENT_EMAIL: v }))}
                        setupSteps={googleCalendarSetupSteps}
+                       placeholder="e.g. calendar-sync@edwak-nutrition-live.iam.gserviceaccount.com"
                    />
                    <SecretCard
                        title="Private Key"
@@ -949,6 +950,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                        value={secrets.GOOGLE_CALENDAR_PRIVATE_KEY}
                        onChange={(v) => setSecrets(p => ({ ...p, GOOGLE_CALENDAR_PRIVATE_KEY: v }))}
                        setupSteps={googleCalendarSetupSteps}
+                       placeholder="-----BEGIN PRIVATE KEY-----\nMIIEvg...-----END PRIVATE KEY-----\n"
                    />
                 </div>
               </CardContent>

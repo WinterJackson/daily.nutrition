@@ -14,6 +14,7 @@ export interface SecretCardProps {
     value: string
     onChange: (val: string) => void
     setupSteps?: { step: number; title: string; description: string; url?: string }[]
+    placeholder?: string
 }
 
 export function SecretCard({
@@ -25,7 +26,8 @@ export function SecretCard({
     isConfigured,
     value,
     onChange,
-    setupSteps
+    setupSteps,
+    placeholder
 }: SecretCardProps) {
     const [showPreview, setShowPreview] = useState(false)
     const [isFocused, setIsFocused] = useState(false)
@@ -97,7 +99,7 @@ export function SecretCard({
                     }}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
-                    placeholder={isConfigured ? "Encrypted safely in database" : `Enter ${title}`}
+                    placeholder={isConfigured ? "Encrypted safely in database" : placeholder || `Enter ${title}`}
                     className={`w-full bg-neutral-50 dark:bg-black/20 border transition-all duration-200 rounded-lg pr-12 pl-10 py-2.5 text-sm font-mono ${
                         isFocused
                           ? "border-olive ring-1 ring-olive/20"
