@@ -41,27 +41,6 @@ async function main() {
             }
         })
         console.log(`✅ Default Site Settings seeded`)
-
-        // 3. Seed at least one Service so the frontend Navbar doesn't crash or look empty
-        await prisma.service.upsert({
-            where: { slug: "introductory-consultation" },
-            update: {},
-            create: {
-                slug: "introductory-consultation",
-                title: "Introductory Consultation",
-                shortDescription: "A preliminary discussion to understand your nutritional goals.",
-                fullDescription: "During this session, we will assess your current lifestyle, dietary habits, and long-term health objectives.",
-                features: ["30-minute virtual call", "Goal assessment", "Basic action plan"],
-                priceVirtual: 50,
-                status: "PUBLISHED",
-                isVisible: true,
-                displayOrder: 1,
-                icon: "Activity",
-                color: "text-brand-green",
-                bgColor: "bg-brand-green/10"
-            }
-        })
-        console.log(`✅ Fallback 'Introductory Consultation' Service seeded`)
         console.log(`Admin user created/updated: ${user.email}`)
         console.log(`Password: ${password}`)
     } catch (e) {
