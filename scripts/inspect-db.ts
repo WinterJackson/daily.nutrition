@@ -17,7 +17,6 @@ async function main() {
     }
 
     console.log('✅ Settings Found:')
-    console.log(`- Calendar Provider: ${settings.calendarProvider}`)
     console.log(`- Google Calendar ID: ${settings.googleCalendarId}`)
 
     if (settings.GoogleCalendarConfig) {

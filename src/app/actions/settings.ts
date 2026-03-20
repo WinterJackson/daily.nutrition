@@ -146,8 +146,6 @@ export async function getSettings() {
                     pageTitle: "Edwak Nutrition | Expert Dietitian",
                     metaDescription: "Professional nutrition consulting and diet planning.",
                     keywords: "nutrition, health, diet, kenya",
-                    calendarProvider: "google_calendar",
-                    calendlyUrl: "",
                     themePreference: "light",
                     updatedAt: new Date()
                 },
@@ -232,7 +230,7 @@ export async function updateSettings(data: SettingsData) {
 
     try {
         // Separate nested config AND strip non-schema fields that getSettings() injects
-        const { googleCalendarConfig, resendConfig, emailBranding, cloudinaryConfig, notificationPreferences, version: clientVersion, hasGeminiKey, ...topLevelData } = data as any
+        const { googleCalendarConfig, resendConfig, emailBranding, cloudinaryConfig, notificationPreferences, version: clientVersion, hasGeminiKey, calendarProvider, calendlyUrl, savvycalUrl, ...topLevelData } = data as any
 
         // Optimistic Locking: Verify version hasn't changed since page load
         if (clientVersion !== undefined) {
