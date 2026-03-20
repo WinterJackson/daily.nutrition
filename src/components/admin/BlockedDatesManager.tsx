@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/Button"
 import { Card, CardContent } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
 import { format, parseISO, startOfDay } from "date-fns"
-import { Calendar, CheckCircle, Loader2, Plus, Save, Trash2, X } from "lucide-react"
+import { Calendar, CheckCircle, Loader2, Plus, Trash2, X } from "lucide-react"
 import { useEffect, useState, useTransition } from "react"
 
 interface BlockedDate {
@@ -33,11 +33,7 @@ export function BlockedDatesManager() {
         setIsLoading(false)
     }
 
-    const handleSave = async () => {
-        await loadBlockedDates()
-        setShowSuccess(true)
-        setTimeout(() => setShowSuccess(false), 3000)
-    }
+
 
     useEffect(() => {
         loadBlockedDates()
@@ -65,21 +61,7 @@ export function BlockedDatesManager() {
         })
     }
 
-    const [dateToDelete, setDateToDelete] = useState<string | null>(null)
 
-    const handleRemoveClick = (id: string) => {
-        setDateToDelete(id)
-    }
-
-    const handleConfirmRemove = () => {
-        if (dateToDelete) {
-            startTransition(async () => {
-                await removeBlockedDate(dateToDelete)
-                await loadBlockedDates()
-                setDateToDelete(null)
-            })
-        }
-    }
 
     if (isLoading) {
         return (
@@ -207,7 +189,12 @@ export function BlockedDatesManager() {
                                     variant="ghost"
                                     size="sm"
                                     className="text-red-500 hover:bg-red-50 dark:hover:bg-red-500/10"
-                                    onClick={() => handleRemoveClick(blocked.id)}
+                                    onClick={() => {
+                                        startTransition(async () => {
+                                            await removeBlockedDate(blocked.id)
+                                            await loadBlockedDates()
+                                        })
+                                    }}
                                     disabled={isPending}
                                 >
                                     <Trash2 className="w-4 h-4" />
@@ -217,26 +204,7 @@ export function BlockedDatesManager() {
                     </div>
                 )}
 
-                <div className="flex justify-end mt-4 pt-4 border-t border-neutral-100 dark:border-white/5">
-                    <Button 
-                        onClick={handleSave}
-                        disabled={isLoading}
-                        variant="accent"
-                        className="shadow-lg shadow-orange/20"
-                    >
-                        {isLoading ? (
-                            <>
-                                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                                Saving...
-                            </>
-                        ) : (
-                            <>
-                                <Save className="mr-2 h-4 w-4" />
-                                Save
-                            </>
-                        )}
-                    </Button>
-                </div>
+
             </CardContent>
         </Card>
     )
