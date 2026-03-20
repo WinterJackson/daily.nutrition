@@ -17,7 +17,8 @@ import { Input } from "@/components/ui/Input"
 import { getPublicIdFromUrl } from "@/lib/cloudinary-utils"
 import { Calendar, CheckCircle, ChevronDown, Clock, Database, Globe, ImageIcon, Key, Loader2, Moon, Save, Sparkles, Star, Sun, Trash2, Upload } from "lucide-react"
 import Image from "next/image"
-import { useRef, useState, useTransition } from "react"
+import { useRouter } from "next/navigation"
+import { useEffect, useRef, useState, useTransition } from "react"
 
 // Google Calendar Setup Steps
 const googleCalendarSetupSteps = [
@@ -167,9 +168,16 @@ export interface SettingsClientProps {
 }
 
 export default function SettingsClient({ initialSettings, envStatus, secretStatuses, is2FAEnabled }: SettingsClientProps) {
+  const router = useRouter()
   const [activeTab, setActiveTab] = useState("general")
   const [settings, setSettings] = useState<SettingsData>(initialSettings)
   const [isSaving, startTransition] = useTransition()
+
+  // Deep prop sync: Ensure incoming server props overwrite stale local state on navigation/revalidation
+  useEffect(() => {
+    setSettings(initialSettings)
+  }, [initialSettings])
+
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [expandedStep, setExpandedStep] = useState<number | null>(null)
   const [isUploading, setIsUploading] = useState(false)
@@ -235,6 +243,9 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
               GOOGLE_MAPS_API_KEY: ""
           })
       }
+
+      // Force Next.js App Router to aggressively hydrate the layout with fresh encrypted prop locks
+      router.refresh()
 
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 3000)
