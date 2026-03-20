@@ -45,9 +45,9 @@ export async function GET(request: Request) {
             logoUrl: settings?.EmailBranding?.logoUrl || null,
             primaryColor: settings?.EmailBranding?.primaryColor || "#556B2F",
             accentColor: settings?.EmailBranding?.accentColor || "#E87A1E",
-            footerText: settings?.EmailBranding?.footerText || "Edwak Nutrition, Nairobi, Kenya",
-            websiteUrl: settings?.EmailBranding?.websiteUrl || "https://edwaknutrition.co.ke",
-            supportEmail: settings?.EmailBranding?.supportEmail || "support@edwaknutrition.co.ke"
+            footerText: settings?.EmailBranding?.footerText || `${settings?.businessName || "Edwak Nutrition"}`,
+            websiteUrl: settings?.EmailBranding?.websiteUrl || process.env.NEXT_PUBLIC_APP_URL || "https://edwakplatform.com",
+            supportEmail: settings?.EmailBranding?.supportEmail || settings?.contactEmail || "info@edwaknutritionco.com"
         }
 
         const now = new Date()
