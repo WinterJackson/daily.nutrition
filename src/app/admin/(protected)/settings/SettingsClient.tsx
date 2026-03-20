@@ -244,9 +244,6 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
           })
       }
 
-      // Force Next.js App Router to aggressively hydrate the layout with fresh encrypted prop locks
-      router.refresh()
-
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 3000)
     })
