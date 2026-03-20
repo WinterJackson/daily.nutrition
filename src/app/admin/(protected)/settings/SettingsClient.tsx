@@ -11,7 +11,6 @@ import { SessionManagement } from "@/components/admin/SessionManagement"
 import { SecretCard } from "@/components/admin/settings/SecretCard"
 import { StatusCard } from "@/components/admin/settings/StatusCard"
 import { SocialMediaConfig } from "@/components/admin/SocialMediaConfig"
-import { WeeklyAvailabilityEditor } from "@/components/admin/WeeklyAvailabilityEditor"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
@@ -937,14 +936,6 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                         />
                       </div>
                    </div>
-                </div>
-
-                {/* Weekly Availability */}
-                <div className="pt-6 mt-6 border-t border-subtle">
-                   <WeeklyAvailabilityEditor
-                       initialSchedule={settings.googleCalendarConfig?.availability && Object.keys(settings.googleCalendarConfig.availability).length > 0 ? settings.googleCalendarConfig.availability : undefined}
-                       onChange={(schedule) => setSettings(p => ({ ...p, googleCalendarConfig: { ...(p.googleCalendarConfig || { eventDuration: 30, bufferTime: 15, minNotice: 120, availability: {} }), availability: schedule } }))}
-                   />
                 </div>
 
                 {/* Service Account Credentials */}
