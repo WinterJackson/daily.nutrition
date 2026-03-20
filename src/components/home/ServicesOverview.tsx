@@ -107,13 +107,8 @@ export function ServicesOverview({ services }: { services: Service[] }) {
            </motion.div>
         )}
 
-        {/* 
-          Using a responsive flexbox layout with centered wrapping here instead of a strict 
-          4-column grid, so that if there are an odd number of items (like 6 total, 
-          leaving 2 on the bottom row), they center themselves elegantly instead of 
-          leaving empty spaces on the right.
-        */}
-        <div className="flex flex-wrap justify-center gap-6">
+        {/* Strict CSS grid guarantees exactly the requested column layout per breakpoint */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {gridServices.map((service, index) => (
             <motion.div
               key={service.id}
@@ -122,7 +117,7 @@ export function ServicesOverview({ services }: { services: Service[] }) {
               viewport={{ once: true }}
               transition={{ delay: index * 0.1 }}
               whileHover={{ y: -5 }}
-              className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] xl:w-[calc(25%-18px)]"
+              className="w-full"
             >
               <Card className="h-full border-neutral-200/80 dark:border-white/10 shadow-md hover:shadow-xl transition-all bg-white/90 dark:bg-white/5 backdrop-blur-sm relative group overflow-hidden">
                 <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-transparent to-soft-green/5 dark:to-white/5 rounded-bl-[100px] transition-all group-hover:scale-110"></div>
