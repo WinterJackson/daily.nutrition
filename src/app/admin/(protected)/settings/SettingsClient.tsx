@@ -221,8 +221,12 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
 
   const handleSave = () => {
     startTransition(async () => {
-      // Save traditional settings
-      await updateSettings(settings)
+      // Save traditional settings and CHECK for errors
+      const result = await updateSettings(settings)
+      if (result && !result.success) {
+        alert(`Save failed: ${result.error || "Unknown error"}`)
+        return
+      }
 
       // Save integrations encrypted
       const payload = Object.entries(secrets)
@@ -230,7 +234,11 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
           .map(([key, value]) => ({ key, value }))
 
       if (payload.length > 0) {
-          await upsertIntegrationSecrets(payload)
+          const secretResult = await upsertIntegrationSecrets(payload)
+          if (secretResult && !secretResult.success) {
+            alert(`Secret save failed: ${secretResult.error || "Unknown error"}`)
+            return
+          }
           // Clear after save
           setSecrets({
               RESEND_API_KEY: "",

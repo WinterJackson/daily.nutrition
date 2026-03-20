@@ -231,8 +231,8 @@ export async function updateSettings(data: SettingsData) {
     }
 
     try {
-        // Separate nested config
-        const { googleCalendarConfig, resendConfig, emailBranding, cloudinaryConfig, notificationPreferences, version: clientVersion, ...topLevelData } = data as any
+        // Separate nested config AND strip non-schema fields that getSettings() injects
+        const { googleCalendarConfig, resendConfig, emailBranding, cloudinaryConfig, notificationPreferences, version: clientVersion, hasGeminiKey, ...topLevelData } = data as any
 
         // Optimistic Locking: Verify version hasn't changed since page load
         if (clientVersion !== undefined) {
