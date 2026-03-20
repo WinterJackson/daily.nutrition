@@ -590,11 +590,15 @@ export function InquiriesTable({
                             onChange={(e) => setReplyText(e.target.value)}
                             disabled={isPending}
                         />
-                        <div className="flex justify-end">
+                        <div className="flex justify-between items-center mt-4">
+                            <p className="text-[10px] md:text-xs text-neutral-400 dark:text-neutral-500 flex items-center gap-1.5">
+                                <Mail size={12} className="text-brand-green opacity-70" />
+                                Replies automatically route to the platform's support email. Continue the conversation natively in Gmail.
+                            </p>
                             <Button
                                 onClick={handleSendReply}
                                 disabled={!replyText.trim() || isPending}
-                                className="bg-olive hover:bg-olive/90 text-white gap-2 px-6 disabled:opacity-50 disabled:grayscale transition-all shadow-md"
+                                className="bg-olive hover:bg-olive/90 text-white gap-2 px-6 disabled:opacity-50 disabled:grayscale transition-all shadow-md shrink-0"
                             >
                                 <Send className="w-4 h-4" />
                                 {isPending ? "Sending..." : "Send Reply"}
