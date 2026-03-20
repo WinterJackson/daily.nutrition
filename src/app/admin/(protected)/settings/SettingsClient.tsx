@@ -942,9 +942,9 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                        secretKey="GOOGLE_CALENDAR_CLIENT_EMAIL"
                        docsLink="https://console.cloud.google.com/"
                        docsLabel="Google Cloud Console"
-                       isConfigured={secretStatuses["GOOGLE_CALENDAR_CLIENT_EMAIL"]}
-                       value={secrets.GOOGLE_CALENDAR_CLIENT_EMAIL}
-                       onChange={(v) => setSecrets(p => ({ ...p, GOOGLE_CALENDAR_CLIENT_EMAIL: v }))}
+                       isConfigured={settings.googleCalendarConfig?.hasCredentials || false}
+                       value={settings.googleCalendarConfig?.clientEmail || ""}
+                       onChange={(v) => setSettings(p => ({ ...p, googleCalendarConfig: { ...(p.googleCalendarConfig || { eventDuration: 30, bufferTime: 15, minNotice: 120, availability: {} }), clientEmail: v } }))}
                        setupSteps={googleCalendarSetupSteps}
                        placeholder="e.g. calendar-sync@edwak-nutrition-live.iam.gserviceaccount.com"
                    />
@@ -954,9 +954,9 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                        secretKey="GOOGLE_CALENDAR_PRIVATE_KEY"
                        docsLink="https://console.cloud.google.com/"
                        docsLabel="Google Cloud Console"
-                       isConfigured={secretStatuses["GOOGLE_CALENDAR_PRIVATE_KEY"]}
-                       value={secrets.GOOGLE_CALENDAR_PRIVATE_KEY}
-                       onChange={(v) => setSecrets(p => ({ ...p, GOOGLE_CALENDAR_PRIVATE_KEY: v }))}
+                       isConfigured={settings.googleCalendarConfig?.hasCredentials || false}
+                       value={settings.googleCalendarConfig?.privateKey || ""}
+                       onChange={(v) => setSettings(p => ({ ...p, googleCalendarConfig: { ...(p.googleCalendarConfig || { eventDuration: 30, bufferTime: 15, minNotice: 120, availability: {} }), privateKey: v } }))}
                        setupSteps={googleCalendarSetupSteps}
                        placeholder="-----BEGIN PRIVATE KEY-----\nMIIEvg...-----END PRIVATE KEY-----\n"
                    />
