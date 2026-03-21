@@ -52,17 +52,11 @@ async function getGoogleClient() {
  */
 export async function getAvailableSlots(dateStr: string): Promise<string[]> {
     // 0. Check if date is manually blocked
-    // Enforce EAT timezone for boundaries
-    const dayStartEAT = new Date(`${dateStr}T00:00:00+03:00`);
-    const dayEndEAT = new Date(`${dateStr}T23:59:59+03:00`);
+    // Enforce strict UTC Midnight to flawlessly match the BlockedDate Indexed Postgres value
+    const utcMidnight = new Date(`${dateStr}T00:00:00.000Z`);
 
     const blockedDate = await prisma.blockedDate.findFirst({
-        where: {
-            date: {
-                gte: dayStartEAT,
-                lt: dayEndEAT
-            }
-        }
+        where: { date: utcMidnight }
     });
 
     if (blockedDate) {
@@ -87,6 +81,7 @@ export async function getAvailableSlots(dateStr: string): Promise<string[]> {
     const availability = config.availability as any; // Typed locally in component usually
 
     // 2. Determine Working Hours for this day
+    const dayStartEAT = new Date(`${dateStr}T00:00:00+03:00`);
     const dayName = format(dayStartEAT, 'EEEE').toLowerCase(); // monday, tuesday...
     const daySchedule = availability[dayName];
 
