@@ -123,13 +123,18 @@ export async function getAvailableSlots(dateStr: string): Promise<string[]> {
         // Stop if the slot goes past working hours
         if (isAfter(currentSlotEnd, workingEnd)) break;
 
-        // 5. Check Collision with Google Busy Slots
+        // 5. Check Collision with Google Busy Slots (Including the exact Administrator Buffer)
+        // By expanding the checking window invisibly, we can cleanly render 30-min UI intervals 
+        // while safely destroying any slots that fall too close to an active Google booking!
+        const checkStart = addMinutes(currentSlotStart, -buffer);
+        const checkEnd = addMinutes(currentSlotEnd, buffer);
+
         const isBusy = busySlots.some((busy) => {
             const busyStart = new Date(busy.start!);
             const busyEnd = new Date(busy.end!);
 
             return areIntervalsOverlapping(
-                { start: currentSlotStart, end: currentSlotEnd },
+                { start: checkStart, end: checkEnd },
                 { start: busyStart, end: busyEnd }
             );
         });
@@ -141,15 +146,9 @@ export async function getAvailableSlots(dateStr: string): Promise<string[]> {
             }
         }
 
-        // Move to next slot: Duration + Buffer
-        // Note: Some systems do fixed intervals (e.g. every 30 mins) regardless of duration. 
-        // Here we use (Start + Duration + Buffer) which is typical for "back-to-back" logic.
-        // Alternatively, we could increment by a fixed 'step' (e.g. 15 mins) and check availability.
-        // For now, let's use discrete slots based on duration. To make it more flexible,
-        // we usually iterate by a smaller "step" (like 15 or 30 mins) and check if a 'duration' block fits.
-        // Let's assume standard behavior: Increment by Duration for now, or 30 mins if duration is long?
-        // Let's stick to Duration + Buffer for simplicity of the first version.
-        currentSlotStart = addMinutes(currentSlotStart, duration + buffer);
+        // Move to next slot strictly by pure Duration to keep visual slots clean (9:00, 9:30, 10:00)
+        // Since we embedded the Buffer collision math above, this is 100% physically secure against double-booking!
+        currentSlotStart = addMinutes(currentSlotStart, duration);
     }
 
     return slots;
