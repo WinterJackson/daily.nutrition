@@ -5,7 +5,7 @@ import { BlockedDatesManager } from "@/components/admin/BlockedDatesManager"
 import { WeeklyAvailabilityEditor, WeeklySchedule } from "@/components/admin/WeeklyAvailabilityEditor"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
-import { Calendar, CheckCircle, Clock, Loader2, Save } from "lucide-react"
+import { Calendar, CheckCircle, Clock, Info, Loader2, Save } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useState, useTransition } from "react"
 
@@ -108,6 +108,30 @@ export default function CalendarManagementPage() {
                     <span className="font-medium">Calendar settings saved!</span>
                 </div>
             )}
+
+            {/* Instructions Card */}
+            <Card className="border-none shadow-xl shadow-neutral-200/50 dark:shadow-black/20 bg-brand-green/5 dark:bg-brand-green/10 backdrop-blur-md mb-8">
+                <CardHeader>
+                    <CardTitle className="flex items-center gap-2 text-brand-green dark:text-brand-green-light">
+                        <Info className="w-5 h-5" />
+                        How Scheduling Works
+                    </CardTitle>
+                </CardHeader>
+                <CardContent className="text-neutral-600 dark:text-neutral-300 space-y-4 text-sm leading-relaxed">
+                    <p>
+                        <strong className="text-olive dark:text-off-white">1. Generating Time Slots (Weekly Schedule):</strong> 
+                        <span> The calendar automatically generates booking slots based exclusively on the global business hours you set in the "Weekly Schedule" on the left. For example, if you set Monday from 09:00 to 17:00, the system automatically creates 30-minute slots for every single Monday of the year. You do NOT manually create slots for specific calendar dates.</span>
+                    </p>
+                    <p>
+                        <strong className="text-olive dark:text-off-white">2. Removing Slots (Blocked Dates):</strong> 
+                        <span> If you need to take a specific day off (e.g., a holiday or vacation) that normally has working hours, use the "Blocked Dates" tool on the right. Blocking a date instantly overrides the Weekly Schedule and permanently grays out that specific day on the public calendar.</span>
+                    </p>
+                    <p>
+                        <strong className="text-olive dark:text-off-white">3. Managing Google Sync:</strong>
+                        <span> The system reads your Google Calendar "Busy" events in real-time. If you create a personal event in your Google Calendar during your normal business hours, that specific time slot is instantly removed from the website!</span>
+                    </p>
+                </CardContent>
+            </Card>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Weekly Availability */}
