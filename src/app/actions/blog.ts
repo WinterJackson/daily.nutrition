@@ -153,7 +153,16 @@ export async function createPost(data: { title: string; content: string; publish
     }
 
     // Zod validation
-    const slug = generateSlug(data.title)
+    // Mathematical Collision Defense: Dynamically generate unique slugs
+    const baseSlug = generateSlug(data.title)
+    let slug = baseSlug
+    let counter = 1
+
+    while (await prisma.blogPost.findUnique({ where: { slug } })) {
+        slug = `${baseSlug}-${counter}`
+        counter++
+    }
+
     const validated = blogPostSchema.partial().safeParse({ ...data, slug })
     if (!validated.success) {
         return { success: false, error: validated.error.issues.map(e => e.message).join(", ") }

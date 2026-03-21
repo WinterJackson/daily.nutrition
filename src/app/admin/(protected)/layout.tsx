@@ -1,11 +1,18 @@
 import { AdminSidebar } from "@/components/admin/AdminSidebar"
 import { AnimatedBackground } from "@/components/ui/AnimatedBackground"
+import { verifySession } from "@/lib/auth"
+import { redirect } from "next/navigation"
 
-export default function AdminLayout({
+export default async function AdminLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const session = await verifySession()
+  if (!session) {
+    redirect("/admin/login")
+  }
+
   return (
     <div className="flex min-h-screen bg-off-white dark:bg-charcoal relative overflow-x-hidden">
        {/* Consistent Nutrition Background for Admin */}

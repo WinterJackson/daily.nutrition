@@ -1,5 +1,6 @@
 "use server"
 
+import { verifySession } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 import { unstable_cache } from "next/cache"
 
@@ -113,6 +114,9 @@ const getCachedActivity = unstable_cache(
 
 export async function getDashboardStats(): Promise<DashboardStats> {
     try {
+        const session = await verifySession()
+        if (!session) throw new Error("Unauthorized access to dashboard stats")
+
         const counts = await getCachedCounts()
         const { recentInquiries, recentTestimonials } = await getCachedActivity()
 
