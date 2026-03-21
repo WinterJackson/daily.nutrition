@@ -4,7 +4,7 @@ import { addBlockedDate, getBlockedDates, removeBlockedDate } from "@/app/action
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
-import { format, parseISO, startOfDay } from "date-fns"
+import { format } from "date-fns"
 import { Calendar, CheckCircle, Loader2, Plus, Trash2, X } from "lucide-react"
 import { useEffect, useState, useTransition } from "react"
 
@@ -47,8 +47,8 @@ export function BlockedDatesManager() {
 
         setError("")
         startTransition(async () => {
-            const dateObj = startOfDay(parseISO(newDate))
-            const result = await addBlockedDate(dateObj, newReason || undefined)
+            const dateStr = newDate
+            const result = await addBlockedDate(dateStr, newReason || undefined)
             
             if (result.success) {
                 await loadBlockedDates()

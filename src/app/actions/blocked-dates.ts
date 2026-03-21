@@ -71,13 +71,13 @@ export async function isDateBlocked(date: Date): Promise<boolean> {
 /**
  * Add a new blocked date
  */
-export async function addBlockedDate(date: Date, reason?: string) {
+export async function addBlockedDate(dateStr: string, reason?: string) {
     const session = await verifySession()
     if (!session) return { success: false, error: "Unauthorized" }
 
     try {
-        // Force strict UTC Midnight to bypass cross-timezone drifting
-        const dateStr = date.toISOString().split('T')[0]
+        // Construct a pristine UTC Date object strictly from the raw HTML input string.
+        // Bypassing network JS serialization ensures East Africa Time never shifts midnight backwards.
         const utcMidnight = new Date(`${dateStr}T00:00:00.000Z`)
 
         const blockedDate = await prisma.blockedDate.create({
