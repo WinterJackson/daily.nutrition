@@ -219,6 +219,22 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
     }))
   }
 
+  const handleNotificationChange = (key: string, value: string | boolean) => {
+    setSettings((prev) => ({
+      ...prev,
+      notificationPreferences: {
+        ...(prev.notificationPreferences || {
+          emailOnNewBooking: true,
+          emailOnCancellation: true,
+          emailOnReschedule: true,
+          emailDailyAgenda: false,
+          agendaTime: "08:00"
+        }),
+        [key]: value
+      }
+    }))
+  }
+
   const handleSave = () => {
     startTransition(async () => {
       const result = await updateSettings(settings)
@@ -422,53 +438,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
               </CardContent>
             </Card>
 
-            {/* Social Media Links Card */}
-            <Card className="surface-card">
-              <CardHeader>
-                <CardTitle>Social Media</CardTitle>
-                <CardDescription>Update the social links displayed in your website footer.</CardDescription>
-              </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-caption">Facebook URL</label>
-                    <Input
-                      placeholder="https://facebook.com/edwaknutrition"
-                      value={settings.facebookUrl || ""}
-                      onChange={(e) => handleChange("facebookUrl", e.target.value)}
-                      className="surface-input"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-caption">Instagram URL</label>
-                    <Input
-                      placeholder="https://instagram.com/edwaknutrition"
-                      value={settings.instagramUrl || ""}
-                      onChange={(e) => handleChange("instagramUrl", e.target.value)}
-                      className="surface-input"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-caption">Twitter / X URL</label>
-                    <Input
-                      placeholder="https://twitter.com/edwaknutrition"
-                      value={settings.twitterUrl || ""}
-                      onChange={(e) => handleChange("twitterUrl", e.target.value)}
-                      className="surface-input"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-caption">LinkedIn URL</label>
-                    <Input
-                      placeholder="https://linkedin.com/company/edwaknutrition"
-                      value={settings.linkedinUrl || ""}
-                      onChange={(e) => handleChange("linkedinUrl", e.target.value)}
-                      className="surface-input"
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+
 
             {/* Profile Image Card */}
             <Card className="surface-card">
@@ -979,7 +949,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
             {/* Notification Preferences */}
             <NotificationConfig
               settings={settings}
-              onChange={(key: string, value: string | boolean) => handleChange(key as keyof SettingsData, value as never)}
+              onChange={handleNotificationChange}
               onSave={handleSave}
               isSaving={isSaving}
               isOpen={openSections.notifications ?? false}
