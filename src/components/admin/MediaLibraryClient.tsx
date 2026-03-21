@@ -5,11 +5,11 @@ import { Button } from "@/components/ui/Button"
 import { MediaFile } from "@prisma/client"
 import { Copy, FileImage, FileVideo, Loader2, Trash2, UploadCloud } from "lucide-react"
 import Image from "next/image"
-import { useRef, useState, useTransition } from "react"
+import { useRef, useState } from "react"
 
 export default function MediaLibraryClient({ initialFiles }: { initialFiles: MediaFile[] }) {
     const [files, setFiles] = useState<MediaFile[]>(initialFiles)
-    const [isPending, startTransition] = useTransition()
+    const [deletingId, setDeletingId] = useState<string | null>(null)
     const [uploading, setUploading] = useState(false)
     const [error, setError] = useState("")
     const [success, setSuccess] = useState("")
@@ -20,63 +20,78 @@ export default function MediaLibraryClient({ initialFiles }: { initialFiles: Med
     }
 
     const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-        const file = e.target.files?.[0]
-        if (!file) return
+        const selectedFiles = Array.from(e.target.files || [])
+        if (selectedFiles.length === 0) return
 
         setError("")
         setSuccess("")
         setUploading(true)
 
         try {
-            const formData = new FormData()
-            formData.append("file", file)
-            
-            const res = await uploadFile(formData)
-            
-            if (res.success && res.url && res.publicId) {
-                // Optimistically add to the UI using the response data
-                const newFile: MediaFile = {
-                    id: "temp-" + Date.now(),
-                    publicId: res.publicId,
-                    url: res.url,
-                    filename: file.name,
-                    size: res.size || file.size,
-                    mimeType: res.mimeType || file.type,
-                    folderId: null,
-                    createdAt: new Date(),
-                    updatedAt: new Date(),
-                    deletedAt: null
+            // Process uploads sequentially to prevent blowing up the Vercel memory boundary
+            const successfulUploads: MediaFile[] = []
+            let errorCount = 0
+
+            for (const file of selectedFiles) {
+                const formData = new FormData()
+                formData.append("file", file)
+                
+                const res = await uploadFile(formData)
+                
+                if (res.success && res.url && res.publicId) {
+                    successfulUploads.push({
+                        id: "temp-" + Date.now() + Math.random(),
+                        publicId: res.publicId,
+                        url: res.url,
+                        filename: file.name,
+                        size: res.size || file.size,
+                        mimeType: res.mimeType || file.type,
+                        folderId: null,
+                        createdAt: new Date(),
+                        updatedAt: new Date(),
+                        deletedAt: null
+                    })
+                } else {
+                    errorCount++
                 }
-                setFiles(prev => [newFile, ...prev])
-                setSuccess("File uploaded successfully")
-            } else {
-                setError(res.error || "Upload failed")
+            }
+
+            if (successfulUploads.length > 0) {
+                setFiles(prev => [...successfulUploads, ...prev])
+                if (errorCount === 0) {
+                    setSuccess(selectedFiles.length === 1 ? "File uploaded successfully" : `${successfulUploads.length} files uploaded successfully`)
+                } else {
+                    setSuccess(`Uploaded ${successfulUploads.length} files. Failed: ${errorCount}.`)
+                }
+            } else if (errorCount > 0) {
+                setError(`Failed to upload ${errorCount} file(s).`)
             }
         } catch (err) {
-            setError("Unexpected error during upload")
+            setError("Unexpected error during bulk upload")
         } finally {
             setUploading(false)
             if (fileInputRef.current) fileInputRef.current.value = ""
         }
     }
 
-    const handleDelete = (publicId: string, id: string) => {
+    const handleDelete = async (publicId: string, id: string) => {
         if (!confirm("Are you sure you want to delete this file? This cannot be undone.")) return
 
-        startTransition(async () => {
-            setError("")
-            try {
-                const res = await deleteFile(publicId)
-                if (res.success) {
-                    setFiles(prev => prev.filter(f => f.id !== id))
-                    setSuccess("File deleted")
-                } else {
-                    setError(res.error || "Failed to delete file")
-                }
-            } catch (err) {
-                setError("Unexpected error during delete")
+        setError("")
+        setDeletingId(id)
+        try {
+            const res = await deleteFile(publicId)
+            if (res.success) {
+                setFiles(prev => prev.filter(f => f.id !== id))
+                setSuccess("File deleted")
+            } else {
+                setError(res.error || "Failed to delete file")
             }
-        })
+        } catch (err) {
+            setError("Unexpected error during delete")
+        } finally {
+            setDeletingId(null)
+        }
     }
 
     const copyToClipboard = (url: string) => {
@@ -99,6 +114,7 @@ export default function MediaLibraryClient({ initialFiles }: { initialFiles: Med
                         className="hidden" 
                         onChange={handleFileChange} 
                         accept="image/*,video/mp4,video/webm"
+                        multiple
                     />
                     <Button onClick={handleUploadClick} disabled={uploading} className="shadow-lg shadow-brand-green/20">
                         {uploading ? (
@@ -123,15 +139,15 @@ export default function MediaLibraryClient({ initialFiles }: { initialFiles: Med
                                 {isVideo ? (
                                     <video src={file.url} className="w-full h-full object-cover" muted playsInline />
                                 ) : (
-                                    <Image src={file.url} alt={file.filename} fill className="object-cover" />
+                                    <Image src={file.url} alt={file.filename} fill className="object-cover" unoptimized={true} sizes="(max-width: 768px) 50vw, 25vw" />
                                 )}
                                 
                                 <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2 backdrop-blur-sm">
                                     <Button size="icon" variant="secondary" onClick={() => copyToClipboard(file.url)} title="Copy URL">
                                         <Copy className="w-4 h-4" />
                                     </Button>
-                                    <Button size="icon" variant="destructive" onClick={() => handleDelete(file.publicId, file.id)} disabled={isPending} title="Delete File">
-                                        {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+                                    <Button size="icon" variant="destructive" onClick={() => handleDelete(file.publicId, file.id)} disabled={deletingId === file.id} title="Delete File">
+                                        {deletingId === file.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
                                     </Button>
                                 </div>
                             </div>
