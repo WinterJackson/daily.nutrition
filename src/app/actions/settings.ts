@@ -324,7 +324,7 @@ export async function updateSettings(data: SettingsData) {
             })
         }
 
-        revalidatePath("/")
+        revalidatePath("/", "layout")
         revalidatePath("/admin/settings")
         return { success: true, settings }
     } catch (error) {
