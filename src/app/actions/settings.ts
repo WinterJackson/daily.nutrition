@@ -6,8 +6,10 @@ import { encrypt } from "@/lib/encryption"
 import { prisma } from "@/lib/prisma"
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit"
 import bcrypt from "bcryptjs"
-import { revalidatePath } from "next/cache"
+import { revalidatePath, unstable_cache } from "next/cache"
 import { EmailBrandingData } from "./email-branding"
+
+export const GLOBAL_SETTINGS_TAG = "global-settings"
 
 export interface CloudinaryConfigData {
     cloudName: string
@@ -121,7 +123,7 @@ export interface NotificationPreferencesData {
     agendaTime: string
 }
 
-export async function getSettings() {
+const getCachedSettingsFromDB = async () => {
     try {
         let settings = await prisma.siteSettings.findUnique({
             where: { id: "default" },
@@ -215,6 +217,14 @@ export async function getSettings() {
         return null
     }
 }
+
+export const getSettings = unstable_cache(
+    async () => {
+        return await getCachedSettingsFromDB()
+    },
+    [GLOBAL_SETTINGS_TAG],
+    { tags: [GLOBAL_SETTINGS_TAG] }
+)
 
 export async function updateSettings(data: SettingsData) {
     const session = await verifySession()
@@ -325,7 +335,7 @@ export async function updateSettings(data: SettingsData) {
         }
 
         revalidatePath("/", "layout")
-        revalidatePath("/admin/settings")
+
         return { success: true, settings }
     } catch (error) {
         console.error("Failed to update settings:", error)
