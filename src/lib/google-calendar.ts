@@ -1,6 +1,6 @@
 import { decrypt } from '@/lib/encryption';
 import { prisma } from '@/lib/prisma';
-import { addMinutes, areIntervalsOverlapping, format, isAfter, isBefore } from 'date-fns';
+import { addMinutes, areIntervalsOverlapping, isAfter, isBefore } from 'date-fns';
 import { JWT } from 'google-auth-library';
 import { google } from 'googleapis';
 
@@ -81,8 +81,10 @@ export async function getAvailableSlots(dateStr: string): Promise<string[]> {
     const availability = config.availability as any; // Typed locally in component usually
 
     // 2. Determine Working Hours for this day
-    const dayStartEAT = new Date(`${dateStr}T00:00:00+03:00`);
-    const dayName = format(dayStartEAT, 'EEEE').toLowerCase(); // monday, tuesday...
+    // Generate a mathematically perfect anchor at Noon UTC so no geographical deployment timezone can shift the date backwards.
+    const safeAnchorDate = new Date(`${dateStr}T12:00:00Z`);
+    const WEEKDAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
+    const dayName = WEEKDAYS[safeAnchorDate.getUTCDay()];
     const daySchedule = availability[dayName];
 
     // If closed today, return empty
@@ -91,6 +93,9 @@ export async function getAvailableSlots(dateStr: string): Promise<string[]> {
     // Parse start/end times precisely in EAT
     const workingStart = new Date(`${dateStr}T${daySchedule.start}:00+03:00`);
     const workingEnd = new Date(`${dateStr}T${daySchedule.end}:00+03:00`);
+
+    const minNoticeMinutes = config.minNotice || 120;
+    const bookingThreshold = addMinutes(new Date(), minNoticeMinutes);
 
     // 3. Fetch Busy Slots from Google
     // Query for the whole business day 
@@ -130,7 +135,8 @@ export async function getAvailableSlots(dateStr: string): Promise<string[]> {
         });
 
         if (!isBusy) {
-            if (isAfter(currentSlotStart, new Date())) { // Only future slots
+            // Protect against last-minute exploits: rigidly enforce the Administrator's minNotice offset barrier
+            if (isAfter(currentSlotStart, bookingThreshold)) {
                 slots.push(currentSlotStart.toISOString());
             }
         }
