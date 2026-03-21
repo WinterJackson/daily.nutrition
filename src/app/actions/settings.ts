@@ -9,7 +9,7 @@ import bcrypt from "bcryptjs"
 import { revalidatePath, unstable_cache } from "next/cache"
 import { EmailBrandingData } from "./email-branding"
 
-export const GLOBAL_SETTINGS_TAG = "global-settings"
+const GLOBAL_SETTINGS_TAG = "global-settings"
 
 export interface CloudinaryConfigData {
     cloudName: string
@@ -123,108 +123,104 @@ export interface NotificationPreferencesData {
     agendaTime: string
 }
 
-const getCachedSettingsFromDB = async () => {
+export async function getSettings() {
     try {
-        let settings = await prisma.siteSettings.findUnique({
-            where: { id: "default" },
-            include: {
-                GoogleCalendarConfig: true,
-                ResendConfig: true,
-                EmailBranding: true,
-                CloudinaryConfig: true,
-                NotificationPreferences: true
-            }
-        })
+        const getCached = unstable_cache(
+            async () => {
+                let settings = await prisma.siteSettings.findUnique({
+                    where: { id: "default" },
+                    include: {
+                        GoogleCalendarConfig: true,
+                        ResendConfig: true,
+                        EmailBranding: true,
+                        CloudinaryConfig: true,
+                        NotificationPreferences: true
+                    }
+                })
 
-        if (!settings) {
-            // Auto-create default settings to prevent layout breakages like the missing Footer
-            settings = await prisma.siteSettings.create({
-                data: {
-                    id: "default",
-                    businessName: "Edwak Nutrition",
-                    contactEmail: "hello@edwaknutrition.co.ke",
-                    phoneNumber: "+254 700 000000",
-                    address: "Nairobi, Kenya",
-                    pageTitle: "Edwak Nutrition | Expert Dietitian",
-                    metaDescription: "Professional nutrition consulting and diet planning.",
-                    keywords: "nutrition, health, diet, kenya",
-                    themePreference: "light",
-                    updatedAt: new Date()
-                },
-                include: {
-                    GoogleCalendarConfig: true,
-                    ResendConfig: true,
-                    EmailBranding: true,
-                    CloudinaryConfig: true,
-                    NotificationPreferences: true
+                if (!settings) {
+                    settings = await prisma.siteSettings.create({
+                        data: {
+                            id: "default",
+                            businessName: "Edwak Nutrition",
+                            contactEmail: "hello@edwaknutrition.co.ke",
+                            phoneNumber: "+254 700 000000",
+                            address: "Nairobi, Kenya",
+                            pageTitle: "Edwak Nutrition | Expert Dietitian",
+                            metaDescription: "Professional nutrition consulting and diet planning.",
+                            keywords: "nutrition, health, diet, kenya",
+                            themePreference: "light",
+                            updatedAt: new Date()
+                        },
+                        include: {
+                            GoogleCalendarConfig: true,
+                            ResendConfig: true,
+                            EmailBranding: true,
+                            CloudinaryConfig: true,
+                            NotificationPreferences: true
+                        }
+                    })
                 }
-            })
-        }
 
-        // Omit id and dates for clean return
-        const { id, updatedAt, GoogleCalendarConfig, EmailBranding, CloudinaryConfig, NotificationPreferences, ResendConfig, version, ...rest } = settings
+                const { id, updatedAt, GoogleCalendarConfig, EmailBranding, CloudinaryConfig, NotificationPreferences, ResendConfig, version, ...rest } = settings
 
-        const result: SettingsData = {
-            ...rest,
-            hasGeminiKey: false, // Not exposed to public
-            // Social & Legal
-            instagramUrl: settings.instagramUrl,
-            facebookUrl: settings.facebookUrl,
-            twitterUrl: settings.twitterUrl,
-            linkedinUrl: settings.linkedinUrl,
-            privacyPolicyContent: settings.privacyPolicyContent,
-            termsContent: settings.termsContent,
+                const result: SettingsData = {
+                    ...rest,
+                    hasGeminiKey: false,
+                    instagramUrl: settings.instagramUrl,
+                    facebookUrl: settings.facebookUrl,
+                    twitterUrl: settings.twitterUrl,
+                    linkedinUrl: settings.linkedinUrl,
+                    privacyPolicyContent: settings.privacyPolicyContent,
+                    termsContent: settings.termsContent,
 
-            googleCalendarConfig: GoogleCalendarConfig ? {
-                eventDuration: GoogleCalendarConfig.eventDuration,
-                bufferTime: GoogleCalendarConfig.bufferTime,
-                minNotice: GoogleCalendarConfig.minNotice,
-                availability: GoogleCalendarConfig.availability,
-                hasCredentials: !!(GoogleCalendarConfig.encryptedClientEmail && GoogleCalendarConfig.encryptedPrivateKey)
-            } : undefined,
-            resendConfig: ResendConfig ? {
-                fromEmail: ResendConfig.fromEmail,
-                hasApiKey: !!ResendConfig.encryptedApiKey
-            } : undefined,
-            emailBranding: EmailBranding ? {
-                logoUrl: EmailBranding.logoUrl,
-                primaryColor: EmailBranding.primaryColor,
-                accentColor: EmailBranding.accentColor,
-                footerText: EmailBranding.footerText,
-                websiteUrl: EmailBranding.websiteUrl,
-                supportEmail: EmailBranding.supportEmail
-            } : undefined,
-            cloudinaryConfig: CloudinaryConfig ? {
-                cloudName: CloudinaryConfig.cloudName,
-                apiKey: CloudinaryConfig.apiKey,
-                apiSecret: "", // Never return secret
-                uploadPreset: CloudinaryConfig.uploadPreset || undefined,
-                hasSecret: !!CloudinaryConfig.encryptedApiSecret
-            } : undefined,
-            notificationPreferences: NotificationPreferences ? {
-                emailOnNewBooking: NotificationPreferences.emailOnNewBooking,
-                emailOnCancellation: NotificationPreferences.emailOnCancellation,
-                emailOnReschedule: NotificationPreferences.emailOnReschedule,
-                emailDailyAgenda: NotificationPreferences.emailDailyAgenda,
-                agendaTime: NotificationPreferences.agendaTime
-            } : undefined,
-            version: settings.version
-        }
+                    googleCalendarConfig: GoogleCalendarConfig ? {
+                        eventDuration: GoogleCalendarConfig.eventDuration,
+                        bufferTime: GoogleCalendarConfig.bufferTime,
+                        minNotice: GoogleCalendarConfig.minNotice,
+                        availability: GoogleCalendarConfig.availability,
+                        hasCredentials: !!(GoogleCalendarConfig.encryptedClientEmail && GoogleCalendarConfig.encryptedPrivateKey)
+                    } : undefined,
+                    resendConfig: ResendConfig ? {
+                        fromEmail: ResendConfig.fromEmail,
+                        hasApiKey: !!ResendConfig.encryptedApiKey
+                    } : undefined,
+                    emailBranding: EmailBranding ? {
+                        logoUrl: EmailBranding.logoUrl,
+                        primaryColor: EmailBranding.primaryColor,
+                        accentColor: EmailBranding.accentColor,
+                        footerText: EmailBranding.footerText,
+                        websiteUrl: EmailBranding.websiteUrl,
+                        supportEmail: EmailBranding.supportEmail
+                    } : undefined,
+                    cloudinaryConfig: CloudinaryConfig ? {
+                        cloudName: CloudinaryConfig.cloudName,
+                        apiKey: CloudinaryConfig.apiKey,
+                        apiSecret: "",
+                        uploadPreset: CloudinaryConfig.uploadPreset || undefined,
+                        hasSecret: !!CloudinaryConfig.encryptedApiSecret
+                    } : undefined,
+                    notificationPreferences: NotificationPreferences ? {
+                        emailOnNewBooking: NotificationPreferences.emailOnNewBooking,
+                        emailOnCancellation: NotificationPreferences.emailOnCancellation,
+                        emailOnReschedule: NotificationPreferences.emailOnReschedule,
+                        emailDailyAgenda: NotificationPreferences.emailDailyAgenda,
+                        agendaTime: NotificationPreferences.agendaTime
+                    } : undefined,
+                    version: settings.version
+                }
+                return result
+            },
+            [GLOBAL_SETTINGS_TAG],
+            { tags: [GLOBAL_SETTINGS_TAG] }
+        )
 
-        return result
+        return await getCached()
     } catch (error) {
         console.error("Failed to fetch settings:", error)
         return null
     }
 }
-
-export const getSettings = unstable_cache(
-    async () => {
-        return await getCachedSettingsFromDB()
-    },
-    [GLOBAL_SETTINGS_TAG],
-    { tags: [GLOBAL_SETTINGS_TAG] }
-)
 
 export async function updateSettings(data: SettingsData) {
     const session = await verifySession()
