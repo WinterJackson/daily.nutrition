@@ -55,8 +55,11 @@ export default function CalendarManagementPage() {
                 alert(`Save failed: ${result.error || "Unknown error"}`)
                 return
             }
-
-            setFullSettings(updatedSettings)
+            // Critically: Update local state with the newly incremented version integer
+            setFullSettings({
+                ...updatedSettings,
+                version: (updatedSettings.version || 0) + 1
+            })
             setSaveSuccess(true)
             setTimeout(() => setSaveSuccess(false), 3000)
         })
