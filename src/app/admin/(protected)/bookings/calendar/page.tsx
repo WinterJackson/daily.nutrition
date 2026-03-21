@@ -130,6 +130,14 @@ export default function CalendarManagementPage() {
                         <strong className="text-olive dark:text-off-white">3. Managing Google Sync:</strong>
                         <span> The system reads your Google Calendar "Busy" events in real-time. If you create a personal event in your Google Calendar during your normal business hours, that specific time slot is instantly removed from the website!</span>
                     </p>
+                    <p>
+                        <strong className="text-olive dark:text-off-white block mb-1">4. The "Invisible Padding" Architecture:</strong>
+                        <span>To rigidly protect your time, the system enforces a 15-minute preparation buffer between appointments using an invisible collision algorithm.</span>
+                        <ul className="list-disc pl-5 mt-2 space-y-1 text-sm">
+                            <li><strong>Empty Calendar Example:</strong> The system displays a perfectly clean grid of 30-minute intervals (9:00, 9:30, 10:00 AM).</li>
+                            <li><strong>Active Booking Example:</strong> If a client books 9:00 AM, the system detects your 15-minute buffer rule and realizes a 9:30 AM appointment would give you 0 minutes of preparation. It silently destroys the 9:30 AM button, making 10:00 AM the next globally available slot. This guarantees you never suffer from back-to-back booking fatigue.</li>
+                        </ul>
+                    </p>
                 </CardContent>
             </Card>
 

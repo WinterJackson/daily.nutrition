@@ -363,6 +363,17 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
                     <h3 className="text-sm font-bold text-neutral-500 uppercase tracking-wider mb-4 text-left">
                         Available Times for {format(selectedDate, "MMM do")}
                     </h3>
+
+                    {/* Client Education Strategy Card */}
+                    <div className="mb-6 p-4 bg-orange/5 border border-orange/10 rounded-xl text-xs text-neutral-600 dark:text-neutral-300 leading-relaxed flex items-start gap-3">
+                        <Info className="w-5 h-5 text-orange flex-shrink-0 mt-0.5" />
+                        <div>
+                            <strong className="text-olive dark:text-off-white block mb-1">Your privacy & care are prioritized.</strong>
+                            <p>
+                                Available times are displayed in structured 30-minute intervals. Behind the scenes, we automatically block out dedicated preparation time between every single appointment so your clinician can review your profile. If you see gaps between times, that slot is intentionally reserved to guarantee you receive a premium, unhurried consultation.
+                            </p>
+                        </div>
+                    </div>
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         {isLoadingSlots ? (
