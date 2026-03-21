@@ -2,7 +2,6 @@
 
 import { verifySession } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
-import { endOfDay, startOfDay } from "date-fns"
 import { revalidatePath, unstable_noStore } from "next/cache"
 
 export interface BlockedDateData {
@@ -32,11 +31,17 @@ export async function getBlockedDates() {
  */
 export async function getBlockedDatesInRange(startDate: Date, endDate: Date) {
     try {
+        const startStr = startDate.toISOString().split('T')[0]
+        const utcStart = new Date(`${startStr}T00:00:00.000Z`)
+
+        const endStr = endDate.toISOString().split('T')[0]
+        const utcEnd = new Date(`${endStr}T23:59:59.999Z`)
+
         const blockedDates = await prisma.blockedDate.findMany({
             where: {
                 date: {
-                    gte: startOfDay(startDate),
-                    lte: endOfDay(endDate)
+                    gte: utcStart,
+                    lte: utcEnd
                 }
             },
             orderBy: { date: 'asc' }
@@ -53,13 +58,11 @@ export async function getBlockedDatesInRange(startDate: Date, endDate: Date) {
  */
 export async function isDateBlocked(date: Date): Promise<boolean> {
     try {
+        const dateStr = date.toISOString().split('T')[0]
+        const utcMidnight = new Date(`${dateStr}T00:00:00.000Z`)
+
         const blocked = await prisma.blockedDate.findFirst({
-            where: {
-                date: {
-                    gte: startOfDay(date),
-                    lte: endOfDay(date)
-                }
-            }
+            where: { date: utcMidnight }
         })
         return !!blocked
     } catch (error) {
@@ -129,15 +132,11 @@ export async function removeBlockedDateByDate(date: Date) {
     if (!session) return { success: false, error: "Unauthorized" }
 
     try {
-        const normalizedDate = startOfDay(date)
+        const dateStr = date.toISOString().split('T')[0]
+        const utcMidnight = new Date(`${dateStr}T00:00:00.000Z`)
 
         await prisma.blockedDate.deleteMany({
-            where: {
-                date: {
-                    gte: normalizedDate,
-                    lt: endOfDay(date)
-                }
-            }
+            where: { date: utcMidnight }
         })
 
         revalidatePath("/admin/bookings/calendar")
