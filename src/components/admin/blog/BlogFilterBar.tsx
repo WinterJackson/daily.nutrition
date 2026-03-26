@@ -55,9 +55,9 @@ export function BlogFilterBar({ categories }: BlogFilterBarProps) {
     }
 
     return (
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+        <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-6">
             {/* Left: Filters */}
-            <div className="flex flex-col sm:flex-row gap-3 flex-1 lg:max-w-2xl">
+            <div className="flex flex-col sm:flex-row gap-3 flex-1 xl:max-w-3xl">
                 {/* Search Group */}
                 <div className="relative flex-1 w-full min-w-[200px]">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400 pointer-events-none" />
@@ -117,7 +117,7 @@ export function BlogFilterBar({ categories }: BlogFilterBarProps) {
             </div>
 
             {/* Right: Actions */}
-            <div className="flex flex-wrap items-center gap-2 self-start lg:self-auto w-full lg:w-auto mt-4 md:mt-0">
+            <div className="flex flex-wrap items-center gap-2 self-start xl:self-auto w-full xl:w-auto mt-4 xl:mt-0">
                 <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 custom-scrollbar">
                     <Link href="/admin/blog/categories" className="flex-1 sm:flex-none">
                         <Button variant="outline" size="sm" className="w-full sm:w-auto shadow-sm rounded-md transition-all whitespace-nowrap">
