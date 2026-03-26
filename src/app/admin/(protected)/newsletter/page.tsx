@@ -1,8 +1,10 @@
 "use client"
 
 import { deleteSubscriberAction, dispatchCampaign, draftCampaign, getNewsletterData } from "@/app/actions/newsletter"
+import { TablePagination } from "@/components/admin/TablePagination"
 import { Button } from "@/components/ui/Button"
 import { Card } from "@/components/ui/Card"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/Dialog"
 import { Input } from "@/components/ui/Input"
 import { Textarea } from "@/components/ui/Textarea"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/Tooltip"
@@ -33,6 +35,34 @@ export default function NewsletterPage() {
     const [isDrafting, setIsDrafting] = useState(false)
     const [isDispatching, setIsDispatching] = useState<string | null>(null)
     const [isDeleting, setIsDeleting] = useState<string | null>(null)
+
+    // Bulk selection
+    const [selectedSubIds, setSelectedSubIds] = useState<Set<string>>(new Set())
+    const allSubsSelected = subscribers.length > 0 && selectedSubIds.size === subscribers.length
+    const someSubsSelected = selectedSubIds.size > 0
+
+    const toggleSelectAllSubs = () => {
+        if (allSubsSelected) setSelectedSubIds(new Set())
+        else setSelectedSubIds(new Set(subscribers.map(s => s.id)))
+    }
+    const toggleSelectSub = (id: string) => {
+        const next = new Set(selectedSubIds)
+        if (next.has(id)) next.delete(id)
+        else next.add(id)
+        setSelectedSubIds(next)
+    }
+
+    const handleBulkDeleteSubscribers = async () => {
+        if (!confirm(`Delete ${selectedSubIds.size} subscriber(s)? This is a soft-delete.`)) return
+        for (const id of selectedSubIds) {
+            await deleteSubscriberAction(id)
+        }
+        setSelectedSubIds(new Set())
+        await loadData()
+    }
+
+    // Subscriber detail modal
+    const [selectedSubscriber, setSelectedSubscriber] = useState<any>(null)
 
     const loadData = async () => {
         setLoading(true)
@@ -146,6 +176,19 @@ export default function NewsletterPage() {
                 {/* Content Area */}
                 {activeTab === "SUBSCRIBERS" ? (
                     <Card className="surface-card overflow-hidden">
+                        {/* Bulk Action Bar */}
+                        {someSubsSelected && (
+                            <div className="p-3 border-b border-[var(--border-default)] flex items-center gap-3 bg-brand-green/5 dark:bg-brand-green/10 animate-in fade-in duration-200">
+                                <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+                                    {selectedSubIds.size} selected
+                                </span>
+                                <Button size="sm" variant="outline" className="border-red-300 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" onClick={handleBulkDeleteSubscribers} disabled={loading}>
+                                    <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Delete Selected
+                                </Button>
+                                <Button size="sm" variant="ghost" onClick={() => setSelectedSubIds(new Set())}>Clear</Button>
+                            </div>
+                        )}
+
                         {/* Toolbar */}
                         <div className="p-4 border-b border-default flex flex-col sm:flex-row gap-4 justify-between items-center surface-secondary">
                             <div className="relative w-full sm:w-64">
@@ -153,7 +196,7 @@ export default function NewsletterPage() {
                                 <Input
                                     placeholder="Search emails..."
                                     value={search}
-                                    onChange={(e) => setSearch(e.target.value)}
+                                    onChange={(e) => { setSearch(e.target.value); setPage(1) }}
                                     className="pl-9 surface-input"
                                 />
                             </div>
@@ -161,7 +204,7 @@ export default function NewsletterPage() {
                                 {["ALL", "ACTIVE", "UNSUBSCRIBED"].map((f) => (
                                     <button
                                         key={f}
-                                        onClick={() => setFilter(f as FilterType)}
+                                        onClick={() => { setFilter(f as FilterType); setPage(1) }}
                                         className={`px-3 py-1.5 rounded-full text-xs font-medium whitespace-nowrap transition-colors border ${
                                             filter === f 
                                             ? "bg-charcoal text-white dark:bg-white dark:text-charcoal border-transparent" 
@@ -175,10 +218,13 @@ export default function NewsletterPage() {
                         </div>
 
                         {/* Data Grid table */}
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto custom-scrollbar">
                             <table className="w-full text-sm text-left">
                                 <thead className="text-xs text-caption uppercase surface-secondary">
                                     <tr>
+                                        <th className="px-3 py-4 font-semibold">
+                                            <input type="checkbox" checked={allSubsSelected} onChange={toggleSelectAllSubs} className="rounded border-neutral-300 dark:border-neutral-600 text-brand-green focus:ring-brand-green" />
+                                        </th>
                                         <th className="px-6 py-4 font-semibold">Email</th>
                                         <th className="px-6 py-4 font-semibold">Status</th>
                                         <th className="px-6 py-4 font-semibold">Joined At</th>
@@ -188,19 +234,22 @@ export default function NewsletterPage() {
                                 <tbody>
                                     {loading ? (
                                         <tr>
-                                            <td colSpan={4} className="px-6 py-12 text-center text-caption">
+                                            <td colSpan={5} className="px-6 py-12 text-center text-caption">
                                                 <Loader2 className="w-6 h-6 animate-spin mx-auto" />
                                             </td>
                                         </tr>
                                     ) : subscribers.length === 0 ? (
                                         <tr>
-                                            <td colSpan={4} className="px-6 py-12 text-center text-caption">
+                                            <td colSpan={5} className="px-6 py-12 text-center text-caption">
                                                 No subscribers found.
                                             </td>
                                         </tr>
                                     ) : (
                                         subscribers.map((sub) => (
-                                            <tr key={sub.id} className="border-b border-subtle last:border-0 hover:surface-secondary transition-colors">
+                                            <tr key={sub.id} className="border-b border-subtle last:border-0 hover:surface-secondary transition-colors cursor-pointer" onClick={() => setSelectedSubscriber(sub)}>
+                                                <td className="px-3 py-4" onClick={(e) => e.stopPropagation()}>
+                                                    <input type="checkbox" checked={selectedSubIds.has(sub.id)} onChange={() => toggleSelectSub(sub.id)} className="rounded border-neutral-300 dark:border-neutral-600 text-brand-green focus:ring-brand-green" />
+                                                </td>
                                                 <td className="px-6 py-4 font-medium text-body">
                                                     {sub.email}
                                                 </td>
@@ -218,7 +267,7 @@ export default function NewsletterPage() {
                                                 <td className="px-6 py-4 text-label">
                                                     {format(new Date(sub.createdAt), "MMM d, yyyy")}
                                                 </td>
-                                                <td className="px-6 py-4 text-right">
+                                                <td className="px-6 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                                                     <Button
                                                         variant="ghost"
                                                         size="sm"
@@ -237,29 +286,12 @@ export default function NewsletterPage() {
                         </div>
 
                         {/* Pagination */}
-                        <div className="p-4 border-t border-default flex justify-between items-center surface-secondary">
-                            <span className="text-sm text-caption">
-                                Showing {subscribers.length} of {totalSubs}
-                            </span>
-                            <div className="flex gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={page === 1 || loading}
-                                    onClick={() => setPage(p => Math.max(1, p - 1))}
-                                >
-                                    Previous
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={subscribers.length < 20 || loading}
-                                    onClick={() => setPage(p => p + 1)}
-                                >
-                                    Next
-                                </Button>
-                            </div>
-                        </div>
+                        <TablePagination
+                            currentPage={page}
+                            totalCount={totalSubs}
+                            pageSize={20}
+                            onPageChange={setPage}
+                        />
                     </Card>
                 ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
@@ -450,6 +482,52 @@ export default function NewsletterPage() {
                     </div>
                 )}
             </div>
+
+            {/* Subscriber Detail Modal */}
+            <Dialog open={!!selectedSubscriber} onOpenChange={(open) => { if (!open) setSelectedSubscriber(null) }}>
+                <DialogContent className="sm:max-w-md">
+                    <div className="pr-8">
+                        <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                            <Mail className="w-5 h-5 text-brand-green" />
+                            Subscriber Details
+                        </DialogTitle>
+                    </div>
+                    {selectedSubscriber && (
+                        <div className="space-y-4 mt-2">
+                            <div className="rounded-xl p-4 space-y-3" style={{ background: "var(--surface-secondary)", borderColor: "var(--border-default)", borderWidth: "1px" }}>
+                                <div className="grid grid-cols-[80px_1fr] gap-2 text-sm">
+                                    <span className="text-caption font-semibold uppercase text-xs">Email</span>
+                                    <span className="font-medium text-body">{selectedSubscriber.email}</span>
+                                </div>
+                                <div className="grid grid-cols-[80px_1fr] gap-2 text-sm">
+                                    <span className="text-caption font-semibold uppercase text-xs">Status</span>
+                                    {selectedSubscriber.isActive ? (
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-brand-green/10 text-brand-green w-fit">
+                                            <CheckCircle className="w-3 h-3" /> Active
+                                        </span>
+                                    ) : (
+                                        <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium surface-elevated text-caption border border-default w-fit">
+                                            <Users className="w-3 h-3" /> Unsubscribed
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="grid grid-cols-[80px_1fr] gap-2 text-sm">
+                                    <span className="text-caption font-semibold uppercase text-xs">Joined</span>
+                                    <span className="text-label">{format(new Date(selectedSubscriber.createdAt), "PPp")}</span>
+                                </div>
+                            </div>
+                            <div className="flex gap-2 justify-end pt-2">
+                                <Button variant="outline" size="sm" className="border-red-300 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                                    onClick={() => { handleDeleteSubscriber(selectedSubscriber.id); setSelectedSubscriber(null) }}
+                                >
+                                    <Trash2 className="w-4 h-4 mr-1" /> Delete
+                                </Button>
+                                <Button variant="outline" size="sm" onClick={() => setSelectedSubscriber(null)}>Close</Button>
+                            </div>
+                        </div>
+                    )}
+                </DialogContent>
+            </Dialog>
         </TooltipProvider>
     )
 }

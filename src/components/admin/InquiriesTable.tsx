@@ -84,6 +84,7 @@ export function InquiriesTable({
   // Local state for optimistic updates
   const [inquiries, setInquiries] = useState<Inquiry[]>(initialInquiries)
   const [selectedId, setSelectedId] = useState<string | null>(null)
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
 
   // Filters
   const [searchQuery, setSearchQuery] = useState("")
@@ -96,10 +97,48 @@ export function InquiriesTable({
 
   useEffect(() => {
     setInquiries(initialInquiries)
+    setSelectedIds(new Set())
   }, [initialInquiries])
 
   // Current Selection
   const selectedInquiry = inquiries.find((i) => i.id === selectedId) || null
+
+  // --------------------------------------------------------
+  // Selection Logic
+  // --------------------------------------------------------
+  const filteredInquiries = inquiries
+    .filter((i) => !i.isArchived)
+    .filter((i) => {
+      const matchesSearch =
+        i.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        i.email.toLowerCase().includes(searchQuery.toLowerCase())
+
+      if (listFilter === "UNREAD") return matchesSearch && !i.isRead
+      if (listFilter === "STARRED") return matchesSearch && i.isStarred
+      return matchesSearch
+    })
+
+  const allSelected = filteredInquiries.length > 0 && selectedIds.size === filteredInquiries.length
+  const someSelected = selectedIds.size > 0 && selectedIds.size < filteredInquiries.length
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(filteredInquiries.map((i) => i.id)))
+    }
+  }
+
+  const toggleSelect = (id: string, e: React.ChangeEvent<HTMLInputElement>) => {
+    e.stopPropagation()
+    const newSelected = new Set(selectedIds)
+    if (newSelected.has(id)) {
+      newSelected.delete(id)
+    } else {
+      newSelected.add(id)
+    }
+    setSelectedIds(newSelected)
+  }
 
   // --------------------------------------------------------
   // Actions
@@ -187,6 +226,33 @@ export function InquiriesTable({
     })
   }
 
+  const handleBulkArchive = () => {
+    startTransition(async () => {
+      setInquiries((prev) => prev.filter((i) => !selectedIds.has(i.id)))
+      if (selectedId && selectedIds.has(selectedId)) {
+        setSelectedId(null)
+      }
+      setSelectedIds(new Set())
+      
+      for (const id of selectedIds) {
+        await archiveInquiry(id)
+      }
+    })
+  }
+
+  const handleBulkDelete = () => {
+    startTransition(async () => {
+      for (const id of selectedIds) {
+          await deleteInquiry(id)
+      }
+      setInquiries((prev) => prev.filter((i) => !selectedIds.has(i.id)))
+      if (selectedId && selectedIds.has(selectedId)) {
+        setSelectedId(null)
+      }
+      setSelectedIds(new Set())
+    })
+  }
+
   const handleDelete = () => {
     if (!inquiryToDelete) return
     startTransition(async () => {
@@ -264,24 +330,12 @@ export function InquiriesTable({
   const getGmailReplyUrl = (inquiry: Inquiry) => {
     const subject = encodeURIComponent(`Re: Your Inquiry to Edwak Nutrition`)
     const body = encodeURIComponent(
-      `Hi \${inquiry.name},\\n\\nThank you for reaching out to Edwak Nutrition.\\n\\n---\\n\\nBest regards,\\nEdwak Nutrition Team`
+      `Hi ${inquiry.name},\n\nThank you for reaching out to Edwak Nutrition.\n\n---\n\nBest regards,\nEdwak Nutrition Team`
     )
-    return `https://mail.google.com/mail/?view=cm&fs=1&to=\${encodeURIComponent(
+    return `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
       inquiry.email
-    )}&su=\${subject}&body=\${body}`
+    )}&su=${subject}&body=${body}`
   }
-
-  const filteredInquiries = inquiries
-    .filter((i) => !i.isArchived)
-    .filter((i) => {
-      const matchesSearch =
-        i.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        i.email.toLowerCase().includes(searchQuery.toLowerCase())
-
-      if (listFilter === "UNREAD") return matchesSearch && !i.isRead
-      if (listFilter === "STARRED") return matchesSearch && i.isStarred
-      return matchesSearch
-    })
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -301,48 +355,62 @@ export function InquiriesTable({
         
         {/* Header / Search */}
         <div className="p-4 border-b border-neutral-100 dark:border-white/5 space-y-4 shrink-0 bg-neutral-50/50 dark:bg-white/[0.02]">
-          <div className="relative">
-            <Search className="absolute left-3 top-2.5 h-4 w-4 text-neutral-400" />
-            <Input
-              placeholder="Search leads..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-9 bg-white dark:bg-black/40 border-neutral-200 dark:border-white/10 rounded-full h-9 shadow-sm"
-            />
-          </div>
-          <div className="flex gap-1 bg-neutral-100 dark:bg-black/40 p-1 rounded-lg">
-            <button
-              onClick={() => setListFilter("ALL")}
-              className={`flex-1 text-[11px] font-bold uppercase tracking-wider py-1.5 rounded-md transition-all \${
-                listFilter === "ALL"
-                  ? "bg-white text-charcoal dark:bg-white/10 dark:text-white shadow-sm"
-                  : "text-neutral-500 hover:text-charcoal dark:hover:text-white"
-              }`}
-            >
-              All
-            </button>
-            <button
-              onClick={() => setListFilter("UNREAD")}
-              className={`flex-1 text-[11px] font-bold uppercase tracking-wider py-1.5 rounded-md transition-all \${
-                listFilter === "UNREAD"
-                  ? "bg-white text-brand-green dark:bg-brand-green/20 dark:text-brand-green shadow-sm"
-                  : "text-neutral-500 hover:text-charcoal dark:hover:text-white"
-              }`}
-            >
-              Unread
-            </button>
-            <button
-              onClick={() => setListFilter("STARRED")}
-              className={`flex-1 flex justify-center items-center gap-1 text-[11px] font-bold uppercase tracking-wider py-1.5 rounded-md transition-all \${
-                listFilter === "STARRED"
-                  ? "bg-white text-yellow-500 dark:bg-yellow-500/20 dark:text-yellow-400 shadow-sm"
-                  : "text-neutral-500 hover:text-charcoal dark:hover:text-white"
-              }`}
-            >
-              <Star className="w-3 h-3" />
-              Starred
-            </button>
-          </div>
+          {someSelected ? (
+             <div className="flex items-center gap-2 animate-in fade-in">
+                 <span className="text-sm font-semibold">{selectedIds.size} selected</span>
+                 <Button size="sm" variant="outline" className="border-neutral-300 hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800" onClick={handleBulkArchive} disabled={isPending}>
+                     Archive
+                 </Button>
+                 <Button size="sm" variant="outline" className="border-red-300 text-red-600 hover:bg-red-50" onClick={handleBulkDelete} disabled={isPending}>
+                     <Trash2 className="w-3.5 h-3.5 mr-1" /> Delete
+                 </Button>
+             </div>
+          ) : (
+            <>
+              <div className="relative">
+                <Search className="absolute left-3 top-2.5 h-4 w-4 text-neutral-400" />
+                <Input
+                  placeholder="Search leads..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-9 bg-white dark:bg-black/40 border-neutral-200 dark:border-white/10 rounded-full h-9 shadow-sm"
+                />
+              </div>
+              <div className="flex gap-1 bg-neutral-100 dark:bg-black/40 p-1 rounded-lg">
+                <button
+                  onClick={() => setListFilter("ALL")}
+                  className={`flex-1 text-[11px] font-bold uppercase tracking-wider py-1.5 rounded-md transition-all ${
+                    listFilter === "ALL"
+                      ? "bg-white text-charcoal dark:bg-white/10 dark:text-white shadow-sm"
+                      : "text-neutral-500 hover:text-charcoal dark:hover:text-white"
+                  }`}
+                >
+                  All
+                </button>
+                <button
+                  onClick={() => setListFilter("UNREAD")}
+                  className={`flex-1 text-[11px] font-bold uppercase tracking-wider py-1.5 rounded-md transition-all ${
+                    listFilter === "UNREAD"
+                      ? "bg-white text-brand-green dark:bg-brand-green/20 dark:text-brand-green shadow-sm"
+                      : "text-neutral-500 hover:text-charcoal dark:hover:text-white"
+                  }`}
+                >
+                  Unread
+                </button>
+                <button
+                  onClick={() => setListFilter("STARRED")}
+                  className={`flex-1 flex justify-center items-center gap-1 text-[11px] font-bold uppercase tracking-wider py-1.5 rounded-md transition-all ${
+                    listFilter === "STARRED"
+                      ? "bg-white text-yellow-500 dark:bg-yellow-500/20 dark:text-yellow-400 shadow-sm"
+                      : "text-neutral-500 hover:text-charcoal dark:hover:text-white"
+                  }`}
+                >
+                  <Star className="w-3 h-3" />
+                  Starred
+                </button>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Lead List Scroll */}
@@ -353,6 +421,16 @@ export function InquiriesTable({
             </div>
           ) : (
             <div className="divide-y divide-neutral-100 dark:divide-white/5">
+              {/* Header row with select-all */}
+              <div className="px-4 py-3 bg-neutral-50/50 dark:bg-white/[0.02] border-b border-neutral-100 dark:border-white/5 flex items-center gap-4">
+                  <input
+                    type="checkbox"
+                    checked={allSelected}
+                    onChange={toggleSelectAll}
+                    className="rounded border-neutral-300 dark:border-neutral-600 text-brand-green focus:ring-brand-green mt-0.5"
+                  />
+                  <span className="text-xs font-bold uppercase tracking-wider text-neutral-500">Select All Leads</span>
+              </div>
               {filteredInquiries.map((inquiry) => (
                 <div
                   key={inquiry.id}
@@ -364,30 +442,42 @@ export function InquiriesTable({
                     }
                   }}
                   tabIndex={0}
-                  className={`w-full text-left p-4 hover:bg-neutral-50 dark:hover:bg-white/[0.04] transition-all group relative cursor-pointer \${
+                  className={`w-full text-left p-4 hover:bg-neutral-50 dark:hover:bg-white/[0.04] transition-all group relative cursor-pointer ${
                     selectedId === inquiry.id
                       ? "bg-neutral-50 dark:bg-white/[0.06] shadow-inner"
                       : ""
-                  } \${!inquiry.isRead ? "border-l-2 border-brand-green" : "border-l-2 border-transparent"}`}
+                  } ${!inquiry.isRead ? "border-l-2 border-brand-green" : "border-l-2 border-transparent"}`}
                 >
-                  <div className="flex justify-between items-start mb-1 gap-2">
-                    <div className={`text-sm truncate pr-4 relative \${!inquiry.isRead ? 'font-bold text-charcoal dark:text-white' : 'font-medium text-neutral-700 dark:text-neutral-300'}`}>
-                      {inquiry.name}
+                  <div className="flex items-start gap-3">
+                    <div className="pt-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(inquiry.id)}
+                        onChange={(e) => toggleSelect(inquiry.id, e)}
+                        className="rounded border-neutral-300 dark:border-neutral-600 text-brand-green focus:ring-brand-green"
+                      />
                     </div>
-                    <span className="text-[10px] uppercase font-bold tracking-widest text-neutral-400 whitespace-nowrap flex-shrink-0 mt-0.5">
-                      {new Date(inquiry.createdAt).toLocaleDateString([], {
-                        month: "short",
-                        day: "numeric",
-                      })}
-                    </span>
-                  </div>
-                  <div className="flex justify-between items-start gap-2 h-5">
-                    <div className="text-xs text-neutral-500 truncate flex-1">
-                      {inquiry.message}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start mb-1 gap-2">
+                        <div className={`text-sm truncate pr-4 relative ${!inquiry.isRead ? 'font-bold text-charcoal dark:text-white' : 'font-medium text-neutral-700 dark:text-neutral-300'}`}>
+                          {inquiry.name}
+                        </div>
+                        <span className="text-[10px] uppercase font-bold tracking-widest text-neutral-400 whitespace-nowrap flex-shrink-0 mt-0.5">
+                          {new Date(inquiry.createdAt).toLocaleDateString([], {
+                            month: "short",
+                            day: "numeric",
+                          })}
+                        </span>
+                      </div>
+                      <div className="flex justify-between items-start gap-2 h-5">
+                        <div className="text-xs text-neutral-500 truncate flex-1">
+                          {inquiry.message}
+                        </div>
+                        {inquiry.isStarred && (
+                          <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500 flex-shrink-0 mt-0.5" />
+                        )}
+                      </div>
                     </div>
-                    {inquiry.isStarred && (
-                      <Star className="w-3.5 h-3.5 text-yellow-500 fill-yellow-500 flex-shrink-0 mt-0.5" />
-                    )}
                   </div>
 
                   {/* Absolute Quick Actions (Xinteck CRM Pattern) */}
@@ -396,7 +486,7 @@ export function InquiriesTable({
                          className="text-neutral-400 hover:text-yellow-500 transition-colors p-1"
                          onClick={(e) => handleToggleStar(e, inquiry.id, inquiry.isStarred)}
                       >
-                         <Star className={`w-3.5 h-3.5 \${inquiry.isStarred ? 'fill-yellow-500 text-yellow-500' : ''}`} />
+                         <Star className={`w-3.5 h-3.5 ${inquiry.isStarred ? 'fill-yellow-500 text-yellow-500' : ''}`} />
                       </button>
                       {!inquiry.isRead && (
                           <button 

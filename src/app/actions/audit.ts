@@ -1,6 +1,6 @@
 "use server"
 
-import { verifySession, getCurrentUser } from "@/lib/auth"
+import { verifySession } from "@/lib/auth"
 import { prisma } from "@/lib/prisma"
 
 /**
@@ -12,6 +12,7 @@ export async function getAuditLogs(page = 1, pageSize = 25, filters?: {
     action?: string
     entity?: string
     userId?: string
+    search?: string
     startDate?: Date
     endDate?: Date
 }) {
@@ -19,16 +20,31 @@ export async function getAuditLogs(page = 1, pageSize = 25, filters?: {
     if (!session) return { logs: [], totalCount: 0 }
 
     try {
-        const where: any = {}
+        const conditions: any[] = []
 
-        if (filters?.action) where.action = filters.action
-        if (filters?.entity) where.entity = filters.entity
-        if (filters?.userId) where.userId = filters.userId
+        if (filters?.action) conditions.push({ action: filters.action })
+        if (filters?.entity) conditions.push({ entity: filters.entity })
+        if (filters?.userId) conditions.push({ userId: filters.userId })
         if (filters?.startDate || filters?.endDate) {
-            where.createdAt = {}
-            if (filters.startDate) where.createdAt.gte = filters.startDate
-            if (filters.endDate) where.createdAt.lte = filters.endDate
+            const dateFilter: any = {}
+            if (filters.startDate) dateFilter.gte = filters.startDate
+            if (filters.endDate) dateFilter.lte = filters.endDate
+            conditions.push({ createdAt: dateFilter })
         }
+
+        // Server-side search across action, entity, entityId
+        if (filters?.search && filters.search.trim()) {
+            const q = filters.search.trim()
+            conditions.push({
+                OR: [
+                    { action: { contains: q, mode: "insensitive" } },
+                    { entity: { contains: q, mode: "insensitive" } },
+                    { entityId: { contains: q, mode: "insensitive" } },
+                ]
+            })
+        }
+
+        const where = conditions.length > 0 ? { AND: conditions } : {}
 
         const [logs, totalCount] = await Promise.all([
             prisma.auditLog.findMany({

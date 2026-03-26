@@ -10,9 +10,13 @@ export default async function BookingsPage({
 }) {
   const params = await searchParams
   const filter = (params.filter as "all" | "upcoming" | "past" | "today") || "all"
+  const page = typeof params.page === 'string' ? parseInt(params.page) : 1
+  const pageSize = typeof params.pageSize === 'string' ? parseInt(params.pageSize) : 10
+  const search = typeof params.search === 'string' ? params.search : undefined
+  const statusFilter = typeof params.status === 'string' ? params.status : undefined
   
-  const [{ bookings }, stats] = await Promise.all([
-    getBookings(filter),
+  const [{ bookings, totalCount }, stats] = await Promise.all([
+    getBookings(filter, page, pageSize, search, statusFilter),
     getBookingStats()
   ])
 
@@ -55,15 +59,20 @@ export default async function BookingsPage({
       </div>
 
       {/* Bookings List */}
-      <Card className="border-none shadow-xl shadow-neutral-200/50 dark:shadow-black/20 bg-white/90 dark:bg-white/5 backdrop-blur-md overflow-hidden">
-        <CardHeader className="border-b border-neutral-100 dark:border-white/5 pb-4">
+      <Card className="glass overflow-hidden">
+        <CardHeader className="border-b border-[var(--border-default)] pb-4">
           <CardTitle className="flex items-center gap-2 text-lg">
             <Calendar className="h-5 w-5 text-orange" />
-            Appointments ({bookings.length})
+            Appointments ({totalCount})
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <BookingsClient initialBookings={bookings} />
+          <BookingsClient 
+            initialBookings={bookings} 
+            totalCount={totalCount ?? 0}
+            currentPage={page}
+            pageSize={pageSize}
+          />
         </CardContent>
       </Card>
     </div>

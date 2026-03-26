@@ -1,13 +1,13 @@
 "use client"
 
 import { exportAuditLogsCsv, getAuditLogs } from "@/app/actions/audit"
+import { TablePagination } from "@/components/admin/TablePagination"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/Dialog"
 import { Input } from "@/components/ui/Input"
 import {
     Calendar,
-    ChevronLeft,
-    ChevronRight,
     Download,
     Filter,
     Loader2,
@@ -15,7 +15,7 @@ import {
     Shield,
     X,
 } from "lucide-react"
-import { useCallback, useEffect, useState, useTransition } from "react"
+import { useCallback, useEffect, useRef, useState, useTransition } from "react"
 
 interface AuditLogEntry {
     id: string
@@ -54,6 +54,7 @@ export default function AuditLogPage() {
     const [logs, setLogs] = useState<AuditLogEntry[]>([])
     const [totalCount, setTotalCount] = useState(0)
     const [page, setPage] = useState(1)
+    const [pageSize, setPageSize] = useState(25)
     const [isLoading, startTransition] = useTransition()
     const [isExporting, startExportTransition] = useTransition()
 
@@ -61,22 +62,50 @@ export default function AuditLogPage() {
     const [actionFilter, setActionFilter] = useState("")
     const [entityFilter, setEntityFilter] = useState("")
     const [searchQuery, setSearchQuery] = useState("")
+    const [debouncedSearch, setDebouncedSearch] = useState("")
     const [showFilters, setShowFilters] = useState(false)
-    const pageSize = 25
+
+    // Detail modal
+    const [selectedLog, setSelectedLog] = useState<AuditLogEntry | null>(null)
+
+    // Debounce search
+    const debounceRef = useRef<NodeJS.Timeout | null>(null)
+    const handleSearchChange = (value: string) => {
+        setSearchQuery(value)
+        if (debounceRef.current) clearTimeout(debounceRef.current)
+        debounceRef.current = setTimeout(() => {
+            setDebouncedSearch(value)
+            setPage(1)
+        }, 400)
+    }
+
+    // All known entities and actions for filter dropdowns (fetched from the first page load)
+    const [knownEntities, setKnownEntities] = useState<string[]>([])
+    const [knownActions, setKnownActions] = useState<string[]>([])
 
     const loadLogs = useCallback(() => {
         startTransition(async () => {
             const result = await getAuditLogs(page, pageSize, {
                 action: actionFilter || undefined,
                 entity: entityFilter || undefined,
+                search: debouncedSearch || undefined,
             })
-            setLogs(result.logs.map(l => ({
+            const mapped = result.logs.map(l => ({
                 ...l,
                 createdAt: l.createdAt.toISOString()
-            })))
+            }))
+            setLogs(mapped)
             setTotalCount(result.totalCount)
+
+            // Build filter options from first load
+            if (knownEntities.length === 0 && mapped.length > 0) {
+                const entities = [...new Set(mapped.map(l => l.entity))].sort()
+                const actions = [...new Set(mapped.map(l => l.action))].sort()
+                setKnownEntities(entities)
+                setKnownActions(actions)
+            }
         })
-    }, [page, actionFilter, entityFilter])
+    }, [page, pageSize, actionFilter, entityFilter, debouncedSearch])
 
     useEffect(() => {
         loadLogs()
@@ -104,22 +133,11 @@ export default function AuditLogPage() {
         setActionFilter("")
         setEntityFilter("")
         setSearchQuery("")
+        setDebouncedSearch("")
         setPage(1)
     }
 
-    const totalPages = Math.ceil(totalCount / pageSize)
-
-    const filteredLogs = searchQuery
-        ? logs.filter(l =>
-            l.action.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            l.entity.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            l.entityId.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (l.userId || "").toLowerCase().includes(searchQuery.toLowerCase())
-        )
-        : logs
-
-    const entities = [...new Set(logs.map(l => l.entity))].sort()
-    const actions = [...new Set(logs.map(l => l.action))].sort()
+    const totalPages = Math.max(1, Math.ceil(totalCount / pageSize))
 
     return (
         <div className="space-y-6 max-w-[1600px] mx-auto animate-in fade-in duration-500">
@@ -130,7 +148,7 @@ export default function AuditLogPage() {
                         <Shield className="w-8 h-8 text-brand-green" />
                         Audit Trail
                     </h1>
-                    <p className="text-neutral-500 dark:text-neutral-400 mt-1">
+                    <p className="text-caption mt-1">
                         {totalCount} total events recorded across the platform.
                     </p>
                 </div>
@@ -170,7 +188,7 @@ export default function AuditLogPage() {
                                     <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
                                     <Input
                                         value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        onChange={(e) => handleSearchChange(e.target.value)}
                                         placeholder="Search actions, entities, IDs..."
                                         className="pl-9 surface-input"
                                     />
@@ -181,10 +199,10 @@ export default function AuditLogPage() {
                                 <select
                                     value={entityFilter}
                                     onChange={(e) => { setEntityFilter(e.target.value); setPage(1) }}
-                                    className="w-full h-10 rounded-xl surface-input border-default px-3 text-sm focus:ring-2 focus:ring-brand-green"
+                                    className="w-full h-10 rounded-xl surface-input border border-[var(--input-border)] px-3 text-sm focus:ring-2 focus:ring-brand-green focus:outline-none"
                                 >
                                     <option value="">All Entities</option>
-                                    {entities.map(e => (
+                                    {knownEntities.map(e => (
                                         <option key={e} value={e}>{e}</option>
                                     ))}
                                 </select>
@@ -194,10 +212,10 @@ export default function AuditLogPage() {
                                 <select
                                     value={actionFilter}
                                     onChange={(e) => { setActionFilter(e.target.value); setPage(1) }}
-                                    className="w-full h-10 rounded-xl surface-input border-default px-3 text-sm focus:ring-2 focus:ring-brand-green"
+                                    className="w-full h-10 rounded-xl surface-input border border-[var(--input-border)] px-3 text-sm focus:ring-2 focus:ring-brand-green focus:outline-none"
                                 >
                                     <option value="">All Actions</option>
-                                    {actions.map(a => (
+                                    {knownActions.map(a => (
                                         <option key={a} value={a}>{formatAction(a)}</option>
                                     ))}
                                 </select>
@@ -213,14 +231,14 @@ export default function AuditLogPage() {
             )}
 
             {/* Audit Log Table */}
-            <Card className="border-none shadow-xl shadow-neutral-200/50 dark:shadow-black/20 bg-white/90 dark:bg-white/5 backdrop-blur-md overflow-hidden">
-                <CardHeader className="border-b border-neutral-100 dark:border-white/5 pb-4">
+            <Card className="glass overflow-hidden">
+                <CardHeader className="border-b border-[var(--border-default)] pb-4">
                     <CardTitle className="text-lg flex items-center gap-2">
                         <Calendar className="w-5 h-5 text-orange" />
                         Event Log
                     </CardTitle>
                     <CardDescription>
-                        Showing {filteredLogs.length} of {totalCount} events (page {page} of {totalPages || 1})
+                        Showing page {page} of {totalPages} ({totalCount} events)
                     </CardDescription>
                 </CardHeader>
                 <CardContent className="p-0">
@@ -228,16 +246,16 @@ export default function AuditLogPage() {
                         <div className="flex items-center justify-center py-12">
                             <Loader2 className="w-6 h-6 animate-spin text-brand-green" />
                         </div>
-                    ) : filteredLogs.length === 0 ? (
-                        <div className="text-center py-12 text-neutral-500">
+                    ) : logs.length === 0 ? (
+                        <div className="text-center py-12" style={{ color: "var(--text-muted)" }}>
                             <Shield className="w-12 h-12 mx-auto mb-3 opacity-30" />
                             <p className="font-medium">No audit events found</p>
                             <p className="text-sm">Events will appear here as actions are performed.</p>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto">
+                        <div className="overflow-x-auto custom-scrollbar">
                             <table className="w-full text-sm">
-                                <thead className="bg-neutral-50 dark:bg-white/5 text-neutral-500 text-xs uppercase tracking-wider">
+                                <thead className="bg-[var(--surface-secondary)] text-[var(--text-muted)] text-xs uppercase tracking-wider">
                                     <tr>
                                         <th className="py-3 px-4 text-left font-semibold">Timestamp</th>
                                         <th className="py-3 px-4 text-left font-semibold">Action</th>
@@ -246,10 +264,14 @@ export default function AuditLogPage() {
                                         <th className="py-3 px-4 text-left font-semibold">Details</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-neutral-100 dark:divide-white/5">
-                                    {filteredLogs.map((log) => (
-                                        <tr key={log.id} className="hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors">
-                                            <td className="py-3 px-4 whitespace-nowrap text-neutral-500 text-xs font-mono">
+                                <tbody className="divide-y divide-[var(--border-subtle)]">
+                                    {logs.map((log) => (
+                                        <tr
+                                            key={log.id}
+                                            className="hover:bg-brand-green/[0.02] dark:hover:bg-white/[0.02] transition-colors cursor-pointer"
+                                            onClick={() => setSelectedLog(log)}
+                                        >
+                                            <td className="py-3 px-4 whitespace-nowrap text-xs font-mono" style={{ color: "var(--text-muted)" }}>
                                                 {new Date(log.createdAt).toLocaleDateString("en-GB", {
                                                     day: "2-digit",
                                                     month: "short",
@@ -269,10 +291,10 @@ export default function AuditLogPage() {
                                             <td className="py-3 px-4 font-medium text-olive dark:text-off-white">
                                                 {log.entity}
                                             </td>
-                                            <td className="py-3 px-4 text-neutral-500 font-mono text-xs max-w-[200px] truncate">
+                                            <td className="py-3 px-4 font-mono text-xs max-w-[200px] truncate" style={{ color: "var(--text-muted)" }}>
                                                 {log.entityId}
                                             </td>
-                                            <td className="py-3 px-4 text-neutral-500 text-xs max-w-[250px] truncate">
+                                            <td className="py-3 px-4 text-xs max-w-[250px] truncate" style={{ color: "var(--text-muted)" }}>
                                                 {log.metadata
                                                     ? Object.entries(log.metadata as Record<string, unknown>)
                                                         .map(([k, v]) => `${k}: ${v}`)
@@ -287,33 +309,83 @@ export default function AuditLogPage() {
                     )}
 
                     {/* Pagination */}
-                    {totalPages > 1 && (
-                        <div className="flex items-center justify-between px-4 py-3 border-t border-neutral-100 dark:border-white/5">
-                            <p className="text-sm text-neutral-500">
-                                Page {page} of {totalPages}
-                            </p>
-                            <div className="flex items-center gap-2">
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={page <= 1}
-                                    onClick={() => setPage(p => p - 1)}
-                                >
-                                    <ChevronLeft className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                    variant="outline"
-                                    size="sm"
-                                    disabled={page >= totalPages}
-                                    onClick={() => setPage(p => p + 1)}
-                                >
-                                    <ChevronRight className="w-4 h-4" />
+                    <TablePagination
+                        currentPage={page}
+                        totalCount={totalCount}
+                        pageSize={pageSize}
+                        onPageChange={setPage}
+                        onPageSizeChange={(size) => { setPageSize(size); setPage(1) }}
+                    />
+                </CardContent>
+            </Card>
+
+            {/* Row-Click Detail Modal */}
+            <Dialog open={!!selectedLog} onOpenChange={(open) => { if (!open) setSelectedLog(null) }}>
+                <DialogContent className="sm:max-w-xl max-h-[80vh] overflow-y-auto">
+                    <div className="pr-8">
+                        <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                            <Shield className="w-5 h-5 text-brand-green" />
+                            Audit Event Details
+                        </DialogTitle>
+                    </div>
+
+                    {selectedLog && (
+                        <div className="space-y-4 mt-2">
+                            {/* Action badge */}
+                            <div className="flex items-center gap-3">
+                                <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-semibold ${getActionColor(selectedLog.action)}`}>
+                                    {formatAction(selectedLog.action)}
+                                </span>
+                                <span className="text-sm font-mono" style={{ color: "var(--text-muted)" }}>
+                                    {new Date(selectedLog.createdAt).toLocaleString("en-GB")}
+                                </span>
+                            </div>
+
+                            {/* Key-value fields */}
+                            <div className="rounded-xl p-4 space-y-3" style={{ background: "var(--surface-secondary)", borderColor: "var(--border-default)", borderWidth: "1px" }}>
+                                <div className="grid grid-cols-[100px_1fr] gap-2 text-sm">
+                                    <span className="text-caption font-semibold uppercase text-xs">Entity</span>
+                                    <span className="font-medium text-olive dark:text-off-white">{selectedLog.entity}</span>
+                                </div>
+                                <div className="grid grid-cols-[100px_1fr] gap-2 text-sm">
+                                    <span className="text-caption font-semibold uppercase text-xs">Entity ID</span>
+                                    <span className="font-mono text-xs break-all" style={{ color: "var(--text-secondary)" }}>{selectedLog.entityId}</span>
+                                </div>
+                                {selectedLog.userId && (
+                                    <div className="grid grid-cols-[100px_1fr] gap-2 text-sm">
+                                        <span className="text-caption font-semibold uppercase text-xs">User ID</span>
+                                        <span className="font-mono text-xs break-all" style={{ color: "var(--text-secondary)" }}>{selectedLog.userId}</span>
+                                    </div>
+                                )}
+                                {selectedLog.ipAddress && (
+                                    <div className="grid grid-cols-[100px_1fr] gap-2 text-sm">
+                                        <span className="text-caption font-semibold uppercase text-xs">IP Address</span>
+                                        <span className="font-mono text-xs" style={{ color: "var(--text-secondary)" }}>{selectedLog.ipAddress}</span>
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* Metadata JSON */}
+                            {selectedLog.metadata && Object.keys(selectedLog.metadata).length > 0 && (
+                                <div className="space-y-2">
+                                    <h4 className="text-xs font-bold uppercase tracking-wider text-caption">Metadata</h4>
+                                    <pre className="text-xs font-mono p-4 rounded-xl overflow-auto max-h-[300px] custom-scrollbar"
+                                        style={{ background: "var(--surface-secondary)", color: "var(--text-secondary)", borderColor: "var(--border-default)", borderWidth: "1px" }}
+                                    >
+                                        {JSON.stringify(selectedLog.metadata, null, 2)}
+                                    </pre>
+                                </div>
+                            )}
+
+                            <div className="flex justify-end pt-2">
+                                <Button variant="outline" size="sm" onClick={() => setSelectedLog(null)}>
+                                    Close
                                 </Button>
                             </div>
                         </div>
                     )}
-                </CardContent>
-            </Card>
+                </DialogContent>
+            </Dialog>
         </div>
     )
 }

@@ -8,10 +8,22 @@ import { revalidatePath } from "next/cache"
 
 export type TestimonialStatus = "IN_REVIEW" | "PUBLISHED" | "ARCHIVED"
 
-export async function getTestimonials(status?: TestimonialStatus, page = 1, pageSize = 10) {
+export async function getTestimonials(status?: TestimonialStatus, page = 1, pageSize = 10, search?: string) {
     try {
-        const where: any = { deletedAt: null }
-        if (status) where.contentStatus = status
+        const conditions: any[] = [{ deletedAt: null }]
+        if (status) conditions.push({ contentStatus: status })
+
+        if (search && search.trim()) {
+            const q = search.trim()
+            conditions.push({
+                OR: [
+                    { clientName: { contains: q, mode: "insensitive" } },
+                    { content: { contains: q, mode: "insensitive" } },
+                ]
+            })
+        }
+
+        const where = { AND: conditions }
 
         const [testimonials, totalCount] = await Promise.all([
             prisma.testimonial.findMany({

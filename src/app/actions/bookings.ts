@@ -28,43 +28,67 @@ export interface BookingData {
 }
 
 /**
- * Get all bookings with optional filtering
+ * Get bookings with robust server-side pagination, search, and filtering.
+ * All filtering happens at the DB level via Prisma — NO client-side filtering.
  */
-export async function getBookings(filter?: "all" | "upcoming" | "past" | "today") {
+export async function getBookings(
+    filter?: "all" | "upcoming" | "past" | "today",
+    page: number = 1,
+    pageSize: number = 10,
+    search?: string,
+    statusFilter?: string
+) {
     try {
         const now = new Date()
         const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate())
         const endOfToday = new Date(startOfToday.getTime() + 24 * 60 * 60 * 1000)
 
         // Always exclude soft-deleted bookings
-        const baseWhere = { deletedAt: null }
-        let where: any = { ...baseWhere }
+        const conditions: any[] = [{ deletedAt: null }]
 
+        // Time-range filter
         switch (filter) {
             case "upcoming":
-                where = { ...baseWhere, scheduledAt: { gte: now } }
+                conditions.push({ scheduledAt: { gte: now } })
                 break
             case "past":
-                where = { ...baseWhere, scheduledAt: { lt: now } }
+                conditions.push({ scheduledAt: { lt: now } })
                 break
             case "today":
-                where = {
-                    ...baseWhere,
-                    scheduledAt: {
-                        gte: startOfToday,
-                        lt: endOfToday
-                    }
-                }
-                break
-            default:
-                // "all" - no filter, only exclude deleted
+                conditions.push({ scheduledAt: { gte: startOfToday, lt: endOfToday } })
                 break
         }
 
-        const bookingsData = await prisma.booking.findMany({
-            where,
-            orderBy: { scheduledAt: "desc" },
-        })
+        // Status filter (e.g. "CONFIRMED", "CANCELLED")
+        if (statusFilter && statusFilter !== "ALL") {
+            conditions.push({ bookingStatus: statusFilter })
+        }
+
+        // Server-side search across key text fields
+        if (search && search.trim()) {
+            const q = search.trim()
+            conditions.push({
+                OR: [
+                    { clientName: { contains: q, mode: "insensitive" } },
+                    { clientEmail: { contains: q, mode: "insensitive" } },
+                    { serviceName: { contains: q, mode: "insensitive" } },
+                    { referenceCode: { contains: q, mode: "insensitive" } },
+                ]
+            })
+        }
+
+        const where = { AND: conditions }
+
+        // Execute count + paginated query in parallel for efficiency
+        const [totalCount, bookingsData] = await Promise.all([
+            prisma.booking.count({ where }),
+            prisma.booking.findMany({
+                where,
+                orderBy: { scheduledAt: "desc" },
+                skip: (page - 1) * pageSize,
+                take: pageSize,
+            })
+        ])
 
         // Normalize bookingStatus to status for the UI
         const bookings = bookingsData.map(b => ({
@@ -72,11 +96,12 @@ export async function getBookings(filter?: "all" | "upcoming" | "past" | "today"
             status: b.bookingStatus
         }))
 
-        return { bookings, error: null }
+        return { bookings, totalCount, error: null }
     } catch (error) {
         console.error("Failed to fetch bookings:", error instanceof Error ? error.message : String(error))
         return {
             bookings: [],
+            totalCount: 0,
             error: "Failed to fetch bookings"
         }
     }

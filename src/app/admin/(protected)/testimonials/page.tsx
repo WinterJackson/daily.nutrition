@@ -11,10 +11,12 @@ export default async function AdminTestimonialsPage({
 }) {
   const params = await searchParams
   const page = typeof params.page === 'string' ? parseInt(params.page) : 1
-  const pageSize = 10
+  const pageSize = typeof params.pageSize === 'string' ? parseInt(params.pageSize) : 10
+  const search = typeof params.search === 'string' ? params.search : undefined
+  const status = typeof params.status === 'string' ? params.status as any : undefined
   
   const [{ testimonials, totalCount }, syncStatus] = await Promise.all([
-    getTestimonials(undefined, page, pageSize),
+    getTestimonials(status, page, pageSize, search),
     getGoogleReviewsSyncStatus()
   ])
 

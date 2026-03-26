@@ -2,13 +2,14 @@
 
 import { adminCancelBooking, adminRescheduleBooking, BookingStatus, deleteBooking, updateBookingNotes, updateBookingStatus } from "@/app/actions/bookings"
 import { fetchAvailability } from "@/app/actions/google-calendar"
+import { TablePagination } from "@/components/admin/TablePagination"
 import { Button } from "@/components/ui/Button"
 import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/Dialog"
 import { Input } from "@/components/ui/Input"
 import { Calendar, CheckCircle, Clock, Copy, Eye, FileText, Loader2, RefreshCw, Search, Trash2, User, Video, XCircle } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useState, useTransition } from "react"
+import { useCallback, useEffect, useRef, useState, useTransition } from "react"
 
 interface Booking {
   id: string
@@ -30,9 +31,12 @@ interface Booking {
 
 interface BookingsClientProps {
   initialBookings: Booking[]
+  totalCount: number
+  currentPage: number
+  pageSize: number
 }
 
-export function BookingsClient({ initialBookings }: BookingsClientProps) {
+export function BookingsClient({ initialBookings, totalCount, currentPage, pageSize }: BookingsClientProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
   const [bookings, setBookings] = useState(initialBookings)
@@ -40,11 +44,62 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const [bookingToDelete, setBookingToDelete] = useState<string | null>(null)
   const [bookingToCancel, setBookingToCancel] = useState<string | null>(null)
-  const [searchQuery, setSearchQuery] = useState("")
-  const [statusFilter, setStatusFilter] = useState<"ALL" | BookingStatus>("ALL")
-  const [timeFilter, setTimeFilter] = useState<"all" | "upcoming" | "past" | "today">("all")
+  const [searchQuery, setSearchQuery] = useState(searchParams.get("search") || "")
+  const [statusFilter, setStatusFilter] = useState<"ALL" | BookingStatus>((searchParams.get("status") as any) || "ALL")
+  const [timeFilter, setTimeFilter] = useState<"all" | "upcoming" | "past" | "today">((searchParams.get("filter") as any) || "all")
   const [editNotes, setEditNotes] = useState("")
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
+
+  // Bulk selection
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
+  const allSelected = bookings.length > 0 && selectedIds.size === bookings.length
+  const someSelected = selectedIds.size > 0
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(new Set())
+    } else {
+      setSelectedIds(new Set(bookings.map(b => b.id)))
+    }
+  }
+
+  const toggleSelect = (id: string) => {
+    const next = new Set(selectedIds)
+    if (next.has(id)) next.delete(id)
+    else next.add(id)
+    setSelectedIds(next)
+  }
+
+  // URL-based navigation for server-side pagination and search
+  const debounceRef = useRef<NodeJS.Timeout | null>(null)
+
+  const pushParams = useCallback((overrides: Record<string, string>) => {
+    const params = new URLSearchParams(searchParams.toString())
+    for (const [k, v] of Object.entries(overrides)) {
+      if (v) params.set(k, v)
+      else params.delete(k)
+    }
+    // Reset page to 1 when search/filter changes (unless page is explicitly set)
+    if (!overrides.page) params.set("page", "1")
+    router.push(`?${params.toString()}`)
+    setSelectedIds(new Set()) // Clear selection on navigation
+  }, [router, searchParams])
+
+  const handleSearchChange = (value: string) => {
+    setSearchQuery(value)
+    if (debounceRef.current) clearTimeout(debounceRef.current)
+    debounceRef.current = setTimeout(() => {
+      pushParams({ search: value })
+    }, 400)
+  }
+
+  const handlePageChange = (page: number) => {
+    pushParams({ page: String(page) })
+  }
+
+  const handlePageSizeChange = (size: number) => {
+    pushParams({ pageSize: String(size), page: "1" })
+  }
 
   // Reschedule state
   const [showReschedule, setShowReschedule] = useState(false)
@@ -57,6 +112,7 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
 
   useEffect(() => {
     setBookings(initialBookings)
+    setSelectedIds(new Set())
   }, [initialBookings])
 
   // Load slots when reschedule date changes
@@ -81,9 +137,36 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
 
   // Update URL with filter
   const handleTimeFilterChange = (filter: string) => {
-    const params = new URLSearchParams(searchParams)
-    params.set("filter", filter)
-    router.push(`?${params.toString()}`)
+    pushParams({ filter })
+  }
+
+  const handleStatusFilterChange = (status: string) => {
+    setStatusFilter(status as any)
+    pushParams({ status: status === "ALL" ? "" : status })
+  }
+
+  // Bulk delete
+  const handleBulkDelete = async () => {
+    if (!confirm(`Delete ${selectedIds.size} booking(s)? This cannot be undone.`)) return
+    startTransition(async () => {
+      for (const id of selectedIds) {
+        await deleteBooking(id)
+      }
+      router.refresh()
+      setSelectedIds(new Set())
+    })
+  }
+
+  // Bulk cancel
+  const handleBulkCancel = async () => {
+    if (!confirm(`Cancel ${selectedIds.size} booking(s)? Clients will be notified.`)) return
+    startTransition(async () => {
+      for (const id of selectedIds) {
+        await adminCancelBooking(id)
+      }
+      router.refresh()
+      setSelectedIds(new Set())
+    })
   }
 
   const handleStatusChange = (id: string, status: BookingStatus) => {
@@ -162,18 +245,9 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
     setTimeout(() => setCopiedCode(null), 2000)
   }
 
-  // Client-side filtering — now includes referenceCode search
-  const filteredBookings = bookings.filter(booking => {
-    const matchesSearch = 
-      booking.clientName.toLowerCase().includes(searchQuery.toLowerCase()) || 
-      booking.clientEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      booking.serviceName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      (booking.referenceCode || "").toLowerCase().includes(searchQuery.toLowerCase())
-    
-    const matchesStatus = statusFilter === "ALL" || booking.status === statusFilter
-    
-    return matchesSearch && matchesStatus
-  })
+  // Server-side filtering — bookings are already filtered by the server action
+  // No client-side filtering needed
+  const filteredBookings = bookings
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -227,22 +301,40 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
 
   return (
     <>
+      {/* Bulk Action Toolbar */}
+      {someSelected && (
+        <div className="p-3 border-b border-[var(--border-default)] flex items-center gap-3 bg-brand-green/5 dark:bg-brand-green/10 animate-in fade-in duration-200">
+          <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>
+            {selectedIds.size} selected
+          </span>
+          <Button size="sm" variant="outline" className="border-red-300 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20" onClick={handleBulkCancel} disabled={isPending}>
+            <XCircle className="w-3.5 h-3.5 mr-1.5" /> Cancel Selected
+          </Button>
+          <Button size="sm" variant="outline" className="border-red-500 text-red-700 hover:bg-red-100 dark:hover:bg-red-900/30" onClick={handleBulkDelete} disabled={isPending}>
+            <Trash2 className="w-3.5 h-3.5 mr-1.5" /> Delete Selected
+          </Button>
+          <Button size="sm" variant="ghost" onClick={() => setSelectedIds(new Set())}>
+            Clear
+          </Button>
+        </div>
+      )}
+
       {/* Filters */}
-      <div className="sticky top-0 z-10 p-4 border-b border-neutral-100 dark:border-white/5 flex flex-col sm:flex-row gap-3 justify-between items-stretch sm:items-center bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm">
+      <div className="sticky top-0 z-10 p-4 border-b border-[var(--border-default)] flex flex-col sm:flex-row gap-3 justify-between items-stretch sm:items-center" style={{ background: "var(--surface-primary)" }}>
         <div className="relative w-full sm:w-auto sm:min-w-[280px]">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
           <Input
             placeholder="Search name, email, service, ref code..."
-            className="pl-9 w-full bg-white dark:bg-black/20 border-neutral-200 dark:border-white/10"
+            className="pl-9 w-full surface-input"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={(e) => handleSearchChange(e.target.value)}
           />
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <select
-            className="h-10 flex-1 sm:flex-none rounded-md border border-neutral-200 dark:border-white/10 bg-white dark:bg-black/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green"
+            className="h-10 flex-1 sm:flex-none rounded-md surface-input border border-[var(--input-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green"
             value={statusFilter}
-            onChange={(e) => setStatusFilter(e.target.value as any)}
+            onChange={(e) => handleStatusFilterChange(e.target.value)}
           >
             <option value="ALL">All Statuses</option>
             <option value="PENDING">Pending</option>
@@ -252,7 +344,7 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
             <option value="NO_SHOW">No Show</option>
           </select>
           <select
-            className="h-10 flex-1 sm:flex-none rounded-md border border-neutral-200 dark:border-white/10 bg-white dark:bg-black/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green"
+            className="h-10 flex-1 sm:flex-none rounded-md surface-input border border-[var(--input-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green"
             value={timeFilter}
             onChange={(e) => {
               setTimeFilter(e.target.value as any)
@@ -270,8 +362,16 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
       {/* Table — always horizontal-scrollable with no text wrap */}
       <div className="overflow-x-auto scrollbar-thin-1px">
         <table className="w-full min-w-[960px] text-sm text-left">
-          <thead className="bg-neutral-50/80 dark:bg-white/[0.03] text-neutral-500 dark:text-neutral-400 border-b border-neutral-100 dark:border-white/5">
+          <thead className="bg-[var(--surface-secondary)] text-[var(--text-muted)] border-b border-[var(--border-default)]">
             <tr>
+              <th className="px-3 py-3.5 font-semibold whitespace-nowrap text-xs uppercase tracking-wider">
+                <input
+                  type="checkbox"
+                  checked={allSelected}
+                  onChange={toggleSelectAll}
+                  className="rounded border-neutral-300 dark:border-neutral-600 text-brand-green focus:ring-brand-green"
+                />
+              </th>
               <th className="px-5 py-3.5 font-semibold whitespace-nowrap text-xs uppercase tracking-wider">Status</th>
               <th className="px-5 py-3.5 font-semibold whitespace-nowrap text-xs uppercase tracking-wider">Client</th>
               <th className="px-5 py-3.5 font-semibold whitespace-nowrap text-xs uppercase tracking-wider">Service</th>
@@ -281,10 +381,10 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
               <th className="px-5 py-3.5 font-semibold whitespace-nowrap text-xs uppercase tracking-wider text-right">Actions</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-neutral-100 dark:divide-white/5">
+          <tbody className="divide-y divide-[var(--border-subtle)]">
             {filteredBookings.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-5 py-16 text-center text-neutral-500">
+                <td colSpan={8} className="px-5 py-16 text-center" style={{ color: "var(--text-muted)" }}>
                   <div className="flex flex-col items-center gap-2">
                     <Calendar className="w-8 h-8 text-neutral-300 dark:text-neutral-600" />
                     <p className="font-medium">{bookings.length === 0 ? "No bookings yet" : "No matches found"}</p>
@@ -296,7 +396,15 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
               filteredBookings.map((booking) => {
                 const { date, time } = formatDateTime(booking.scheduledAt)
                 return (
-                  <tr key={booking.id} className="group hover:bg-brand-green/[0.02] dark:hover:bg-white/[0.02] transition-colors">
+                  <tr key={booking.id} className="group hover:bg-brand-green/[0.02] dark:hover:bg-white/[0.02] transition-colors cursor-pointer" onClick={() => { setSelectedBooking(booking); setEditNotes(booking.notes || ""); setShowReschedule(false); setRescheduleError(null) }}>
+                    <td className="px-3 py-3.5 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                      <input
+                        type="checkbox"
+                        checked={selectedIds.has(booking.id)}
+                        onChange={() => toggleSelect(booking.id)}
+                        className="rounded border-neutral-300 dark:border-neutral-600 text-brand-green focus:ring-brand-green"
+                      />
+                    </td>
                     <td className="px-5 py-3.5 whitespace-nowrap">
                       {getStatusBadge(booking.status)}
                     </td>
@@ -338,7 +446,7 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
                         )}
                       </span>
                     </td>
-                    <td className="px-5 py-3.5 whitespace-nowrap text-right">
+                    <td className="px-5 py-3.5 whitespace-nowrap text-right" onClick={(e) => e.stopPropagation()}>
                       <div className="flex items-center justify-end gap-0.5">
                         <Button
                           variant="ghost"
@@ -386,6 +494,15 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
           </tbody>
         </table>
       </div>
+
+      {/* Pagination */}
+      <TablePagination
+        currentPage={currentPage}
+        totalCount={totalCount}
+        pageSize={pageSize}
+        onPageChange={handlePageChange}
+        onPageSizeChange={handlePageSizeChange}
+      />
 
       {/* Detail Modal */}
       <Dialog open={!!selectedBooking} onOpenChange={(open) => { if (!open) { setSelectedBooking(null); setShowReschedule(false); setRescheduleError(null) } }}>
