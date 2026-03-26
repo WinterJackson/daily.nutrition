@@ -94,11 +94,13 @@ export const NotificationManager = {
             let subject = "";
             let reactElement: React.ReactElement | null = null;
             let htmlContent = "";
+            let replyToAddress = branding.supportEmail; // Default fallback
 
             switch (type) {
                 case "NEW_BOOKING":
                     if (payload.newBooking) {
                         subject = `New Booking: ${payload.newBooking.clientName}`;
+                        replyToAddress = payload.newBooking.clientEmail || branding.supportEmail;
                         // Ensure bookingUrl is absolute (prepend websiteUrl if relative)
                         const fullBookingUrl = payload.newBooking.bookingUrl.startsWith('http')
                             ? payload.newBooking.bookingUrl
@@ -122,6 +124,8 @@ export const NotificationManager = {
                 case "BOOKING_CANCELLED":
                     if (payload.bookingCancelled) {
                         subject = `Booking Cancelled: ${payload.bookingCancelled.clientName}`;
+                        // At minimum set to support, but if we had clientEmail here we'd use it.
+                        // For cancellations we might just use the fallback if clientEmail isn't in payload.
                         htmlContent = `
                             <div style="font-family: sans-serif; padding: 20px;">
                                 <h2 style="color: #d9534f;">A booking has been cancelled</h2>
@@ -135,6 +139,7 @@ export const NotificationManager = {
                 case "BOOKING_RESCHEDULED":
                     if (payload.bookingRescheduled) {
                         subject = `Booking Rescheduled: ${payload.bookingRescheduled.clientName}`;
+                        // Fallback same as cancellation
                         htmlContent = `
                             <div style="font-family: sans-serif; padding: 20px;">
                                 <h2 style="color: #5bc0de;">A booking was rescheduled</h2>
@@ -152,7 +157,7 @@ export const NotificationManager = {
                 const emailConfig: any = {
                     from: `Edwak Nutrition System <${fromEmail}>`,
                     to: adminEmail,
-                    replyTo: branding.supportEmail,
+                    replyTo: replyToAddress,
                     subject
                 };
 
