@@ -169,10 +169,14 @@ export async function createPost(data: { title: string; content: string; publish
     }
 
     try {
+        const plainText = data.content.replace(/[#*_\[\]()>`~-]/g, "").trim()
+        const excerpt = plainText.slice(0, 160).trim() + (plainText.length > 160 ? "..." : "")
+
         const post = await prisma.blogPost.create({
             data: {
                 title: data.title,
                 slug,
+                excerpt,
                 content: data.content,
                 published: data.published,
                 status: data.status || (data.published ? "PUBLISHED" : "DRAFT"),
@@ -214,10 +218,15 @@ export async function updatePost(id: string, data: { title: string; content: str
             }
         }
 
+        // Auto-update the excerpt based on new content
+        const plainText = data.content.replace(/[#*_\[\]()>`~-]/g, "").trim()
+        const excerpt = plainText.slice(0, 160).trim() + (plainText.length > 160 ? "..." : "")
+
         const post = await prisma.blogPost.update({
             where: { id },
             data: {
                 title: data.title,
+                excerpt,
                 content: data.content,
                 published: data.published,
                 status: data.status || (data.published ? "PUBLISHED" : "DRAFT"),
