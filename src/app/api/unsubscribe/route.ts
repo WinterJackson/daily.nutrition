@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
         // Token is valid, unsubscribe the user
         await NewsletterService.unsubscribe(email)
 
-        // Return a simple success HTML page
+        // Return a branded success HTML page
         return new NextResponse(`
             <!DOCTYPE html>
             <html>
@@ -33,6 +33,8 @@ export async function GET(request: NextRequest) {
                     body { font-family: system-ui, -apple-system, sans-serif; text-align: center; padding: 40px 20px; background: #fafafa; color: #333; }
                     .card { background: white; max-width: 400px; margin: 0 auto; padding: 30px; border-radius: 12px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); }
                     h1 { color: #4A5D23; margin-top: 0; }
+                    .btn { display: inline-block; margin-top: 16px; padding: 10px 24px; background: #556B2F; color: white; border-radius: 8px; text-decoration: none; font-weight: 500; }
+                    .btn:hover { background: #4A5D23; }
                 </style>
             </head>
             <body>
@@ -40,6 +42,7 @@ export async function GET(request: NextRequest) {
                     <h1>Unsubscribed</h1>
                     <p>You have been successfully removed from the Edwak Nutrition mailing list.</p>
                     <p><strong>${email}</strong> will no longer receive these emails.</p>
+                    <a href="https://edwaknutrition.co.ke" class="btn">Visit Website</a>
                 </div>
             </body>
             </html>

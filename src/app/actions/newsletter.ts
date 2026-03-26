@@ -1,12 +1,12 @@
 "use server"
 
-import { MainEmailLayout } from "@/components/email/MainEmailLayout"
+import { BrandedEmailLayout, EmailBrandingData } from "@/components/emails/BrandedEmailLayout"
 import { verifySession } from "@/lib/auth"
 import { getResendClient } from "@/lib/email"
 import { prisma } from "@/lib/prisma"
 import { NewsletterService } from "@/lib/services/newsletter-service"
 import { CampaignTarget } from "@prisma/client"
-import { Text } from "@react-email/components"
+import { Section, Text } from "@react-email/components"
 import { render } from "@react-email/render"
 import { revalidatePath } from "next/cache"
 
@@ -84,6 +84,8 @@ export async function dispatchCampaign(campaignId: string) {
     const session = await verifySession()
     if (!session) throw new Error("Unauthorized")
 
+    let sentCount = 0
+
     try {
         const campaign = await prisma.newsletterCampaign.findUnique({ where: { id: campaignId } })
         if (!campaign || campaign.status !== "DRAFT") throw new Error("Invalid campaign or not in DRAFT status")
@@ -95,16 +97,15 @@ export async function dispatchCampaign(campaignId: string) {
             where: {
                 isActive: true,
                 deletedAt: null,
-                // If specific targeting logic exists, apply here. For now, ACTIVE_ONLY is default.
             },
             select: { email: true }
         })
 
         if (subscribers.length === 0) throw new Error("No active subscribers found")
 
-        // Block if attempting to send more than mathematical capacity
+        // Block if attempting to send more than capacity
         if (subscribers.length > quota.maxSendableCapacity) {
-            throw new Error(`CRITICAL: Dispatch blocked. Attempting to send ${subscribers.length} emails, but only ${quota.maxSendableCapacity} remaining in API Quota.`)
+            throw new Error(`Dispatch blocked: attempting to send ${subscribers.length} emails, but only ${quota.maxSendableCapacity} remaining in API quota.`)
         }
 
         // Move to SENDING state
@@ -116,12 +117,41 @@ export async function dispatchCampaign(campaignId: string) {
         const { resend, fromEmail } = await getResendClient()
         if (!resend) throw new Error("Resend is not configured")
 
-        // Render React Email
+        // Fetch branding for the email layout
+        const brandingSettings = await prisma.siteSettings.findUnique({
+            where: { id: "default" },
+            include: { EmailBranding: true }
+        })
+
+        const branding: EmailBrandingData = {
+            logoUrl: brandingSettings?.EmailBranding?.logoUrl || null,
+            primaryColor: brandingSettings?.EmailBranding?.primaryColor || "#556B2F",
+            accentColor: brandingSettings?.EmailBranding?.accentColor || "#E87A1E",
+            footerText: brandingSettings?.EmailBranding?.footerText || "Edwak Nutrition",
+            websiteUrl: brandingSettings?.EmailBranding?.websiteUrl || "https://edwaknutrition.co.ke",
+            supportEmail: brandingSettings?.EmailBranding?.supportEmail || "info@edwaknutrition.co.ke"
+        }
+
+        const replyToEmail = branding.supportEmail
+
+        // Render the campaign content using BrandedEmailLayout for consistent branding
+        // Split content by newlines to render each paragraph properly
+        const contentParagraphs = campaign.content.split("\n").filter(p => p.trim())
+
         const htmlContent = await render(
-            MainEmailLayout({
+            BrandedEmailLayout({
+                branding,
                 previewText: campaign.previewText || campaign.subject,
                 heading: campaign.subject,
-                children: Text({ children: campaign.content }) // In a full app, parse markdown to React-Email components
+                children: Section({
+                    children: contentParagraphs.map((paragraph, i) =>
+                        Text({
+                            key: i,
+                            className: "text-black text-[14px] leading-[24px]",
+                            children: paragraph
+                        })
+                    )
+                })
             })
         )
 
@@ -129,13 +159,11 @@ export async function dispatchCampaign(campaignId: string) {
         const secret = process.env.ENCRYPTION_KEY || "fallback_secret_key_for_dev_only"
         const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://edwaknutrition.co.ke"
 
-        const brandingSettings = await prisma.siteSettings.findUnique({ where: { id: "default" }, include: { EmailBranding: true } });
-        const replyToEmail = brandingSettings?.EmailBranding?.supportEmail || fromEmail;
-
         const emailsToSend = subscribers.map(sub => {
             const token = crypto.createHmac("sha256", secret).update(sub.email).digest("hex")
             const unsubscribeUrl = `${appUrl}/api/unsubscribe?email=${encodeURIComponent(sub.email)}&token=${token}`
 
+            // Inject unsubscribe link before </body>
             const personalizedHtml = htmlContent.replace(
                 "</body>",
                 `<div style="text-align: center; margin-top: 30px; padding-top: 20px; font-size: 12px; color: #888; font-family: sans-serif;">
@@ -152,9 +180,8 @@ export async function dispatchCampaign(campaignId: string) {
             }
         })
 
-        // Resend batch send (Max 100 per API call typically)
+        // Resend batch send (Max 100 per API call)
         const batchSize = 100
-        let sentCount = 0
 
         for (let i = 0; i < emailsToSend.length; i += batchSize) {
             const batch = emailsToSend.slice(i, i + batchSize)
@@ -162,7 +189,7 @@ export async function dispatchCampaign(campaignId: string) {
             sentCount += batch.length
         }
 
-        // Mark as SENT and record the Exact Send Count
+        // Mark as SENT with exact send count
         await prisma.newsletterCampaign.update({
             where: { id: campaignId },
             data: {
@@ -177,11 +204,29 @@ export async function dispatchCampaign(campaignId: string) {
     } catch (error) {
         console.error("Dispatch Failed:", error)
 
-        // Revert to draft if failed
+        // If some emails were sent before failure, record partial progress
+        if (sentCount > 0) {
+            await prisma.newsletterCampaign.update({
+                where: { id: campaignId },
+                data: {
+                    status: "SENT",
+                    sentAt: new Date(),
+                    sentCount: sentCount
+                }
+            }).catch(console.error)
+
+            return {
+                success: false,
+                error: `Partial send: ${sentCount} of ${sentCount} emails sent before failure. ${error instanceof Error ? error.message : "Unknown error"}`,
+                sentCount
+            }
+        }
+
+        // No emails sent, revert to draft
         await prisma.newsletterCampaign.update({
             where: { id: campaignId },
             data: { status: "DRAFT" }
-        })
+        }).catch(console.error)
 
         return { success: false, error: error instanceof Error ? error.message : "Failed to dispatch campaign" }
     }
