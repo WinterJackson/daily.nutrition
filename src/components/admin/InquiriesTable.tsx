@@ -355,8 +355,8 @@ export function InquiriesTable({
         
         {/* Header / Search */}
         <div className="p-4 border-b border-neutral-100 dark:border-white/5 space-y-4 shrink-0 bg-neutral-50/50 dark:bg-white/[0.02]">
-          {someSelected ? (
-             <div className="flex items-center gap-2 animate-in fade-in">
+          {selectedIds.size > 0 ? (
+             <div className="flex flex-wrap items-center gap-2 animate-in fade-in">
                  <span className="text-sm font-semibold">{selectedIds.size} selected</span>
                  <Button size="sm" variant="outline" className="border-neutral-300 hover:bg-neutral-100 dark:border-neutral-700 dark:hover:bg-neutral-800" onClick={handleBulkArchive} disabled={isPending}>
                      Archive
@@ -530,10 +530,10 @@ export function InquiriesTable({
             {/* The Main Content Body */}
             <div className="flex-1 flex flex-col min-w-0 bg-transparent relative z-0 h-full overflow-hidden">
                 {/* Fixed Sticky Toolbar */}
-                <div className="sticky top-0 z-10 bg-neutral-50/80 dark:bg-white/[0.02] backdrop-blur-md px-4 py-3 border-b border-neutral-200 dark:border-white/10 flex items-center justify-between shrink-0">
-                    <div className="flex items-center gap-2">
+                <div className="sticky top-0 z-10 bg-neutral-50/80 dark:bg-white/[0.02] backdrop-blur-md px-3 md:px-4 py-3 border-b border-neutral-200 dark:border-white/10 flex flex-wrap items-center justify-between gap-2 shrink-0">
+                    <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
                         <button
-                          className="lg:hidden p-2 text-neutral-500 hover:text-charcoal dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-white/10 rounded-md transition-colors"
+                          className="lg:hidden p-1.5 md:p-2 text-neutral-500 hover:text-charcoal dark:hover:text-white hover:bg-neutral-100 dark:hover:bg-white/10 rounded-md transition-colors"
                           onClick={() => setSelectedId(null)}
                         >
                           <ArrowLeft className="w-5 h-5" />
@@ -542,7 +542,7 @@ export function InquiriesTable({
                         {/* Status Select */}
                         <select 
                             title="Change Status"
-                            className="bg-transparent text-[11px] uppercase tracking-wider font-bold text-neutral-600 dark:text-neutral-300 outline-none cursor-pointer hover:bg-neutral-100 dark:hover:bg-white/10 py-1.5 px-2 rounded-md transition-colors disabled:opacity-50"
+                            className="bg-transparent text-[10px] md:text-[11px] uppercase tracking-wider font-bold text-neutral-600 dark:text-neutral-300 outline-none cursor-pointer hover:bg-neutral-100 dark:hover:bg-white/10 py-1.5 px-1.5 md:px-2 rounded-md transition-colors disabled:opacity-50"
                             value={selectedInquiry.statusString}
                             onChange={(e) => handleUpdateStatus(selectedInquiry.id, e.target.value as InquiryStatus)}
                             disabled={isPending}
@@ -553,27 +553,27 @@ export function InquiriesTable({
                         </select>
                     </div>
 
-                    <div className="flex items-center gap-1">
+                    <div className="flex flex-wrap items-center gap-1">
                         <Button
                            variant="ghost"
                            size="sm"
                            onClick={() => setInquiryToDelete(selectedInquiry.id)}
-                           className="text-neutral-500 hover:text-red-500 disabled:opacity-50 h-8 font-medium text-xs px-3"
+                           className="text-neutral-500 hover:text-red-500 disabled:opacity-50 h-8 font-medium text-xs px-2 md:px-3"
                            disabled={isPending}
                         >
-                            <Trash2 className="w-3.5 h-3.5 mr-1.5" />
-                            Delete
+                            <Trash2 className="w-3.5 h-3.5 md:mr-1.5" />
+                            <span className="hidden md:inline">Delete</span>
                         </Button>
                         <Button
                            variant="ghost"
                            size="sm"
                            onClick={() => setIsNotesDrawerOpen(!isNotesDrawerOpen)}
-                           className={`h-8 font-medium text-xs px-3 transition-colors \${isNotesDrawerOpen ? 'bg-olive/10 text-olive dark:bg-olive/20' : 'text-neutral-500 hover:text-charcoal dark:hover:text-white'}`}
+                           className={`h-8 font-medium text-xs px-2 md:px-3 transition-colors ${isNotesDrawerOpen ? 'bg-olive/10 text-olive dark:bg-olive/20' : 'text-neutral-500 hover:text-charcoal dark:hover:text-white'}`}
                         >
-                            <PanelRight className="w-3.5 h-3.5 mr-1.5" />
-                            Notes
+                            <PanelRight className="w-3.5 h-3.5 md:mr-1.5" />
+                            <span className="hidden md:inline">Notes</span>
                             {selectedInquiry.notes.length > 0 && (
-                                <span className="ml-1.5 bg-neutral-200 dark:bg-white/20 px-1.5 py-[1px] rounded-full text-[10px] font-bold">
+                                <span className="ml-1 md:ml-1.5 bg-neutral-200 dark:bg-white/20 px-1.5 py-[1px] rounded-full text-[10px] font-bold">
                                     {selectedInquiry.notes.length}
                                 </span>
                             )}
@@ -680,15 +680,15 @@ export function InquiriesTable({
                             onChange={(e) => setReplyText(e.target.value)}
                             disabled={isPending}
                         />
-                        <div className="flex justify-between items-center mt-4">
-                            <p className="text-[10px] md:text-xs text-neutral-400 dark:text-neutral-500 flex items-center gap-1.5">
-                                <Mail size={12} className="text-brand-green opacity-70" />
-                                Replies automatically route to the platform's support email. Continue the conversation natively in Gmail.
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mt-4 gap-4 md:gap-0">
+                            <p className="text-[10px] md:text-xs text-neutral-400 dark:text-neutral-500 flex items-start md:items-center gap-1.5 w-full md:w-auto pr-0 md:pr-4">
+                                <Mail size={12} className="text-brand-green opacity-70 shrink-0 mt-0.5 md:mt-0" />
+                                <span className="flex-1">Replies automatically route to the platform's support email. Continue the conversation natively in Gmail.</span>
                             </p>
                             <Button
                                 onClick={handleSendReply}
                                 disabled={!replyText.trim() || isPending}
-                                className="bg-olive hover:bg-olive/90 text-white gap-2 px-6 disabled:opacity-50 disabled:grayscale transition-all shadow-md shrink-0"
+                                className="bg-olive hover:bg-olive/90 text-white gap-2 px-6 disabled:opacity-50 disabled:grayscale transition-all shadow-md shrink-0 w-full md:w-auto"
                             >
                                 <Send className="w-4 h-4" />
                                 {isPending ? "Sending..." : "Send Reply"}
