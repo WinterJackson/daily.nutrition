@@ -128,9 +128,11 @@ export async function getSidebarNotificationCounts() {
     if (!session) return { bookings: 0, inquiries: 0, testimonials: 0 }
 
     try {
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000)
         const [bookings, inquiries, testimonials] = await Promise.all([
-            prisma.booking.count({ where: { bookingStatus: "PENDING" } }),
-            prisma.inquiry.count({ where: { isRead: false } }),
+            // Count new bookings from the last 24 hours that haven't been soft-deleted
+            prisma.booking.count({ where: { createdAt: { gte: oneDayAgo }, deletedAt: null } }),
+            prisma.inquiry.count({ where: { isRead: false, deletedAt: null } }),
             prisma.testimonial.count({ where: { contentStatus: "IN_REVIEW" } })
         ])
 

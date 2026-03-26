@@ -5,7 +5,6 @@ import { BookingRescheduledEmail } from "@/components/emails/BookingRescheduled"
 import { logAudit } from "@/lib/audit"
 import { verifySession } from "@/lib/auth"
 import { logEmailAttempt } from "@/lib/email-logger"
-import { decrypt } from "@/lib/encryption"
 import { deleteCalendarEvent } from "@/lib/google-calendar"
 import { NotificationManager } from "@/lib/notifications/manager"
 import { prisma } from "@/lib/prisma"
@@ -247,32 +246,26 @@ export async function getBookingStats() {
  * Helper to get Resend client and branding for admin booking actions
  */
 async function getEmailConfig() {
+    // Read API key from SecretConfig table (where it's actually stored)
+    const { INTERNAL_getSecret } = await import("@/lib/ai/secrets")
+    const apiKey = await INTERNAL_getSecret("RESEND_API_KEY")
+
+    if (!apiKey) return null
+
     const settings = await prisma.siteSettings.findUnique({
         where: { id: "default" },
         include: { ResendConfig: true, EmailBranding: true }
     })
 
-    if (!settings?.ResendConfig?.encryptedApiKey) return null
-
-    let apiKey = ""
-    try {
-        apiKey = decrypt(settings.ResendConfig.encryptedApiKey) || ""
-    } catch (e) {
-        console.error("Failed to decrypt Resend API key")
-        return null
-    }
-
-    if (!apiKey) return null
-
     const resend = new Resend(apiKey)
-    const fromEmail = settings.ResendConfig.fromEmail || "onboarding@resend.dev"
+    const fromEmail = settings?.ResendConfig?.fromEmail || "no-reply@edwaknutrition.co.ke"
     const branding = {
-        logoUrl: settings.EmailBranding?.logoUrl || null,
-        primaryColor: settings.EmailBranding?.primaryColor || "#556B2F",
-        accentColor: settings.EmailBranding?.accentColor || "#E87A1E",
-        footerText: settings.EmailBranding?.footerText || "Edwak Nutrition, Nairobi, Kenya",
-        websiteUrl: settings.EmailBranding?.websiteUrl || "https://edwaknutrition.co.ke",
-        supportEmail: settings.EmailBranding?.supportEmail || "support@edwaknutrition.co.ke"
+        logoUrl: settings?.EmailBranding?.logoUrl || null,
+        primaryColor: settings?.EmailBranding?.primaryColor || "#556B2F",
+        accentColor: settings?.EmailBranding?.accentColor || "#E87A1E",
+        footerText: settings?.EmailBranding?.footerText || "Edwak Nutrition, Nairobi, Kenya",
+        websiteUrl: settings?.EmailBranding?.websiteUrl || "https://edwaknutrition.co.ke",
+        supportEmail: settings?.EmailBranding?.supportEmail || "support@edwaknutrition.co.ke"
     }
 
     return { resend, fromEmail, branding }

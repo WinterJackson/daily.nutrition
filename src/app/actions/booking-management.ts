@@ -2,9 +2,9 @@
 
 import { BookingCancellationEmail } from "@/components/emails/BookingCancellation";
 import { BookingRescheduledEmail } from "@/components/emails/BookingRescheduled";
+import { INTERNAL_getSecret } from "@/lib/ai/secrets";
 import { logAudit } from "@/lib/audit";
 import { logEmailAttempt } from "@/lib/email-logger";
-import { decrypt } from "@/lib/encryption";
 import { deleteCalendarEvent } from "@/lib/google-calendar";
 import { NotificationManager } from "@/lib/notifications/manager";
 import { prisma } from "@/lib/prisma";
@@ -48,72 +48,65 @@ export async function cancelBooking(referenceCode: string) {
             }
         }
 
-        // 2. Fetch Settings for Email
+        // 2. Fetch API key from SecretConfig (where it's actually stored)
+        const apiKey = await INTERNAL_getSecret("RESEND_API_KEY")
+
         const settings = await prisma.siteSettings.findUnique({
             where: { id: "default" },
             include: { ResendConfig: true, EmailBranding: true }
         })
 
         // 3. Send Email
-        if (settings?.ResendConfig?.encryptedApiKey) {
-            let apiKey = ""
-            try {
-                apiKey = decrypt(settings.ResendConfig.encryptedApiKey) || ""
-            } catch (e) {
-                console.error("Failed to decrypt API key")
+        if (apiKey) {
+            const resend = new Resend(apiKey)
+            const fromEmail = settings?.ResendConfig?.fromEmail || "no-reply@edwaknutrition.co.ke"
+
+            const branding = {
+                logoUrl: settings?.EmailBranding?.logoUrl || null,
+                primaryColor: settings?.EmailBranding?.primaryColor || "#556B2F",
+                accentColor: settings?.EmailBranding?.accentColor || "#E87A1E",
+                footerText: settings?.EmailBranding?.footerText || "Edwak Nutrition, Nairobi, Kenya",
+                websiteUrl: settings?.EmailBranding?.websiteUrl || "https://edwaknutrition.co.ke",
+                supportEmail: settings?.EmailBranding?.supportEmail || "support@edwaknutrition.co.ke"
             }
 
-            if (apiKey) {
-                const resend = new Resend(apiKey)
-                const fromEmail = settings.ResendConfig.fromEmail || "onboarding@resend.dev"
+            // Format time for email
+            const scheduledDate = new Date(booking.scheduledAt)
+            const clientTimezone = booking.clientTimezone || "Africa/Nairobi"
 
-                const branding = {
-                    logoUrl: settings?.EmailBranding?.logoUrl || null,
-                    primaryColor: settings?.EmailBranding?.primaryColor || "#556B2F",
-                    accentColor: settings?.EmailBranding?.accentColor || "#E87A1E",
-                    footerText: settings?.EmailBranding?.footerText || "Edwak Nutrition, Nairobi, Kenya",
-                    websiteUrl: settings?.EmailBranding?.websiteUrl || "https://edwaknutrition.co.ke",
-                    supportEmail: settings?.EmailBranding?.supportEmail || "support@edwaknutrition.co.ke"
-                }
+            const formattedDate = scheduledDate.toLocaleDateString("en-US", {
+                weekday: 'long',
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+                timeZone: clientTimezone
+            })
 
-                // Format time for email
-                const scheduledDate = new Date(booking.scheduledAt)
-                const clientTimezone = booking.clientTimezone || "Africa/Nairobi"
+            const formattedTime = scheduledDate.toLocaleTimeString("en-US", {
+                hour: 'numeric',
+                minute: '2-digit',
+                timeZone: clientTimezone
+            })
 
-                const formattedDate = scheduledDate.toLocaleDateString("en-US", {
-                    weekday: 'long',
-                    month: 'long',
-                    day: 'numeric',
-                    year: 'numeric',
-                    timeZone: clientTimezone
-                })
-
-                const formattedTime = scheduledDate.toLocaleTimeString("en-US", {
-                    hour: 'numeric',
-                    minute: '2-digit',
-                    timeZone: clientTimezone
-                })
-
-                const emailSubject = `Booking Cancelled: ${booking.serviceName}`
-                try {
-                    await resend.emails.send({
-                        from: `Edwak Nutrition <${fromEmail}>`,
-                        to: booking.clientEmail,
-                        subject: emailSubject,
-                        react: BookingCancellationEmail({
-                            clientName: booking.clientName,
-                            serviceName: booking.serviceName,
-                            date: formattedDate,
-                            time: `${formattedTime} (${clientTimezone})`,
-                            branding: branding,
-                            bookingUrl: settings?.EmailBranding?.websiteUrl ? `${settings.EmailBranding.websiteUrl}/booking` : "https://edwaknutrition.co.ke/booking"
-                        })
+            const emailSubject = `Booking Cancelled: ${booking.serviceName}`
+            try {
+                await resend.emails.send({
+                    from: `Edwak Nutrition <${fromEmail}>`,
+                    to: booking.clientEmail,
+                    subject: emailSubject,
+                    react: BookingCancellationEmail({
+                        clientName: booking.clientName,
+                        serviceName: booking.serviceName,
+                        date: formattedDate,
+                        time: `${formattedTime} (${clientTimezone})`,
+                        branding: branding,
+                        bookingUrl: settings?.EmailBranding?.websiteUrl ? `${settings.EmailBranding.websiteUrl}/booking` : "https://edwaknutrition.co.ke/booking"
                     })
-                    await logEmailAttempt({ recipientEmail: booking.clientEmail, subject: emailSubject, context: "BOOKING_CANCELLATION", entityId: referenceCode, success: true })
-                } catch (emailErr) {
-                    console.error("Cancellation email failed:", emailErr)
-                    await logEmailAttempt({ recipientEmail: booking.clientEmail, subject: emailSubject, context: "BOOKING_CANCELLATION", entityId: referenceCode, success: false, errorMessage: emailErr instanceof Error ? emailErr.message : "Unknown" })
-                }
+                })
+                await logEmailAttempt({ recipientEmail: booking.clientEmail, subject: emailSubject, context: "BOOKING_CANCELLATION", entityId: referenceCode, success: true })
+            } catch (emailErr) {
+                console.error("Cancellation email failed:", emailErr)
+                await logEmailAttempt({ recipientEmail: booking.clientEmail, subject: emailSubject, context: "BOOKING_CANCELLATION", entityId: referenceCode, success: false, errorMessage: emailErr instanceof Error ? emailErr.message : "Unknown" })
             }
         }
 
@@ -205,76 +198,69 @@ export async function rescheduleBooking(referenceCode: string, newDateStr: strin
         }
 
         // Send rescheduled confirmation email
+        const apiKey = await INTERNAL_getSecret("RESEND_API_KEY")
+
         const settings = await prisma.siteSettings.findUnique({
             where: { id: "default" },
             include: { ResendConfig: true, EmailBranding: true }
         });
 
-        if (settings?.ResendConfig?.encryptedApiKey) {
-            let apiKey = "";
+        if (apiKey) {
+            const resend = new Resend(apiKey);
+            const fromEmail = settings?.ResendConfig?.fromEmail || "no-reply@edwaknutrition.co.ke";
+            const clientTimezone = updatedBooking.clientTimezone || "Africa/Nairobi";
+
+            // Format old time for email
+            const oldScheduledAt = new Date(booking.scheduledAt);
+            const oldFormattedDate = oldScheduledAt.toLocaleDateString("en-US", {
+                weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+                timeZone: clientTimezone
+            });
+            const oldFormattedTime = oldScheduledAt.toLocaleTimeString("en-US", {
+                hour: 'numeric', minute: '2-digit',
+                timeZone: clientTimezone
+            });
+
+            const formattedDate = newScheduledAt.toLocaleDateString("en-US", {
+                weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+                timeZone: clientTimezone
+            });
+            const formattedTime = newScheduledAt.toLocaleTimeString("en-US", {
+                hour: 'numeric', minute: '2-digit',
+                timeZone: clientTimezone
+            });
+
+            const branding = {
+                logoUrl: settings?.EmailBranding?.logoUrl || null,
+                primaryColor: settings?.EmailBranding?.primaryColor || "#556B2F",
+                accentColor: settings?.EmailBranding?.accentColor || "#E87A1E",
+                footerText: settings?.EmailBranding?.footerText || "Edwak Nutrition, Nairobi, Kenya",
+                websiteUrl: settings?.EmailBranding?.websiteUrl || "https://edwaknutrition.co.ke",
+                supportEmail: settings?.EmailBranding?.supportEmail || "support@edwaknutrition.co.ke"
+            };
+
+            const emailSubject = `Booking Rescheduled: ${updatedBooking.serviceName} (#${referenceCode})`;
             try {
-                apiKey = decrypt(settings.ResendConfig.encryptedApiKey) || "";
-            } catch (e) {
-                console.error("Failed to decrypt API key");
-            }
-
-            if (apiKey) {
-                const resend = new Resend(apiKey);
-                const fromEmail = settings.ResendConfig.fromEmail || "onboarding@resend.dev";
-                const clientTimezone = updatedBooking.clientTimezone || "Africa/Nairobi";
-
-                // Format old time for email
-                const oldScheduledAt = new Date(booking.scheduledAt);
-                const oldFormattedDate = oldScheduledAt.toLocaleDateString("en-US", {
-                    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
-                    timeZone: clientTimezone
+                await resend.emails.send({
+                    from: `Edwak Nutrition <${fromEmail}>`,
+                    to: updatedBooking.clientEmail,
+                    subject: emailSubject,
+                    react: BookingRescheduledEmail({
+                        clientName: updatedBooking.clientName,
+                        serviceName: updatedBooking.serviceName,
+                        oldDate: oldFormattedDate,
+                        oldTime: `${oldFormattedTime} (${clientTimezone})`,
+                        newDate: formattedDate,
+                        newTime: `${formattedTime} (${clientTimezone})`,
+                        referenceCode: referenceCode,
+                        manageUrl: `${branding.websiteUrl}/booking/manage/${referenceCode}`,
+                        branding: branding
+                    })
                 });
-                const oldFormattedTime = oldScheduledAt.toLocaleTimeString("en-US", {
-                    hour: 'numeric', minute: '2-digit',
-                    timeZone: clientTimezone
-                });
-
-                const formattedDate = newScheduledAt.toLocaleDateString("en-US", {
-                    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
-                    timeZone: clientTimezone
-                });
-                const formattedTime = newScheduledAt.toLocaleTimeString("en-US", {
-                    hour: 'numeric', minute: '2-digit',
-                    timeZone: clientTimezone
-                });
-
-                const branding = {
-                    logoUrl: settings?.EmailBranding?.logoUrl || null,
-                    primaryColor: settings?.EmailBranding?.primaryColor || "#556B2F",
-                    accentColor: settings?.EmailBranding?.accentColor || "#E87A1E",
-                    footerText: settings?.EmailBranding?.footerText || "Edwak Nutrition, Nairobi, Kenya",
-                    websiteUrl: settings?.EmailBranding?.websiteUrl || "https://edwaknutrition.co.ke",
-                    supportEmail: settings?.EmailBranding?.supportEmail || "support@edwaknutrition.co.ke"
-                };
-
-                const emailSubject = `Booking Rescheduled: ${updatedBooking.serviceName} (#${referenceCode})`;
-                try {
-                    await resend.emails.send({
-                        from: `Edwak Nutrition <${fromEmail}>`,
-                        to: updatedBooking.clientEmail,
-                        subject: emailSubject,
-                        react: BookingRescheduledEmail({
-                            clientName: updatedBooking.clientName,
-                            serviceName: updatedBooking.serviceName,
-                            oldDate: oldFormattedDate,
-                            oldTime: `${oldFormattedTime} (${clientTimezone})`,
-                            newDate: formattedDate,
-                            newTime: `${formattedTime} (${clientTimezone})`,
-                            referenceCode: referenceCode,
-                            manageUrl: `${branding.websiteUrl}/booking/manage/${referenceCode}`,
-                            branding: branding
-                        })
-                    });
-                    await logEmailAttempt({ recipientEmail: updatedBooking.clientEmail, subject: emailSubject, context: "BOOKING_RESCHEDULED", entityId: referenceCode, success: true });
-                } catch (emailErr) {
-                    console.error("Reschedule email failed:", emailErr);
-                    await logEmailAttempt({ recipientEmail: updatedBooking.clientEmail, subject: emailSubject, context: "BOOKING_RESCHEDULED", entityId: referenceCode, success: false, errorMessage: emailErr instanceof Error ? emailErr.message : "Unknown" });
-                }
+                await logEmailAttempt({ recipientEmail: updatedBooking.clientEmail, subject: emailSubject, context: "BOOKING_RESCHEDULED", entityId: referenceCode, success: true });
+            } catch (emailErr) {
+                console.error("Reschedule email failed:", emailErr);
+                await logEmailAttempt({ recipientEmail: updatedBooking.clientEmail, subject: emailSubject, context: "BOOKING_RESCHEDULED", entityId: referenceCode, success: false, errorMessage: emailErr instanceof Error ? emailErr.message : "Unknown" });
             }
         }
 

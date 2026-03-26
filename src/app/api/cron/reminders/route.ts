@@ -1,4 +1,5 @@
 import { UpcomingReminderEmail } from "@/components/emails/UpcomingReminder"
+import { INTERNAL_getSecret } from "@/lib/ai/secrets"
 import { decrypt } from "@/lib/encryption"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
@@ -24,22 +25,20 @@ export async function GET(request: Request) {
             include: { ResendConfig: true, EmailBranding: true }
         })
 
-        if (!settings?.ResendConfig?.encryptedApiKey) {
-            console.error("No Resend API Key found")
+        if (!settings) {
+            console.error("No site settings found")
+            return NextResponse.json({ success: false, error: "No settings" })
+        }
+
+        // Read API key from SecretConfig (where it's actually stored)
+        const apiKey = await INTERNAL_getSecret("RESEND_API_KEY")
+        if (!apiKey) {
+            console.error("No Resend API Key found in SecretConfig or ENV")
             return NextResponse.json({ success: false, error: "No API Key" })
         }
 
-        let apiKey = ""
-        try {
-            apiKey = decrypt(settings.ResendConfig.encryptedApiKey) || ""
-        } catch (e) {
-            console.error("Failed to decrypt API Key")
-        }
-
-        if (!apiKey) return NextResponse.json({ success: false, error: "Invalid API Key" })
-
         const resend = new Resend(apiKey)
-        const fromEmail = settings.ResendConfig.fromEmail || "onboarding@resend.dev"
+        const fromEmail = settings.ResendConfig?.fromEmail || "no-reply@edwaknutrition.co.ke"
 
         const branding = {
             logoUrl: settings?.EmailBranding?.logoUrl || null,

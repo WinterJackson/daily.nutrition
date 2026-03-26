@@ -1,7 +1,7 @@
 import { AdminNewBookingEmail } from "@/components/emails/AdminNewBooking";
 import { AdminPasswordChangedEmail } from "@/components/emails/AdminPasswordChanged";
 import { EmailBrandingData } from "@/components/emails/BrandedEmailLayout";
-import { decrypt } from "@/lib/encryption";
+import { INTERNAL_getSecret } from "@/lib/ai/secrets";
 import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
 
@@ -46,9 +46,9 @@ export const NotificationManager = {
                 }
             });
 
-            if (!settings?.ResendConfig?.encryptedApiKey) {
-                console.warn("NotificationManager: No Resend API Key configured");
-                return { success: false, error: "No email provider configured" };
+            if (!settings) {
+                console.warn("NotificationManager: No site settings found");
+                return { success: false, error: "No site settings configured" };
             }
 
             // 2. Check Preferences
@@ -65,19 +65,15 @@ export const NotificationManager = {
                 return { success: true, skipped: true };
             }
 
-            // 3. Prepare Resend
-            let apiKey = "";
-            try {
-                apiKey = decrypt(settings.ResendConfig.encryptedApiKey) || "";
-            } catch (e) {
-                console.error("NotificationManager: Failed to decrypt API key");
-                return { success: false, error: "Decryption failed" };
+            // 3. Prepare Resend — read API key from SecretConfig (where it's stored)
+            const apiKey = await INTERNAL_getSecret("RESEND_API_KEY");
+            if (!apiKey) {
+                console.warn("NotificationManager: No Resend API Key in SecretConfig or ENV");
+                return { success: false, error: "No email provider configured" };
             }
 
-            if (!apiKey) return { success: false, error: "Invalid API Key" };
-
             const resend = new Resend(apiKey);
-            const fromEmail = settings.ResendConfig.fromEmail || "onboarding@resend.dev";
+            const fromEmail = settings.ResendConfig?.fromEmail || "no-reply@edwaknutrition.co.ke";
             const adminEmail = settings.contactEmail; // Send to admin
 
             // 4. Branding

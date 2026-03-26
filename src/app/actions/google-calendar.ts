@@ -1,5 +1,6 @@
 "use server"
 
+import { INTERNAL_getSecret } from "@/lib/ai/secrets"
 import { logEmailAttempt } from "@/lib/email-logger"
 import { createCalendarEvent, getAvailableSlots } from "@/lib/google-calendar"
 import { parseISO } from "date-fns"
@@ -22,7 +23,7 @@ import { bookingLimiter } from "@/lib/rate-limit"
 import { Resend } from 'resend'
 
 import { logAudit } from "@/lib/audit"
-import { decrypt, encrypt } from "@/lib/encryption"
+import { encrypt } from "@/lib/encryption"
 
 // Removed top-level Resend init to prevent crashes if API key is missing
 // const resend = new Resend(process.env.RESEND_API_KEY)
@@ -175,6 +176,9 @@ export async function bookAppointment(data: {
 
         // 5. Send Confirmation Email via Resend (non-blocking — should never crash the booking)
         try {
+            // Use INTERNAL_getSecret which reads from SecretConfig table (where the key is stored)
+            const apiKey = await INTERNAL_getSecret("RESEND_API_KEY")
+
             const settings = await prisma.siteSettings.findUnique({
                 where: { id: "default" },
                 include: {
@@ -183,20 +187,7 @@ export async function bookAppointment(data: {
                 }
             })
 
-            let apiKey = process.env.RESEND_API_KEY
-            let fromEmail = "onboarding@resend.dev"
-
-            if (settings?.ResendConfig?.encryptedApiKey) {
-                try {
-                    const decrypted = decrypt(settings.ResendConfig.encryptedApiKey)
-                    if (decrypted) apiKey = decrypted
-                } catch (e) {
-                    console.error("Failed to decrypt Resend API key", e)
-                }
-                if (settings.ResendConfig.fromEmail) {
-                    fromEmail = settings.ResendConfig.fromEmail
-                }
-            }
+            const fromEmail = settings?.ResendConfig?.fromEmail || "no-reply@edwaknutrition.co.ke"
 
             // Prepare Branding Data
             const branding = {
@@ -250,7 +241,7 @@ export async function bookAppointment(data: {
                     await logEmailAttempt({ recipientEmail: data.clientEmail, subject: emailSubject, context: "BOOKING_CONFIRMATION", entityId: referenceCode, success: false, errorMessage: emailErr instanceof Error ? emailErr.message : "Unknown" })
                 }
             } else {
-                console.warn("Skipping email confirmation: No Resend API Key found in DB or ENV.")
+                console.warn("Skipping email confirmation: No Resend API Key found in SecretConfig or ENV.")
             }
 
             // Notify Admin (NotificationManager checks settings natively)
