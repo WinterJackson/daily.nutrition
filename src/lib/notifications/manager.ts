@@ -25,11 +25,13 @@ interface NotificationPayload {
     };
     bookingCancelled?: {
         clientName: string;
+        clientEmail?: string;
         serviceName: string;
         referenceCode: string;
     };
     bookingRescheduled?: {
         clientName: string;
+        clientEmail?: string;
         serviceName: string;
         referenceCode: string;
         newDate: string;
@@ -57,7 +59,6 @@ export const NotificationManager = {
 
             // 2. Check Preferences
             const prefs = settings.NotificationPreferences;
-            // Default to TRUE if no preferences record exists yet
             const shouldSendMap = {
                 "NEW_BOOKING": prefs?.emailOnNewBooking ?? true,
                 "PASSWORD_CHANGED": true, // Always send security alerts
@@ -78,7 +79,7 @@ export const NotificationManager = {
 
             const resend = new Resend(apiKey);
             const fromEmail = settings.ResendConfig?.fromEmail || "no-reply@edwaknutrition.co.ke";
-            const adminEmail = settings.contactEmail; // Send to admin
+            const adminEmail = settings.contactEmail;
 
             // 4. Branding
             const branding: EmailBrandingData = {
@@ -90,17 +91,24 @@ export const NotificationManager = {
                 supportEmail: settings.EmailBranding?.supportEmail || "info@edwaknutrition.co.ke"
             };
 
-            // 5. Select Template & Send
+            // 5. Select Template & Determine Reply-To
+            //
+            // Reply-To Strategy:
+            //   Booking-related (NEW, CANCELLED, RESCHEDULED) → client's email
+            //     → Admin clicks Reply in Gmail → TO automatically fills with the client's email
+            //   System alerts (PASSWORD_CHANGED) → NO replyTo header
+            //     → Gmail falls back to from: no-reply@edwaknutrition.co.ke (prevents accidental replies)
+            //
             let subject = "";
             let reactElement: React.ReactElement | null = null;
             let htmlContent = "";
-            let replyToAddress = branding.supportEmail; // Default fallback
+            let replyToAddress: string | undefined = undefined;
 
             switch (type) {
                 case "NEW_BOOKING":
                     if (payload.newBooking) {
                         subject = `New Booking: ${payload.newBooking.clientName}`;
-                        replyToAddress = payload.newBooking.clientEmail || branding.supportEmail;
+                        replyToAddress = payload.newBooking.clientEmail;
                         // Ensure bookingUrl is absolute (prepend websiteUrl if relative)
                         const fullBookingUrl = payload.newBooking.bookingUrl.startsWith('http')
                             ? payload.newBooking.bookingUrl
@@ -113,6 +121,7 @@ export const NotificationManager = {
                     }
                     break;
                 case "PASSWORD_CHANGED":
+                    // System alert — no replyTo (stays undefined → falls back to no-reply@)
                     if (payload.passwordChanged) {
                         subject = "Security Alert: Password Changed";
                         reactElement = AdminPasswordChangedEmail({
@@ -124,8 +133,7 @@ export const NotificationManager = {
                 case "BOOKING_CANCELLED":
                     if (payload.bookingCancelled) {
                         subject = `Booking Cancelled: ${payload.bookingCancelled.clientName}`;
-                        // At minimum set to support, but if we had clientEmail here we'd use it.
-                        // For cancellations we might just use the fallback if clientEmail isn't in payload.
+                        replyToAddress = payload.bookingCancelled.clientEmail;
                         htmlContent = `
                             <div style="font-family: sans-serif; padding: 20px;">
                                 <h2 style="color: #d9534f;">A booking has been cancelled</h2>
@@ -139,7 +147,7 @@ export const NotificationManager = {
                 case "BOOKING_RESCHEDULED":
                     if (payload.bookingRescheduled) {
                         subject = `Booking Rescheduled: ${payload.bookingRescheduled.clientName}`;
-                        // Fallback same as cancellation
+                        replyToAddress = payload.bookingRescheduled.clientEmail;
                         htmlContent = `
                             <div style="font-family: sans-serif; padding: 20px;">
                                 <h2 style="color: #5bc0de;">A booking was rescheduled</h2>
@@ -157,9 +165,14 @@ export const NotificationManager = {
                 const emailConfig: any = {
                     from: `Edwak Nutrition System <${fromEmail}>`,
                     to: adminEmail,
-                    replyTo: replyToAddress,
                     subject
                 };
+
+                // Only set replyTo for booking-related emails (so admin can reply directly to client)
+                // System alerts intentionally have NO replyTo — Gmail falls back to from: no-reply@
+                if (replyToAddress) {
+                    emailConfig.replyTo = replyToAddress;
+                }
 
                 if (reactElement) {
                     emailConfig.react = reactElement;

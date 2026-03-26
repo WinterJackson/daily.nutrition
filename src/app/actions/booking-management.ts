@@ -120,6 +120,7 @@ export async function cancelBooking(referenceCode: string) {
         await NotificationManager.sendAdminNotification("BOOKING_CANCELLED", {
             bookingCancelled: {
                 clientName: booking.clientName,
+                clientEmail: booking.clientEmail,
                 serviceName: booking.serviceName,
                 referenceCode: referenceCode
             }
@@ -274,6 +275,7 @@ export async function rescheduleBooking(referenceCode: string, newDateStr: strin
         await NotificationManager.sendAdminNotification("BOOKING_RESCHEDULED", {
             bookingRescheduled: {
                 clientName: updatedBooking.clientName,
+                clientEmail: updatedBooking.clientEmail,
                 serviceName: updatedBooking.serviceName,
                 referenceCode: referenceCode,
                 newDate: newDateStr,
