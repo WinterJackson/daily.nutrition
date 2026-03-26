@@ -85,6 +85,7 @@ export async function dispatchCampaign(campaignId: string) {
     if (!session) throw new Error("Unauthorized")
 
     let sentCount = 0
+    let totalAttempted = 0
 
     try {
         const campaign = await prisma.newsletterCampaign.findUnique({ where: { id: campaignId } })
@@ -102,6 +103,7 @@ export async function dispatchCampaign(campaignId: string) {
         })
 
         if (subscribers.length === 0) throw new Error("No active subscribers found")
+        totalAttempted = subscribers.length
 
         // Block if attempting to send more than capacity
         if (subscribers.length > quota.maxSendableCapacity) {
@@ -217,7 +219,7 @@ export async function dispatchCampaign(campaignId: string) {
 
             return {
                 success: false,
-                error: `Partial send: ${sentCount} of ${sentCount} emails sent before failure. ${error instanceof Error ? error.message : "Unknown error"}`,
+                error: `Partial send: ${sentCount} of ${totalAttempted} emails sent before failure. ${error instanceof Error ? error.message : "Unknown error"}`,
                 sentCount
             }
         }
