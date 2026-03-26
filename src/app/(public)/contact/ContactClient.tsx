@@ -1,6 +1,7 @@
 "use client"
 
 import { ContactForm } from "@/components/contact/ContactForm"
+import { NewsletterForm } from "@/components/layout/NewsletterForm"
 import { AnimatedBackground } from "@/components/ui/AnimatedBackground"
 import { motion } from "framer-motion"
 import { Clock, Globe, Mail, MapPin, Phone } from "lucide-react"
@@ -116,16 +117,32 @@ export default function ContactClient({ settings }: ContactClientProps) {
             className="mt-16 h-[350px] w-full rounded-2xl overflow-hidden relative border border-neutral-200 dark:border-white/10 shadow-lg"
           >
              <iframe 
-               src={`https://maps.google.com/maps?q=${encodeURIComponent(`${settings.businessName} ${settings.address}`)}&t=&z=16&ie=UTF8&iwloc=&output=embed`}
+               src={`https://maps.google.com/maps?q=${settings.latitude},${settings.longitude}&t=&z=16&ie=UTF8&iwloc=&output=embed`}
                width="100%" 
                height="100%" 
                style={{ border: 0 }} 
                allowFullScreen 
                loading="lazy" 
                referrerPolicy="no-referrer-when-downgrade"
-               title="Edwak Nutrition Location - Parklands"
+               title={`${settings.businessName} Location`}
                className="absolute inset-0"
              />
+          </motion.div>
+
+          {/* Newsletter Relocation Section */}
+          <motion.div 
+            initial={{ opacity: 0, y: 30 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="mt-16 max-w-2xl mx-auto text-center"
+          >
+             <div className="bg-white/80 dark:bg-charcoal/80 backdrop-blur-md rounded-2xl p-8 lg:p-10 border border-neutral-200 dark:border-white/10 shadow-xl shadow-olive/5">
+                 <h3 className="text-2xl font-serif font-bold text-olive dark:text-off-white mb-2">Join Our Newsletter</h3>
+                 <p className="text-neutral-500 text-sm mb-8">Get weekly nutrition advice, healthy recipes, and exclusive offers straight to your inbox.</p>
+                 <div className="max-w-md mx-auto">
+                     <NewsletterForm />
+                 </div>
+             </div>
           </motion.div>
        </div>
     </div>

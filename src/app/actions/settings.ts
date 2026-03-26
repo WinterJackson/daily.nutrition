@@ -44,6 +44,8 @@ export interface GeneralSettingsData {
     contactEmail: string
     phoneNumber: string
     address: string
+    latitude: number
+    longitude: number
     pageTitle: string
     metaDescription: string
     keywords: string
@@ -65,6 +67,8 @@ export interface SettingsData {
     contactEmail: string
     phoneNumber: string
     address: string
+    latitude: number
+    longitude: number
     pageTitle: string
     metaDescription: string
     keywords: string
@@ -146,6 +150,8 @@ export async function getSettings() {
                             contactEmail: "hello@edwaknutrition.co.ke",
                             phoneNumber: "+254 700 000000",
                             address: "Nairobi, Kenya",
+                            latitude: -1.2921,
+                            longitude: 36.8219,
                             pageTitle: "Edwak Nutrition | Expert Dietitian",
                             metaDescription: "Professional nutrition consulting and diet planning.",
                             keywords: "nutrition, health, diet, kenya",
@@ -167,6 +173,8 @@ export async function getSettings() {
                 const result: SettingsData = {
                     ...rest,
                     hasGeminiKey: false,
+                    latitude: settings.latitude,
+                    longitude: settings.longitude,
                     instagramUrl: settings.instagramUrl,
                     facebookUrl: settings.facebookUrl,
                     twitterUrl: settings.twitterUrl,

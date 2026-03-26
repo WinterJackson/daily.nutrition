@@ -3,7 +3,6 @@ import { getSettings } from "@/app/actions/settings";
 import { Facebook, Instagram, Linkedin, Mail, MapPin, Phone } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { NewsletterForm } from "./NewsletterForm";
 
 export async function Footer() {
   const settings = await getSettings()
@@ -18,7 +17,7 @@ export async function Footer() {
   return (
     <footer className="bg-olive text-white pt-16 pb-8 mx-[5px] mb-[5px] rounded-b-xl rounded-t-none">
       <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {/* Brand */}
           <div className="space-y-4 text-center md:text-left flex flex-col items-center md:items-start">
             <Link href="/" className="inline-block">
@@ -109,11 +108,6 @@ export async function Footer() {
                 </Link>
               )}
             </div>
-          </div>
-
-          {/* Newsletter Subscription */}
-          <div className="space-y-4 md:col-span-2 lg:col-span-1 text-center md:text-left pt-6 md:pt-0">
-            <NewsletterForm />
           </div>
         </div>
 

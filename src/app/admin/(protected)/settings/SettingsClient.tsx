@@ -15,10 +15,16 @@ import { Button } from "@/components/ui/Button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
 import { getPublicIdFromUrl } from "@/lib/cloudinary-utils"
-import { Calendar, CheckCircle, ChevronDown, Clock, Database, Globe, ImageIcon, Key, Loader2, Moon, Save, Sparkles, Star, Sun, Trash2, Upload } from "lucide-react"
+import { Calendar, CheckCircle, ChevronDown, Clock, Database, Globe, ImageIcon, Key, Loader2, MapPin, Moon, Save, Sparkles, Star, Sun, Trash2, Upload } from "lucide-react"
+import dynamic from "next/dynamic"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState, useTransition } from "react"
+
+const MapPicker = dynamic(() => import("@/components/admin/MapPicker"), {
+  ssr: false,
+  loading: () => <div className="h-[300px] w-full bg-neutral-100 dark:bg-neutral-800 animate-pulse rounded-xl flex items-center justify-center text-neutral-400">Loading Map Engine...</div>
+})
 
 // Google Calendar Setup Steps
 const googleCalendarSetupSteps = [
@@ -198,7 +204,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
       GOOGLE_MAPS_API_KEY: ""
   })
 
-  const handleChange = (key: keyof SettingsData, value: string) => {
+  const handleChange = (key: keyof SettingsData, value: string | number) => {
     setSettings((prev) => ({ ...prev, [key]: value }))
   }
 
@@ -433,6 +439,28 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                       onChange={(e) => handleChange("address", e.target.value)}
                       className="surface-input"
                     />
+                  </div>
+                  
+                  {/* Map Coordinates Picker */}
+                  <div className="space-y-2 md:col-span-2 mt-2">
+                    <label className="text-xs font-bold uppercase tracking-wider text-caption mb-2 block flex items-center gap-2">
+                       <MapPin className="w-4 h-4 text-brand-green" />
+                       Precise Location Coordinates
+                    </label>
+                    <p className="text-xs text-neutral-500 mb-4 pr-10">Drag the pointer or click anywhere on the open-source map grid below to rigidly enforce exactly where your business drops a pin on the public Contact page.</p>
+                    <MapPicker 
+                      latitude={settings.latitude || -1.2921} 
+                      longitude={settings.longitude || 36.8219} 
+                      onChange={(lat, lng) => {
+                         handleChange("latitude", lat)
+                         handleChange("longitude", lng)
+                      }} 
+                    />
+                    <div className="flex items-center gap-4 mt-3 text-xs font-mono text-neutral-600 dark:text-neutral-400 bg-neutral-50 border border-neutral-100 shadow-sm dark:border-white/5 dark:bg-black/20 px-3 py-2 rounded-lg w-fit">
+                       <span>Lat: {(settings.latitude || -1.2921).toFixed(6)}</span>
+                       <span className="opacity-30">|</span>
+                       <span>Lng: {(settings.longitude || 36.8219).toFixed(6)}</span>
+                    </div>
                   </div>
                 </div>
               </CardContent>
