@@ -50,11 +50,18 @@ export async function generateWithGemini(prompt: string): Promise<string> {
 
         return text.trim()
     } catch (error: any) {
-        if (error.message?.includes("API key")) {
-            throw new Error("Invalid Gemini API key. Please update it in Admin → Blog → AI → Config.")
+        const msg = error.message || ""
+        if (msg.includes("API key")) {
+            throw new Error("Invalid Gemini API key. Please update it in Admin → Blog → AI.")
         }
-        if (error.message?.includes("quota")) {
-            throw new Error("Gemini API quota exceeded. Please try again later or check your billing.")
+        if (msg.includes("User location is not supported") || msg.includes("location is not supported")) {
+            throw new Error("Google blocked this request: The completely free AI tier is not natively supported in your geographical region (Kenya) without verification. Please add a billing card to your Google Cloud project to immediately bypass this Geo-block.")
+        }
+        if (msg.includes("quota") || msg.includes("429") || msg.includes("limit: 0")) {
+            throw new Error("Google AI Quota strictly set to 0. This region requires you to attach a billing card to your Google Cloud API account to unlock the 15 RPM free tier limits.")
+        }
+        if (msg.includes("404") || msg.includes("not found")) {
+            throw new Error("The requested Gemini model is forcefully hidden by Google for your API Key's region setup. Please ensure billing is enabled on Google Cloud to unlock the models.")
         }
         throw error
     }
