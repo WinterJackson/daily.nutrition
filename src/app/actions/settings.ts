@@ -168,7 +168,7 @@ export async function getSettings() {
                     })
                 }
 
-                const { id, updatedAt, GoogleCalendarConfig, EmailBranding, CloudinaryConfig, NotificationPreferences, ResendConfig, version, ...rest } = settings
+                const { id: _id, updatedAt: _updatedAt, GoogleCalendarConfig, EmailBranding, CloudinaryConfig, NotificationPreferences, ResendConfig, version: _version, ...rest } = settings
 
                 const result: SettingsData = {
                     ...rest,
@@ -244,7 +244,7 @@ export async function updateSettings(data: SettingsData) {
 
     try {
         // Separate nested config AND strip non-schema fields that getSettings() injects
-        const { googleCalendarConfig, resendConfig, emailBranding, cloudinaryConfig, notificationPreferences, version: clientVersion, hasGeminiKey, calendarProvider, calendlyUrl, savvycalUrl, ...topLevelData } = data as any
+        const { googleCalendarConfig, resendConfig, emailBranding, cloudinaryConfig, notificationPreferences, version: clientVersion, hasGeminiKey: _hasGeminiKey, calendarProvider: _calendarProvider, calendlyUrl: _calendlyUrl, savvycalUrl: _savvycalUrl, ...topLevelData } = data as any
 
         // Optimistic Locking: Verify version hasn't changed since page load
         if (clientVersion !== undefined) {
@@ -257,7 +257,7 @@ export async function updateSettings(data: SettingsData) {
         // Prepare Google Config Payload
         let googleConfigPayload: any = undefined
         if (googleCalendarConfig) {
-            const { clientEmail, privateKey, hasCredentials, ...restConfig } = googleCalendarConfig
+            const { clientEmail, privateKey, hasCredentials: _hasCredentials, ...restConfig } = googleCalendarConfig
             googleConfigPayload = { ...restConfig, updatedAt: new Date() }
             if (clientEmail?.trim()) googleConfigPayload.encryptedClientEmail = encrypt(clientEmail)
             if (privateKey?.trim()) googleConfigPayload.encryptedPrivateKey = encrypt(privateKey)
