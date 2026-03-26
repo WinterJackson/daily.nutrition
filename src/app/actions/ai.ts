@@ -407,8 +407,8 @@ export async function generateRawDraft(topic: string, angle: string): Promise<{ 
                 content: markdown
             }
         }
-    } catch (error) {
+    } catch (error: any) {
         console.error("AI Generation failed:", error)
-        return { success: false, error: "Failed to generate raw draft. Check AI configuration." }
+        return { success: false, error: error.message || "Failed to generate raw draft. Check AI configuration." }
     }
 }

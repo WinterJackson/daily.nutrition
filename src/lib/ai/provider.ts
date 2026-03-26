@@ -26,7 +26,10 @@ export async function getGeminiModel(): Promise<GenerativeModel> {
     }
 
     const genAI = new GoogleGenerativeAI(apiKey)
-    cachedModel = genAI.getGenerativeModel({ model: "gemini-2.0-flash" })
+    cachedModel = genAI.getGenerativeModel({
+        model: "gemini-1.5-flash",
+        tools: [{ googleSearchRetrieval: {} }]
+    })
     cachedKeyHash = keyHash
     return cachedModel
 }
