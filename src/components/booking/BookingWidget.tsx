@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/Input"
 import { Textarea } from "@/components/ui/Textarea"
 import { addMonths, eachDayOfInterval, endOfMonth, endOfWeek, format, isBefore, isSameDay, startOfMonth, startOfToday, startOfWeek, subMonths } from "date-fns"
 import { AnimatePresence, motion } from "framer-motion"
-import { ArrowRight, CheckCircle, ChevronLeft, ChevronRight, Clock, Globe, Info, Loader2, Mail, User } from "lucide-react"
+import { AlertCircle, ArrowRight, CheckCircle, ChevronLeft, ChevronRight, Clock, Globe, Info, Loader2, Mail, User } from "lucide-react"
 import { useEffect, useMemo, useState } from "react"
 
 // Types
@@ -41,6 +41,7 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
   const [referenceCode, setReferenceCode] = useState<string | null>(null)
   
   const [formData, setFormData] = useState({ name: "", email: "", notes: "" })
+  const [bookingError, setBookingError] = useState<string | null>(null)
   const [isInstructionsOpen, setIsInstructionsOpen] = useState(true)
 
   // Timezone State
@@ -119,6 +120,7 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
     if (!selectedDate || !selectedTime) return
 
     setIsSubmitting(true)
+    setBookingError(null)
     
     // Call Server Action
     const res = await bookAppointment({
@@ -133,10 +135,11 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
     })
 
     if (res.success) {
-        setReferenceCode(res.referenceCode || null)
+        setReferenceCode('referenceCode' in res ? res.referenceCode : null)
+        setBookingError(null)
         setBookingStep("success")
     } else {
-        alert("Booking failed: " + (res.error || "Unknown error"))
+        setBookingError(res.error || "An unexpected error occurred. Please try again.")
     }
     
     setIsSubmitting(false)
@@ -425,6 +428,22 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
                             {format(selectedDate!, "EEEE, MMMM do")} • {new Date(selectedTime!).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: clientTimezone })}
                         </div>
                     </div>
+
+                    {bookingError && (
+                        <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-xl flex items-start gap-3">
+                            <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                            <div>
+                                <p className="text-sm font-medium text-red-700 dark:text-red-400">{bookingError}</p>
+                                <button
+                                    type="button"
+                                    onClick={() => setBookingError(null)}
+                                    className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-300 mt-1 underline"
+                                >
+                                    Dismiss
+                                </button>
+                            </div>
+                        </div>
+                    )}
 
                     <form onSubmit={handleSubmit} className="space-y-4 flex-1">
                         <div className="space-y-2">

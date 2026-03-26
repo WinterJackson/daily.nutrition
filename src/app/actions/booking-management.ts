@@ -186,8 +186,6 @@ export async function rescheduleBooking(referenceCode: string, newDateStr: strin
             where: { referenceCode },
             data: {
                 scheduledAt: newScheduledAt,
-                date: newScheduledAt,
-                time: newTime,
             }
         });
 
