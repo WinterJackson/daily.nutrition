@@ -10,9 +10,13 @@ export type AdminNotificationType = "NEW_BOOKING" | "PASSWORD_CHANGED" | "BOOKIN
 interface NotificationPayload {
     newBooking?: {
         clientName: string;
+        clientEmail: string;
+        clientPhone?: string;
         serviceName: string;
         date: string;
         time: string;
+        referenceCode?: string;
+        sessionType?: "virtual" | "in-person";
         bookingUrl: string;
     };
     passwordChanged?: {

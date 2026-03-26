@@ -46,6 +46,7 @@ export async function bookAppointment(data: {
     time: string
     clientName: string
     clientEmail: string
+    clientPhone?: string
     notes?: string
     serviceName: string
     clientTimezone?: string
@@ -248,12 +249,32 @@ export async function bookAppointment(data: {
             await NotificationManager.sendAdminNotification("NEW_BOOKING", {
                 newBooking: {
                     clientName: data.clientName.trim(),
+                    clientEmail: data.clientEmail.trim(),
+                    clientPhone: data.clientPhone,
                     serviceName: data.serviceName,
                     date: clientFormattedDate,
                     time: `${clientFormattedTime} (${clientTimezone})`,
-                    bookingUrl: `/admin/bookings/${referenceCode}`
+                    referenceCode: referenceCode,
+                    sessionType: data.sessionType || "virtual",
+                    bookingUrl: `/admin/bookings`
                 }
             })
+
+            // 7. Create corresponding Inquiry record for CRM visibility
+            // This bridges the booking into the Inquiries page so admin can track follow-up
+            try {
+                await prisma.inquiry.create({
+                    data: {
+                        name: data.clientName.trim(),
+                        email: data.clientEmail.trim().toLowerCase(),
+                        message: `📅 Booking: ${data.serviceName}\n📆 ${clientFormattedDate} at ${clientFormattedTime} (${clientTimezone})\n🔖 Reference: ${referenceCode}\n📋 Session: ${data.sessionType || "virtual"}${data.clientPhone ? `\n📞 Phone: ${data.clientPhone}` : ""}`,
+                        statusString: "NEW",
+                    }
+                })
+            } catch (inquiryErr) {
+                // Non-critical — booking is already saved
+                console.error("Failed to create inquiry bridge for booking:", inquiryErr)
+            }
         } catch (postBookingErr) {
             // Email/notification failures should NEVER crash the booking
             console.error("Post-booking steps failed (booking was saved):", postBookingErr)

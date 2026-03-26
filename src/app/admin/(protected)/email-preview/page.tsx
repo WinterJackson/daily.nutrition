@@ -58,10 +58,14 @@ const templates: Record<string, () => React.ReactElement> = {
   "admin-new-booking": () =>
     AdminNewBookingEmail({
       clientName: "Grace Mwangi",
+      clientEmail: "grace.mwangi@example.com",
+      clientPhone: "+254 712 345 678",
       serviceName: "Personalized Diet Plan",
       date: "March 25, 2026",
       time: "10:00 AM",
-      bookingUrl: "https://edwaknutrition.co.ke/admin/bookings/DN-839201",
+      referenceCode: "DN-839201",
+      sessionType: "virtual",
+      bookingUrl: "https://edwaknutrition.co.ke/admin/bookings",
       branding: sampleBranding,
     }),
   "admin-password-changed": () =>

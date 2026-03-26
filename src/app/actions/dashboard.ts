@@ -35,7 +35,7 @@ export interface DashboardStats {
 
 export interface ActivityItem {
     id: string
-    type: 'inquiry' | 'review' | 'system'
+    type: 'inquiry' | 'review' | 'booking' | 'system'
     title: string
     description: string
     time: Date
@@ -101,12 +101,13 @@ const getCachedCounts = unstable_cache(
 // Activity feed cached separately with 1-minute revalidation
 const getCachedActivity = unstable_cache(
     async () => {
-        const [recentInquiries, recentTestimonials] = await Promise.all([
+        const [recentInquiries, recentTestimonials, recentBookings] = await Promise.all([
             prisma.inquiry.findMany({ where: { deletedAt: null }, take: 3, orderBy: { createdAt: 'desc' } }),
-            prisma.testimonial.findMany({ where: { deletedAt: null }, take: 2, orderBy: { createdAt: 'desc' } })
+            prisma.testimonial.findMany({ where: { deletedAt: null }, take: 2, orderBy: { createdAt: 'desc' } }),
+            prisma.booking.findMany({ where: { deletedAt: null }, take: 3, orderBy: { createdAt: 'desc' } })
         ])
 
-        return { recentInquiries, recentTestimonials }
+        return { recentInquiries, recentTestimonials, recentBookings }
     },
     ["dashboard-activity"],
     { revalidate: 60, tags: ["dashboard-activity"] } // 1-minute cache
@@ -118,7 +119,7 @@ export async function getDashboardStats(): Promise<DashboardStats> {
         if (!session) throw new Error("Unauthorized access to dashboard stats")
 
         const counts = await getCachedCounts()
-        const { recentInquiries, recentTestimonials } = await getCachedActivity()
+        const { recentInquiries, recentTestimonials, recentBookings } = await getCachedActivity()
 
         const activity: ActivityItem[] = [
             ...recentInquiries.map(i => ({
@@ -134,6 +135,13 @@ export async function getDashboardStats(): Promise<DashboardStats> {
                 title: "New Testimonial",
                 description: `From ${t.authorName}`,
                 time: new Date(t.createdAt)
+            })),
+            ...recentBookings.map(b => ({
+                id: b.id,
+                type: 'booking' as const,
+                title: "New Booking",
+                description: `${b.clientName} — ${b.serviceName}`,
+                time: new Date(b.createdAt)
             }))
         ].sort((a, b) => b.time.getTime() - a.time.getTime()).slice(0, 5)
 
