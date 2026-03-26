@@ -247,7 +247,7 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
                              </div>
                              <div className="flex items-center gap-2 ml-auto">
                                 <Mail className="w-3 h-3" />
-                                <span>Need help? Contact support@edwaknutrition.co.ke</span>
+                                <span>Need help? Contact info@edwaknutrition.co.ke</span>
                              </div>
                         </div>
                     </div>

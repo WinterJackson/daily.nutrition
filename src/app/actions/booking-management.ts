@@ -67,7 +67,7 @@ export async function cancelBooking(referenceCode: string) {
                 accentColor: settings?.EmailBranding?.accentColor || "#E87A1E",
                 footerText: settings?.EmailBranding?.footerText || "Edwak Nutrition, Nairobi, Kenya",
                 websiteUrl: settings?.EmailBranding?.websiteUrl || "https://edwaknutrition.co.ke",
-                supportEmail: settings?.EmailBranding?.supportEmail || "support@edwaknutrition.co.ke"
+                supportEmail: settings?.EmailBranding?.supportEmail || "info@edwaknutrition.co.ke"
             }
 
             // Format time for email
@@ -236,7 +236,7 @@ export async function rescheduleBooking(referenceCode: string, newDateStr: strin
                 accentColor: settings?.EmailBranding?.accentColor || "#E87A1E",
                 footerText: settings?.EmailBranding?.footerText || "Edwak Nutrition, Nairobi, Kenya",
                 websiteUrl: settings?.EmailBranding?.websiteUrl || "https://edwaknutrition.co.ke",
-                supportEmail: settings?.EmailBranding?.supportEmail || "support@edwaknutrition.co.ke"
+                supportEmail: settings?.EmailBranding?.supportEmail || "info@edwaknutrition.co.ke"
             };
 
             const emailSubject = `Booking Rescheduled: ${updatedBooking.serviceName} (#${referenceCode})`;

@@ -264,7 +264,7 @@ export async function replyToInquiry(id: string, replyContent: string) {
             accentColor: "#E87A1E",
             footerText: "Edwak Nutrition",
             websiteUrl: "https://edwaknutrition.co.ke",
-            supportEmail: "support@edwaknutrition.co.ke"
+            supportEmail: "info@edwaknutrition.co.ke"
         }
 
         // Store reply explicitly

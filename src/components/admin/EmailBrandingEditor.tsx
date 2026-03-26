@@ -181,7 +181,7 @@ export function EmailBrandingEditor({ branding, onChange }: EmailBrandingEditorP
                         <Input
                             value={branding.supportEmail}
                             onChange={(e) => onChange("supportEmail", e.target.value)}
-                            placeholder="support@edwaknutrition.co.ke"
+                            placeholder="info@edwaknutrition.co.ke"
                             className="pl-10 bg-white dark:bg-charcoal border-neutral-200 dark:border-white/10"
                         />
                         <Mail className="w-4 h-4 text-neutral-400 absolute left-3 top-1/2 -translate-y-1/2" />

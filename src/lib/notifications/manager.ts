@@ -87,7 +87,7 @@ export const NotificationManager = {
                 accentColor: settings.EmailBranding?.accentColor || "#E87A1E",
                 footerText: settings.EmailBranding?.footerText || "Edwak Nutrition",
                 websiteUrl: settings.EmailBranding?.websiteUrl || "https://edwaknutrition.co.ke",
-                supportEmail: settings.EmailBranding?.supportEmail || "support@edwaknutrition.co.ke"
+                supportEmail: settings.EmailBranding?.supportEmail || "info@edwaknutrition.co.ke"
             };
 
             // 5. Select Template & Send
@@ -99,9 +99,14 @@ export const NotificationManager = {
                 case "NEW_BOOKING":
                     if (payload.newBooking) {
                         subject = `New Booking: ${payload.newBooking.clientName}`;
+                        // Ensure bookingUrl is absolute (prepend websiteUrl if relative)
+                        const fullBookingUrl = payload.newBooking.bookingUrl.startsWith('http')
+                            ? payload.newBooking.bookingUrl
+                            : `${branding.websiteUrl}${payload.newBooking.bookingUrl}`;
                         reactElement = AdminNewBookingEmail({
                             branding,
-                            ...payload.newBooking
+                            ...payload.newBooking,
+                            bookingUrl: fullBookingUrl
                         });
                     }
                     break;
@@ -147,6 +152,7 @@ export const NotificationManager = {
                 const emailConfig: any = {
                     from: `Edwak Nutrition System <${fromEmail}>`,
                     to: adminEmail,
+                    replyTo: branding.supportEmail,
                     subject
                 };
 

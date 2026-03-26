@@ -19,7 +19,7 @@ const DEFAULT_BRANDING: EmailBrandingData = {
     accentColor: "#E87A1E",
     footerText: "Edwak Nutrition, Nairobi, Kenya",
     websiteUrl: "https://edwaknutrition.co.ke",
-    supportEmail: "support@edwaknutrition.co.ke"
+    supportEmail: "info@edwaknutrition.co.ke"
 }
 
 /**

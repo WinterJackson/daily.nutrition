@@ -265,7 +265,7 @@ async function getEmailConfig() {
         accentColor: settings?.EmailBranding?.accentColor || "#E87A1E",
         footerText: settings?.EmailBranding?.footerText || "Edwak Nutrition, Nairobi, Kenya",
         websiteUrl: settings?.EmailBranding?.websiteUrl || "https://edwaknutrition.co.ke",
-        supportEmail: settings?.EmailBranding?.supportEmail || "support@edwaknutrition.co.ke"
+        supportEmail: settings?.EmailBranding?.supportEmail || "info@edwaknutrition.co.ke"
     }
 
     return { resend, fromEmail, branding }
