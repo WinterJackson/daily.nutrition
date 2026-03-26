@@ -48,11 +48,14 @@ async function getGoogleClient() {
 
 /**
  * Calculates available time slots for a given date
- * Logic: (Working Hours) - (Google Busy Time) - (Buffers) - (Blocked Dates)
+ * Logic: (Working Hours) - (Google Busy Time) - (Local DB Bookings) - (Buffers) - (Blocked Dates)
+ *
+ * IMPORTANT: This function checks BOTH Google Calendar AND the local Booking database.
+ * If a Google Calendar event creation failed but the booking was saved to the DB,
+ * the slot is still correctly blocked for future clients.
  */
 export async function getAvailableSlots(dateStr: string): Promise<string[]> {
     // 0. Check if date is manually blocked
-    // Enforce strict UTC Midnight to flawlessly match the BlockedDate Indexed Postgres value
     const utcMidnight = new Date(`${dateStr}T00:00:00.000Z`);
 
     const blockedDate = await prisma.blockedDate.findFirst({
@@ -78,16 +81,14 @@ export async function getAvailableSlots(dateStr: string): Promise<string[]> {
 
     const duration = config.eventDuration || 30;
     const buffer = config.bufferTime || 15;
-    const availability = config.availability as any; // Typed locally in component usually
+    const availability = config.availability as any;
 
     // 2. Determine Working Hours for this day
-    // Generate a mathematically perfect anchor at Noon UTC so no geographical deployment timezone can shift the date backwards.
     const safeAnchorDate = new Date(`${dateStr}T12:00:00Z`);
     const WEEKDAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"];
     const dayName = WEEKDAYS[safeAnchorDate.getUTCDay()];
     const daySchedule = availability[dayName];
 
-    // If closed today, return empty
     if (!daySchedule?.isOpen) return [];
 
     // Parse start/end times precisely in EAT
@@ -97,41 +98,67 @@ export async function getAvailableSlots(dateStr: string): Promise<string[]> {
     const minNoticeMinutes = config.minNotice || 120;
     const bookingThreshold = addMinutes(new Date(), minNoticeMinutes);
 
-    // 3. Fetch Busy Slots from Google
-    // Query for the whole business day 
-    const queryStart = workingStart;
-    const queryEnd = workingEnd;
-
+    // 3. Fetch Busy Slots from Google Calendar
     const res = await calendar.freebusy.query({
         requestBody: {
-            timeMin: queryStart.toISOString(),
-            timeMax: queryEnd.toISOString(),
+            timeMin: workingStart.toISOString(),
+            timeMax: workingEnd.toISOString(),
             items: [{ id: calendarId }],
         },
     });
 
-    const busySlots = res.data.calendars?.[calendarId]?.busy || [];
+    const googleBusySlots = res.data.calendars?.[calendarId]?.busy || [];
 
-    // 4. Generate All Possible Slots
+    // 4. CRITICAL: Also fetch bookings from LOCAL DATABASE
+    // This catches bookings where Google Calendar event creation failed but the DB record exists.
+    // Without this, a client could book a slot that's already taken in the DB.
+    // Only non-cancelled bookings block slots — CANCELLED bookings free their slots back up.
+    const localBookings = await prisma.booking.findMany({
+        where: {
+            scheduledAt: {
+                gte: workingStart,
+                lt: workingEnd
+            },
+            bookingStatus: {
+                not: "CANCELLED"
+            }
+        },
+        select: {
+            scheduledAt: true,
+            duration: true
+        }
+    });
+
+    // Convert local bookings into busy-slot format
+    const localBusySlots = localBookings.map(booking => ({
+        start: booking.scheduledAt.toISOString(),
+        end: addMinutes(booking.scheduledAt, booking.duration).toISOString()
+    }));
+
+    // Merge Google Calendar busy slots + local DB busy slots
+    const allBusySlots = [
+        ...googleBusySlots.map(s => ({ start: s.start!, end: s.end! })),
+        ...localBusySlots
+    ];
+
+    // 5. Generate All Possible Slots
     const slots: string[] = [];
     let currentSlotStart = workingStart;
 
-    // Iterate from Start Time to End Time
     while (isBefore(currentSlotStart, workingEnd)) {
         const currentSlotEnd = addMinutes(currentSlotStart, duration);
 
         // Stop if the slot goes past working hours
         if (isAfter(currentSlotEnd, workingEnd)) break;
 
-        // 5. Check Collision with Google Busy Slots (Including the exact Administrator Buffer)
-        // By expanding the checking window invisibly, we can cleanly render 30-min UI intervals 
-        // while safely destroying any slots that fall too close to an active Google booking!
+        // 6. Check Collision with ALL Busy Slots (Google + DB)
+        // Expand the checking window by buffer time to prevent back-to-back bookings
         const checkStart = addMinutes(currentSlotStart, -buffer);
         const checkEnd = addMinutes(currentSlotEnd, buffer);
 
-        const isBusy = busySlots.some((busy) => {
-            const busyStart = new Date(busy.start!);
-            const busyEnd = new Date(busy.end!);
+        const isBusy = allBusySlots.some((busy) => {
+            const busyStart = new Date(busy.start);
+            const busyEnd = new Date(busy.end);
 
             return areIntervalsOverlapping(
                 { start: checkStart, end: checkEnd },
@@ -140,14 +167,13 @@ export async function getAvailableSlots(dateStr: string): Promise<string[]> {
         });
 
         if (!isBusy) {
-            // Protect against last-minute exploits: rigidly enforce the Administrator's minNotice offset barrier
+            // Enforce the Administrator's minNotice barrier
             if (isAfter(currentSlotStart, bookingThreshold)) {
                 slots.push(currentSlotStart.toISOString());
             }
         }
 
-        // Move to next slot strictly by pure Duration to keep visual slots clean (9:00, 9:30, 10:00)
-        // Since we embedded the Buffer collision math above, this is 100% physically secure against double-booking!
+        // Move to next slot by pure Duration for clean visual intervals (9:00, 9:30, 10:00)
         currentSlotStart = addMinutes(currentSlotStart, duration);
     }
 
@@ -158,24 +184,21 @@ export async function getAvailableSlots(dateStr: string): Promise<string[]> {
  * Create a new Calendar Event
  */
 export async function createCalendarEvent(
-    date: Date, // legacy param for backwards compat, though we can usually infer
-    isoTime: string, // now receives full absolute ISO string
+    date: Date,
+    isoTime: string,
     clientData: { name: string, email: string, notes?: string },
     serviceName: string,
-    customDuration?: number // Optional custom duration override
+    customDuration?: number
 ) {
     const { client, calendarId } = await getGoogleClient();
     const calendar = google.calendar({ version: 'v3', auth: client });
 
-    // Get duration settings
     const settings = await prisma.siteSettings.findUnique({
         where: { id: "default" },
         include: { GoogleCalendarConfig: true }
     });
-    // Use customDuration if provided, otherwise fall back to settings, then default 30
     const duration = customDuration || settings?.GoogleCalendarConfig?.eventDuration || 30;
 
-    // Parse absolute start time
     const startDateTime = new Date(isoTime);
     const endDateTime = addMinutes(startDateTime, duration);
 
@@ -188,7 +211,7 @@ export async function createCalendarEvent(
         `,
         start: {
             dateTime: startDateTime.toISOString(),
-            timeZone: 'Africa/Nairobi', // Default for now, should be configurable or inferred
+            timeZone: 'Africa/Nairobi',
         },
         end: {
             dateTime: endDateTime.toISOString(),
@@ -196,7 +219,6 @@ export async function createCalendarEvent(
         },
         attendees: [
             { email: clientData.email },
-            // Add business email too if needed, though they own the calendar
         ],
         conferenceData: {
             createRequest: {
@@ -209,8 +231,8 @@ export async function createCalendarEvent(
     const res = await calendar.events.insert({
         calendarId: calendarId,
         requestBody: event,
-        sendUpdates: 'all', // Send email invites to attendees
-        conferenceDataVersion: 1, // Required for creating conference data
+        sendUpdates: 'all',
+        conferenceDataVersion: 1,
     });
 
     return res.data;
@@ -236,7 +258,6 @@ export async function updateCalendarEvent(
         requestBody: {
             start: {
                 dateTime: startDateTime.toISOString(),
-                // Keep default timezone for now, matching create logic
                 timeZone: 'Africa/Nairobi',
             },
             end: {
@@ -260,6 +281,6 @@ export async function deleteCalendarEvent(eventId: string) {
     await calendar.events.delete({
         calendarId: calendarId,
         eventId: eventId,
-        sendUpdates: 'all', // Notify attendees of cancellation
+        sendUpdates: 'all',
     });
 }
