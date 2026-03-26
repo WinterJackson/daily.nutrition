@@ -341,7 +341,7 @@ export default function NewsletterPage() {
                                         <Input 
                                             value={draftSubject}
                                             onChange={(e) => setDraftSubject(e.target.value)}
-                                            placeholder="Exciting news from Daily Nutrition!"
+                                            placeholder="Exciting news from Edwak Nutrition!"
                                             required
                                             className="surface-input"
                                         />

@@ -5,8 +5,8 @@ import ContactClient from "./ContactClient"
 export async function generateMetadata(): Promise<Metadata> {
   const settings = await getSettings()
   return {
-    title: `Contact Us | ${settings?.businessName || "Daily Nutrition"}`,
-    description: `Get in touch with ${settings?.businessName || "Daily Nutrition"}. ${settings?.metaDescription || ""}`,
+    title: `Contact Us | ${settings?.businessName || "Edwak Nutrition"}`,
+    description: `Get in touch with ${settings?.businessName || "Edwak Nutrition"}. ${settings?.metaDescription || ""}`,
   }
 }
 

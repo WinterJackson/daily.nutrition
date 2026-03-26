@@ -85,7 +85,7 @@ export const NotificationManager = {
                 logoUrl: settings.EmailBranding?.logoUrl || null,
                 primaryColor: settings.EmailBranding?.primaryColor || "#556B2F",
                 accentColor: settings.EmailBranding?.accentColor || "#E87A1E",
-                footerText: settings.EmailBranding?.footerText || "Daily Nutrition",
+                footerText: settings.EmailBranding?.footerText || "Edwak Nutrition",
                 websiteUrl: settings.EmailBranding?.websiteUrl || "https://edwaknutrition.co.ke",
                 supportEmail: settings.EmailBranding?.supportEmail || "support@edwaknutrition.co.ke"
             };

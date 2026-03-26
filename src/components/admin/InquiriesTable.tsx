@@ -262,9 +262,9 @@ export function InquiriesTable({
   // Utilities & Rendering
   // --------------------------------------------------------
   const getGmailReplyUrl = (inquiry: Inquiry) => {
-    const subject = encodeURIComponent(`Re: Your Inquiry to Daily Nutrition`)
+    const subject = encodeURIComponent(`Re: Your Inquiry to Edwak Nutrition`)
     const body = encodeURIComponent(
-      `Hi \${inquiry.name},\\n\\nThank you for reaching out to Daily Nutrition.\\n\\n---\\n\\nBest regards,\\nDaily Nutrition Team`
+      `Hi \${inquiry.name},\\n\\nThank you for reaching out to Edwak Nutrition.\\n\\n---\\n\\nBest regards,\\nEdwak Nutrition Team`
     )
     return `https://mail.google.com/mail/?view=cm&fs=1&to=\${encodeURIComponent(
       inquiry.email

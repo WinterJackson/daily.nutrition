@@ -341,7 +341,7 @@ export function AdminSidebar() {
            <div className="relative h-10 w-28 bg-gradient-to-br from-white via-white to-olive/20 rounded-[10px] px-1 shadow-sm">
                <Image 
                  src="/admin-logo.png" 
-                 alt="Daily Nutrition" 
+                 alt="Edwak Nutrition" 
                  fill
                  className="object-contain"
                />

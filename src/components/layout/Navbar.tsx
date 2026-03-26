@@ -32,7 +32,7 @@ export function Navbar() {
             <Link href="/" className="flex items-center gap-2 group">
                <Image 
                  src="/logo.png" 
-                 alt="Daily Nutrition Logo" 
+                 alt="Edwak Nutrition Logo" 
                  width={180} 
                  height={60} 
                  className="h-14 w-auto object-contain"

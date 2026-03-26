@@ -275,7 +275,7 @@ export async function generate2FASecret() {
 
     // Create a new TOTP object
     const totp = new OTPAuth.TOTP({
-        issuer: "Daily Nutrition",
+        issuer: "Edwak Nutrition",
         label: session.user.email,
         algorithm: "SHA1",
         digits: 6,
@@ -299,7 +299,7 @@ export async function verify2FASetup(secret: string, code: string) {
     if (!session) return { success: false, error: "Unauthorized" }
 
     const totp = new OTPAuth.TOTP({
-        issuer: "Daily Nutrition",
+        issuer: "Edwak Nutrition",
         label: session.user.email,
         algorithm: "SHA1",
         digits: 6,
@@ -367,7 +367,7 @@ export async function verify2FALogin(email: string, code: string) {
     }
 
     const totp = new OTPAuth.TOTP({
-        issuer: "Daily Nutrition",
+        issuer: "Edwak Nutrition",
         label: user.email,
         algorithm: "SHA1",
         digits: 6,

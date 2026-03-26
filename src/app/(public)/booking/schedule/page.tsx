@@ -29,6 +29,7 @@ export default async function SchedulePage() {
     }>
       <ScheduleClient 
         calendarId={calendarConfig.calendarId}
+        businessName={calendarConfig.businessName}
         googleCalendarConfig={calendarConfig.googleConfig}
         blockedDates={blockedDates}
       />

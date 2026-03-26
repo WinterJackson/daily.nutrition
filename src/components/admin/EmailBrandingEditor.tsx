@@ -150,7 +150,7 @@ export function EmailBrandingEditor({ branding, onChange }: EmailBrandingEditorP
                 <Input
                     value={branding.footerText}
                     onChange={(e) => onChange("footerText", e.target.value)}
-                    placeholder="Daily Nutrition, Nairobi, Kenya"
+                    placeholder="Edwak Nutrition, Nairobi, Kenya"
                     className="bg-white dark:bg-charcoal border-neutral-200 dark:border-white/10"
                 />
                 <p className="text-xs text-neutral-400">Appears at the bottom of every email</p>

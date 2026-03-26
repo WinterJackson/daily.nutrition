@@ -79,7 +79,7 @@ const resendSetupSteps = [
   {
     step: 3,
     title: "Generate API Key",
-    description: "Click 'API Keys' on the left sidebar. Click 'Create API Key', name it 'Daily Nutrition Prod', and give it Full Access.",
+    description: "Click 'API Keys' on the left sidebar. Click 'Create API Key', name it 'Edwak Nutrition Prod', and give it Full Access.",
   },
   {
     step: 4,
@@ -466,7 +466,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                          Live Location Preview
                       </label>
                       <iframe 
-                        src={settings.googleMapsEmbedUrl || `https://maps.google.com/maps?q=${encodeURIComponent(`${settings.businessName || "Daily Nutrition"} ${settings.address || "Nairobi"}`)}&t=&z=16&ie=UTF8&iwloc=&output=embed`}
+                        src={settings.googleMapsEmbedUrl || `https://maps.google.com/maps?q=${encodeURIComponent(`${settings.businessName || "Edwak Nutrition"} ${settings.address || "Nairobi"}`)}&t=&z=16&ie=UTF8&iwloc=&output=embed`}
                         width="100%" 
                         height="300" 
                         style={{ border: 0 }} 

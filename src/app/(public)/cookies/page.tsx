@@ -3,13 +3,13 @@ import { AnimatedBackground } from "@/components/ui/AnimatedBackground"
 import { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Cookie Policy | Daily Nutrition",
-  description: "Detailed information about how Daily Nutrition uses cookies and tracking technologies.",
+  title: "Cookie Policy | Edwak Nutrition",
+  description: "Detailed information about how Edwak Nutrition uses cookies and tracking technologies.",
 }
 
 export default async function CookiePolicyPage() {
   const settings = await getSettings()
-  const businessName = settings?.businessName || "Daily Nutrition"
+  const businessName = settings?.businessName || "Edwak Nutrition"
 
   return (
     <div className="min-h-screen bg-off-white dark:bg-charcoal relative pb-16 pt-32">

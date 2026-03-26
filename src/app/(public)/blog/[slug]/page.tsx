@@ -24,7 +24,7 @@ function calculateReadTime(content: string): number {
 
 /**
  * Custom react-markdown component overrides
- * Matches Daily Nutrition brand design system tokens
+ * Matches Edwak Nutrition brand design system tokens
  */
 const markdownComponents: Components = {
   h1: ({ children }) => (
@@ -155,7 +155,7 @@ export async function generateMetadata(
   
   if (!post) return { title: "Post Not Found" }
   
-  const title = post.metaTitle || `${post.title} | Daily Nutrition`
+  const title = post.metaTitle || `${post.title} | Edwak Nutrition`
   const description = post.metaDescription || post.content.replace(/[#*`_\[\]]/g, '').substring(0, 160).trim() + "..."
   
   const previousImages = (await parent).openGraph?.images || []
@@ -171,12 +171,12 @@ export async function generateMetadata(
       title: post.metaTitle || post.title,
       description: description,
       url: `https://daily.nutrition/blog/${post.slug}`,
-      siteName: 'Daily Nutrition',
+      siteName: 'Edwak Nutrition',
       images: ogImages,
       locale: 'en_US',
       type: 'article',
       publishedTime: post.createdAt.toISOString(),
-      authors: ['Daily Nutrition Team'],
+      authors: ['Edwak Nutrition Team'],
       section: post.category?.name,
     },
     twitter: {
@@ -208,12 +208,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     dateModified: post.updatedAt.toISOString(),
     author: [{
         '@type': 'Organization',
-        name: 'Daily Nutrition Team',
+        name: 'Edwak Nutrition Team',
         url: 'https://daily.nutrition'
     }],
     publisher: {
         '@type': 'Organization',
-        name: 'Daily Nutrition',
+        name: 'Edwak Nutrition',
         logo: {
             '@type': 'ImageObject',
             url: 'https://daily.nutrition/logo.png'

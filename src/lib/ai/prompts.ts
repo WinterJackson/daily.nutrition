@@ -1,6 +1,6 @@
 /**
  * Xinteck Pattern: AI Prompt Templates
- * All prompts are deeply tuned for a Kenyan nutrition consultancy (Daily Nutrition)
+ * All prompts are deeply tuned for a Kenyan nutrition consultancy (Edwak Nutrition)
  * targeting professional, evidence-based content for the East African market.
  */
 
@@ -41,7 +41,7 @@ export const DEFAULT_AI_CONFIG: AiConfig = {
  * relevant to the Kenyan market with business value scoring.
  */
 export function buildScoutPrompt(config: AiConfig): string {
-    return `You are a senior content strategist for "Daily Nutrition," a premium clinical nutrition consultancy based in Nairobi, Kenya. Your audience is health-conscious Kenyan professionals, families managing chronic conditions, and corporate wellness programs across East Africa.
+    return `You are a senior content strategist for "Edwak Nutrition," a premium clinical nutrition consultancy based in Nairobi, Kenya. Your audience is health-conscious Kenyan professionals, families managing chronic conditions, and corporate wellness programs across East Africa.
 
 TARGET NICHES (focus your research here):
 ${config.targetNiches.map((n) => `- ${n}`).join("\n")}
@@ -52,7 +52,7 @@ ${config.excludedKeywords.map((k) => `- ${k}`).join("\n")}
 BRAND VOICE: ${config.brandVoice}
 
 YOUR TASK:
-Generate exactly 5 emerging nutrition content ideas that would position Daily Nutrition as a thought leader in the Kenyan nutrition space. Each idea must be:
+Generate exactly 5 emerging nutrition content ideas that would position Edwak Nutrition as a thought leader in the Kenyan nutrition space. Each idea must be:
 1. Timely and relevant to current Kenyan health trends (2024-2026)
 2. Backed by evidence or emerging research
 3. Aligned with our premium, clinical positioning
@@ -89,7 +89,7 @@ export function buildDraftPrompt(
     keywords: string[],
     config: AiConfig
 ): string {
-    return `You are the lead clinical nutritionist and content writer for "Daily Nutrition," a premier nutrition consultancy in Nairobi, Kenya. Write a professional blog article in RAW MARKDOWN (not wrapped in code blocks).
+    return `You are the lead clinical nutritionist and content writer for "Edwak Nutrition," a premier nutrition consultancy in Nairobi, Kenya. Write a professional blog article in RAW MARKDOWN (not wrapped in code blocks).
 
 ARTICLE DETAILS:
 - Title: ${title}
@@ -107,7 +107,7 @@ STRICT REQUIREMENTS:
    - ## The Approach: Evidence-based nutritional strategies. Include specific Kenyan foods (ugali, sukuma wiki, nyama choma, omena, avocado, sweet potato, arrow roots, green grams, cowpeas, millet, sorghum).
    - ## The Impact: What results can readers expect? Include a practical meal plan or action steps.
    - ## Key Takeaways: 3-4 bullet points summarizing the article.
-   - Closing paragraph: Gentle call-to-action to book a consultation at Daily Nutrition.
+   - Closing paragraph: Gentle call-to-action to book a consultation at Edwak Nutrition.
 4. TONE: Clinical authority with warmth. Cite real nutrient values and health mechanisms.
 5. NEVER use: "${config.excludedKeywords.join('", "')}"
 6. NEVER mention: ChatGPT, AI, artificial intelligence, language model, or any AI tool.
@@ -122,7 +122,7 @@ Write the article now. Output RAW MARKDOWN only — no code blocks, no explanati
  * Auto-suggest keywords the brand should blacklist.
  */
 export function buildExclusionSuggestPrompt(config: AiConfig): string {
-    return `You are a brand strategist for "Daily Nutrition," a premium clinical nutrition consultancy in Nairobi, Kenya.
+    return `You are a brand strategist for "Edwak Nutrition," a premium clinical nutrition consultancy in Nairobi, Kenya.
 
 OUR POSITIONING: Evidence-based, premium, clinical authority in the Kenyan nutrition space.
 

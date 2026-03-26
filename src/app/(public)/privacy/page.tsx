@@ -3,13 +3,13 @@ import { AnimatedBackground } from "@/components/ui/AnimatedBackground"
 import { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Privacy Policy | Daily Nutrition",
-  description: "Privacy Policy and data protection practices for Daily Nutrition in compliance with the Kenya Data Protection Act, 2019.",
+  title: "Privacy Policy | Edwak Nutrition",
+  description: "Privacy Policy and data protection practices for Edwak Nutrition in compliance with the Kenya Data Protection Act, 2019.",
 }
 
 export default async function PrivacyPolicyPage() {
   const settings = await getSettings()
-  const businessName = settings?.businessName || "Daily Nutrition"
+  const businessName = settings?.businessName || "Edwak Nutrition"
   const email = settings?.contactEmail || "privacy@edwaknutrition.co.ke"
   const address = settings?.address || "Nairobi, Kenya"
 

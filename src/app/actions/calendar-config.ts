@@ -5,6 +5,7 @@ import { prisma } from "@/lib/prisma"
 export interface CalendarConfig {
     provider: "google_calendar" | "none"
     calendarId: string
+    businessName: string
     googleConfig?: {
         eventDuration: number
         bufferTime: number
@@ -15,7 +16,8 @@ export interface CalendarConfig {
 
 const DEFAULT_CONFIG: CalendarConfig = {
     provider: "none",
-    calendarId: ""
+    calendarId: "",
+    businessName: "Edwak Nutrition"
 }
 
 /**
@@ -44,6 +46,7 @@ export async function getCalendarConfig(): Promise<CalendarConfig> {
         return {
             provider: "google_calendar",
             calendarId,
+            businessName: settings.businessName || "Edwak Nutrition",
             googleConfig: hasConfig ? {
                 eventDuration: settings.GoogleCalendarConfig!.eventDuration,
                 bufferTime: settings.GoogleCalendarConfig!.bufferTime,

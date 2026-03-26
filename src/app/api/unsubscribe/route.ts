@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
             <body>
                 <div class="card">
                     <h1>Unsubscribed</h1>
-                    <p>You have been successfully removed from the Daily Nutrition mailing list.</p>
+                    <p>You have been successfully removed from the Edwak Nutrition mailing list.</p>
                     <p><strong>${email}</strong> will no longer receive these emails.</p>
                 </div>
             </body>

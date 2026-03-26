@@ -29,7 +29,7 @@ export function AiDashboardClient({ userRole }: AiDashboardClientProps) {
                     AI Content Assistant
                 </h1>
                 <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>
-                    AI-powered content ideation and drafting for Daily Nutrition
+                    AI-powered content ideation and drafting for Edwak Nutrition
                 </p>
             </div>
 

@@ -2,7 +2,7 @@ import { getMediaFiles } from "@/app/actions/media"
 import MediaLibraryClient from "@/components/admin/MediaLibraryClient"
 
 export const metadata = {
-    title: 'Media Library | Daily Nutrition Admin',
+    title: 'Media Library | Edwak Nutrition Admin',
 }
 
 export default async function AdminMediaPage() {

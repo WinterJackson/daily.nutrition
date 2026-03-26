@@ -3,13 +3,13 @@ import { AnimatedBackground } from "@/components/ui/AnimatedBackground"
 import { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Terms of Service | Daily Nutrition",
-  description: "Terms of Service, governing laws, and dispute resolution for Daily Nutrition.",
+  title: "Terms of Service | Edwak Nutrition",
+  description: "Terms of Service, governing laws, and dispute resolution for Edwak Nutrition.",
 }
 
 export default async function TermsOfServicePage() {
   const settings = await getSettings()
-  const businessName = settings?.businessName || "Daily Nutrition"
+  const businessName = settings?.businessName || "Edwak Nutrition"
   const email = settings?.contactEmail || "legal@edwaknutrition.co.ke"
 
   return (

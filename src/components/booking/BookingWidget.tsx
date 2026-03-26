@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/Textarea"
 import { addMonths, eachDayOfInterval, endOfMonth, endOfWeek, format, isBefore, isSameDay, startOfMonth, startOfToday, startOfWeek, subMonths } from "date-fns"
 import { AnimatePresence, motion } from "framer-motion"
 import { AlertCircle, ArrowRight, CheckCircle, ChevronLeft, ChevronRight, Clock, Globe, Info, Loader2, Mail, User } from "lucide-react"
+import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
 
 // Types
@@ -155,13 +156,20 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
             </div>
             <h2 className="text-3xl font-bold text-olive dark:text-off-white">Booking Confirmed!</h2>
             <p className="text-neutral-600 dark:text-neutral-400 max-w-md mx-auto">
-                You are scheduled with {settings.businessName} for <strong>{selectedDate && format(selectedDate, 'MMMM d, yyyy')}</strong> at <strong>{new Date(selectedTime!).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: clientTimezone })}</strong>.
+                You are scheduled with <strong>{settings.businessName || "Edwak Nutrition"}</strong> for <strong>{selectedDate && format(selectedDate, 'MMMM d, yyyy')}</strong> at <strong>{new Date(selectedTime!).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: clientTimezone })}</strong>.
             </p>
             {referenceCode && (
-              <div className="p-4 bg-brand-green/5 dark:bg-brand-green/10 rounded-xl border border-brand-green/20 text-sm">
-                <p className="text-neutral-500 mb-1">Your Reference Code</p>
-                <p className="text-2xl font-mono font-bold text-olive dark:text-off-white">{referenceCode}</p>
-                <p className="text-xs text-neutral-400 mt-1">Use this to manage or reschedule your booking</p>
+              <div className="p-5 bg-brand-green/5 dark:bg-brand-green/10 rounded-xl border border-brand-green/20">
+                <p className="text-neutral-500 mb-2 text-sm">Your Reference Code</p>
+                <div className="flex flex-col sm:flex-row items-center justify-center gap-4 mb-3">
+                    <p className="text-3xl font-mono font-bold text-olive dark:text-off-white bg-white dark:bg-white/5 py-2 px-6 rounded-lg shadow-inner">{referenceCode}</p>
+                </div>
+                <p className="text-sm text-neutral-600 dark:text-neutral-400 mb-4">Use this code to manage or reschedule your appointment at any time.</p>
+                <Button asChild className="w-full sm:w-auto">
+                    <Link href={`/booking/manage/${referenceCode}`}>
+                        Manage Booking
+                    </Link>
+                </Button>
               </div>
             )}
             <div className="p-4 bg-neutral-50 dark:bg-white/5 rounded-xl border border-neutral-100 dark:border-white/10 text-sm text-neutral-500">
