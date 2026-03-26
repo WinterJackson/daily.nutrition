@@ -367,7 +367,8 @@ export async function adminRescheduleBooking(id: string, newDateStr: string, new
         // Verify slot is available
         const { getAvailableSlots } = await import("@/lib/google-calendar")
         const slots = await getAvailableSlots(newDateStr)
-        if (!slots.includes(newTime)) {
+        const reqSlot = slots.find(s => s.time === newTime)
+        if (!reqSlot || !reqSlot.available) {
             return { success: false, error: "This time slot is no longer available." }
         }
 

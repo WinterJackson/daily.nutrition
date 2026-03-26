@@ -32,7 +32,7 @@ export default function BookingDetailPage() {
     const [rescheduleError, setRescheduleError] = useState<string | null>(null)
     const [canReschedule, setCanReschedule] = useState(true)
 
-    const [availableSlots, setAvailableSlots] = useState<string[]>([])
+    const [availableSlots, setAvailableSlots] = useState<{ time: string, available: boolean }[]>([])
     const [isLoadingSlots, setIsLoadingSlots] = useState(false)
 
     useEffect(() => {
@@ -260,8 +260,9 @@ export default function BookingDetailPage() {
                                                     {!rescheduleDate ? "Pick a date first" : isLoadingSlots ? "Loading slots..." : availableSlots.length === 0 ? "No slots available" : "Select a time block"}
                                                 </option>
                                                 {availableSlots.map(slot => (
-                                                    <option key={slot} value={slot}>
-                                                        {new Date(slot).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: booking.clientTimezone || 'Africa/Nairobi' })}
+                                                    <option key={slot.time} value={slot.time} disabled={!slot.available}>
+                                                        {new Date(slot.time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: booking.clientTimezone || 'Africa/Nairobi' })}
+                                                        {!slot.available ? " (Booked)" : ""}
                                                     </option>
                                                 ))}
                                             </select>

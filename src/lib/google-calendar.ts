@@ -10,6 +10,11 @@ export interface TimeSlot {
     end: string;   // ISO string
 }
 
+export interface TimeSlotAvailability {
+    time: string;
+    available: boolean;
+}
+
 export interface AvailabilityParams {
     date: Date;
     timezone?: string;
@@ -50,11 +55,9 @@ async function getGoogleClient() {
  * Calculates available time slots for a given date
  * Logic: (Working Hours) - (Google Busy Time) - (Local DB Bookings) - (Buffers) - (Blocked Dates)
  *
- * IMPORTANT: This function checks BOTH Google Calendar AND the local Booking database.
- * If a Google Calendar event creation failed but the booking was saved to the DB,
- * the slot is still correctly blocked for future clients.
+ * Returns ALL slots within working hours, marked as available or unavailable.
  */
-export async function getAvailableSlots(dateStr: string): Promise<string[]> {
+export async function getAvailableSlots(dateStr: string): Promise<TimeSlotAvailability[]> {
     // 0. Check if date is manually blocked
     const utcMidnight = new Date(`${dateStr}T00:00:00.000Z`);
 
@@ -99,20 +102,21 @@ export async function getAvailableSlots(dateStr: string): Promise<string[]> {
     const bookingThreshold = addMinutes(new Date(), minNoticeMinutes);
 
     // 3. Fetch Busy Slots from Google Calendar
-    const res = await calendar.freebusy.query({
-        requestBody: {
-            timeMin: workingStart.toISOString(),
-            timeMax: workingEnd.toISOString(),
-            items: [{ id: calendarId }],
-        },
-    });
-
-    const googleBusySlots = res.data.calendars?.[calendarId]?.busy || [];
+    let googleBusySlots: any[] = [];
+    try {
+        const res = await calendar.freebusy.query({
+            requestBody: {
+                timeMin: workingStart.toISOString(),
+                timeMax: workingEnd.toISOString(),
+                items: [{ id: calendarId }],
+            },
+        });
+        googleBusySlots = res.data.calendars?.[calendarId]?.busy || [];
+    } catch (e) {
+        console.warn("Could not fetch Google Calendar busy slots", e);
+    }
 
     // 4. CRITICAL: Also fetch bookings from LOCAL DATABASE
-    // This catches bookings where Google Calendar event creation failed but the DB record exists.
-    // Without this, a client could book a slot that's already taken in the DB.
-    // Only non-cancelled bookings block slots — CANCELLED bookings free their slots back up.
     const localBookings = await prisma.booking.findMany({
         where: {
             scheduledAt: {
@@ -142,7 +146,7 @@ export async function getAvailableSlots(dateStr: string): Promise<string[]> {
     ];
 
     // 5. Generate All Possible Slots
-    const slots: string[] = [];
+    const slots: TimeSlotAvailability[] = [];
     let currentSlotStart = workingStart;
 
     while (isBefore(currentSlotStart, workingEnd)) {
@@ -166,12 +170,13 @@ export async function getAvailableSlots(dateStr: string): Promise<string[]> {
             );
         });
 
-        if (!isBusy) {
-            // Enforce the Administrator's minNotice barrier
-            if (isAfter(currentSlotStart, bookingThreshold)) {
-                slots.push(currentSlotStart.toISOString());
-            }
-        }
+        const isPastThreshold = !isAfter(currentSlotStart, bookingThreshold);
+        const isAvailable = !isBusy && !isPastThreshold;
+
+        slots.push({
+            time: currentSlotStart.toISOString(),
+            available: isAvailable
+        });
 
         // Move to next slot by pure Duration for clean visual intervals (9:00, 9:30, 10:00)
         currentSlotStart = addMinutes(currentSlotStart, duration);

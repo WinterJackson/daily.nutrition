@@ -34,7 +34,7 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
   const [selectedTime, setSelectedTime] = useState<string | null>(null)
   
   // Slots State
-  const [availableSlots, setAvailableSlots] = useState<string[]>([])
+  const [availableSlots, setAvailableSlots] = useState<{ time: string, available: boolean }[]>([])
   const [isLoadingSlots, setIsLoadingSlots] = useState(false)
 
   const [bookingStep, setBookingStep] = useState<"calendar" | "form" | "success">("calendar")
@@ -392,17 +392,27 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
                                 <Loader2 className="w-6 h-6 animate-spin text-olive" />
                                 <p className="text-sm text-neutral-500">Loading available times...</p>
                             </div>
-                        ) : availableSlots.length > 0 ? availableSlots.map(time => (
+                        ) : availableSlots.length > 0 ? availableSlots.map(slot => (
                             <button
-                                key={time}
-                                onClick={() => handleTimeSelect(time)}
-                                className="flex flex-col items-center justify-center p-3 bg-white dark:bg-white/5 border border-neutral-200 dark:border-white/10 rounded-xl hover:border-olive hover:shadow-sm transition-all group"
+                                key={slot.time}
+                                disabled={!slot.available}
+                                onClick={() => handleTimeSelect(slot.time)}
+                                className={`
+                                    flex flex-col items-center justify-center p-3 border rounded-xl transition-all group
+                                    ${slot.available 
+                                        ? "bg-white dark:bg-white/5 border-neutral-200 dark:border-white/10 hover:border-olive hover:shadow-sm cursor-pointer" 
+                                        : "bg-neutral-100 dark:bg-neutral-800/50 border-neutral-200 dark:border-neutral-700/50 opacity-60 cursor-not-allowed"}
+                                `}
                             >
-                                <span className="font-bold text-olive dark:text-white text-lg">
-                                    {new Date(time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: clientTimezone })}
+                                <span className={`font-bold text-lg ${slot.available ? "text-olive dark:text-white" : "text-neutral-400 dark:text-neutral-500 line-through decoration-neutral-400"}`}>
+                                    {new Date(slot.time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: clientTimezone })}
                                 </span>
-                                <div className="text-[10px] font-bold text-neutral-400 uppercase tracking-wider group-hover:text-olive transition-colors flex items-center gap-1">
-                                    Next <ArrowRight className="w-2.5 h-2.5" />
+                                <div className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 transition-colors ${slot.available ? "text-neutral-400 group-hover:text-olive" : "text-neutral-400/50"}`}>
+                                    {slot.available ? (
+                                        <>Next <ArrowRight className="w-2.5 h-2.5" /></>
+                                    ) : (
+                                        "Booked"
+                                    )}
                                 </div>
                             </button>
                         )) : (

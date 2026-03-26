@@ -2,10 +2,10 @@
 
 import { INTERNAL_getSecret } from "@/lib/ai/secrets"
 import { logEmailAttempt } from "@/lib/email-logger"
-import { createCalendarEvent, getAvailableSlots } from "@/lib/google-calendar"
+import { TimeSlotAvailability, createCalendarEvent, getAvailableSlots } from "@/lib/google-calendar"
 import { parseISO } from "date-fns"
 
-export async function fetchAvailability(dateStr: string) {
+export async function fetchAvailability(dateStr: string): Promise<{ success: boolean; error?: string; slots: TimeSlotAvailability[] }> {
     try {
         const slots = await getAvailableSlots(dateStr)
         return { success: true, slots }
@@ -74,7 +74,7 @@ export async function bookAppointment(data: {
         }
 
         // 1. Double-Booking Guard: Verify slot is still open
-        let slots: string[] = []
+        let slots: TimeSlotAvailability[] = []
         try {
             slots = await getAvailableSlots(data.dateStr)
         } catch (availErr) {
@@ -82,7 +82,8 @@ export async function bookAppointment(data: {
             return { success: false, error: "Unable to verify time slot availability. Please try again." }
         }
 
-        if (!slots.includes(data.time)) {
+        const requestedSlot = slots.find(s => s.time === data.time)
+        if (!requestedSlot || !requestedSlot.available) {
             return { success: false, error: "This time slot was just taken. Please choose another." }
         }
 
@@ -291,4 +292,3 @@ export async function bookAppointment(data: {
         return { success: false, error: `Booking failed: ${message}. Please try again or contact support.` }
     }
 }
-
