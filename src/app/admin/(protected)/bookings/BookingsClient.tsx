@@ -228,19 +228,19 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
   return (
     <>
       {/* Filters */}
-      <div className="p-4 border-b border-neutral-100 dark:border-white/5 flex flex-col sm:flex-row gap-4 justify-between items-center bg-white/50 dark:bg-white/[0.02]">
-        <div className="relative w-full sm:w-auto">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-neutral-500" />
+      <div className="sticky top-0 z-10 p-4 border-b border-neutral-100 dark:border-white/5 flex flex-col sm:flex-row gap-3 justify-between items-stretch sm:items-center bg-white/95 dark:bg-neutral-900/95 backdrop-blur-sm">
+        <div className="relative w-full sm:w-auto sm:min-w-[280px]">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-neutral-400" />
           <Input
-            placeholder="Search by name, email, service, or ref code..."
-            className="pl-9 w-full sm:w-72 bg-white dark:bg-black/20 border-neutral-200 dark:border-white/10"
+            placeholder="Search name, email, service, ref code..."
+            className="pl-9 w-full bg-white dark:bg-black/20 border-neutral-200 dark:border-white/10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
-        <div className="flex items-center gap-3 w-full sm:w-auto flex-wrap">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           <select
-            className="h-10 rounded-md border border-neutral-200 dark:border-white/10 bg-white dark:bg-black/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green"
+            className="h-10 flex-1 sm:flex-none rounded-md border border-neutral-200 dark:border-white/10 bg-white dark:bg-black/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green"
             value={statusFilter}
             onChange={(e) => setStatusFilter(e.target.value as any)}
           >
@@ -252,7 +252,7 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
             <option value="NO_SHOW">No Show</option>
           </select>
           <select
-            className="h-10 rounded-md border border-neutral-200 dark:border-white/10 bg-white dark:bg-black/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green"
+            className="h-10 flex-1 sm:flex-none rounded-md border border-neutral-200 dark:border-white/10 bg-white dark:bg-black/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green"
             value={timeFilter}
             onChange={(e) => {
               setTimeFilter(e.target.value as any)
@@ -267,51 +267,55 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
         </div>
       </div>
 
-      {/* Table */}
-      <div className="overflow-x-auto scrollbar-thin-1px lg:overflow-visible">
-        <table className="w-full text-sm text-left">
-          <thead className="bg-neutral-50/50 dark:bg-white/[0.02] text-neutral-500 dark:text-neutral-400 font-medium">
+      {/* Table — always horizontal-scrollable with no text wrap */}
+      <div className="overflow-x-auto scrollbar-thin-1px">
+        <table className="w-full min-w-[960px] text-sm text-left">
+          <thead className="bg-neutral-50/80 dark:bg-white/[0.03] text-neutral-500 dark:text-neutral-400 border-b border-neutral-100 dark:border-white/5">
             <tr>
-              <th className="px-6 py-4 font-semibold">Status</th>
-              <th className="px-6 py-4 font-semibold">Client</th>
-              <th className="px-6 py-4 font-semibold">Service</th>
-              <th className="px-6 py-4 font-semibold">Date & Time</th>
-              <th className="px-6 py-4 font-semibold">Reference</th>
-              <th className="px-6 py-4 font-semibold">Type</th>
-              <th className="px-6 py-4 text-right font-semibold">Actions</th>
+              <th className="px-5 py-3.5 font-semibold whitespace-nowrap text-xs uppercase tracking-wider">Status</th>
+              <th className="px-5 py-3.5 font-semibold whitespace-nowrap text-xs uppercase tracking-wider">Client</th>
+              <th className="px-5 py-3.5 font-semibold whitespace-nowrap text-xs uppercase tracking-wider">Service</th>
+              <th className="px-5 py-3.5 font-semibold whitespace-nowrap text-xs uppercase tracking-wider">Date & Time</th>
+              <th className="px-5 py-3.5 font-semibold whitespace-nowrap text-xs uppercase tracking-wider">Reference</th>
+              <th className="px-5 py-3.5 font-semibold whitespace-nowrap text-xs uppercase tracking-wider">Type</th>
+              <th className="px-5 py-3.5 font-semibold whitespace-nowrap text-xs uppercase tracking-wider text-right">Actions</th>
             </tr>
           </thead>
           <tbody className="divide-y divide-neutral-100 dark:divide-white/5">
             {filteredBookings.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-6 py-12 text-center text-neutral-500">
-                  {bookings.length === 0 ? "No bookings found. Bookings will appear here when clients book consultations." : "No bookings match your filters."}
+                <td colSpan={7} className="px-5 py-16 text-center text-neutral-500">
+                  <div className="flex flex-col items-center gap-2">
+                    <Calendar className="w-8 h-8 text-neutral-300 dark:text-neutral-600" />
+                    <p className="font-medium">{bookings.length === 0 ? "No bookings yet" : "No matches found"}</p>
+                    <p className="text-xs max-w-xs">{bookings.length === 0 ? "Bookings will appear here when clients book consultations." : "Try adjusting your search or filters."}</p>
+                  </div>
                 </td>
               </tr>
             ) : (
               filteredBookings.map((booking) => {
                 const { date, time } = formatDateTime(booking.scheduledAt)
                 return (
-                  <tr key={booking.id} className="group hover:bg-neutral-50 dark:hover:bg-white/[0.02] transition-colors">
-                    <td className="px-6 py-4">
+                  <tr key={booking.id} className="group hover:bg-brand-green/[0.02] dark:hover:bg-white/[0.02] transition-colors">
+                    <td className="px-5 py-3.5 whitespace-nowrap">
                       {getStatusBadge(booking.status)}
                     </td>
-                    <td className="px-6 py-4">
-                      <div className="font-semibold text-olive dark:text-off-white">{booking.clientName}</div>
+                    <td className="px-5 py-3.5 whitespace-nowrap">
+                      <div className="font-semibold text-olive dark:text-off-white text-sm">{booking.clientName}</div>
                       <div className="text-xs text-neutral-400 font-normal">{booking.clientEmail}</div>
                     </td>
-                    <td className="px-6 py-4 text-neutral-600 dark:text-neutral-300">
+                    <td className="px-5 py-3.5 whitespace-nowrap text-neutral-600 dark:text-neutral-300">
                       {booking.serviceName}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-3.5 whitespace-nowrap">
                       <div className="font-medium text-olive dark:text-off-white">{date}</div>
-                      <div className="text-xs text-neutral-400">{time} ({booking.duration} min)</div>
+                      <div className="text-xs text-neutral-400">{time} · {booking.duration}min</div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-5 py-3.5 whitespace-nowrap">
                       {booking.referenceCode ? (
                         <button
                           onClick={() => handleCopyCode(booking.referenceCode!)}
-                          className="group/code inline-flex items-center gap-1.5 font-mono text-xs font-bold text-brand-green bg-brand-green/5 px-2.5 py-1.5 rounded-lg hover:bg-brand-green/10 transition-colors"
+                          className="group/code inline-flex items-center gap-1.5 font-mono text-xs font-bold text-brand-green bg-brand-green/5 px-2 py-1 rounded-md hover:bg-brand-green/10 transition-colors"
                           title="Click to copy"
                         >
                           {booking.referenceCode}
@@ -325,17 +329,17 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
                         <span className="text-xs text-neutral-400">—</span>
                       )}
                     </td>
-                    <td className="px-6 py-4">
-                      <span className="inline-flex items-center gap-1 text-xs">
+                    <td className="px-5 py-3.5 whitespace-nowrap">
+                      <span className="inline-flex items-center gap-1.5 text-xs font-medium">
                         {booking.sessionType === "virtual" ? (
-                          <><Video className="w-3 h-3" /> Virtual</>
+                          <><Video className="w-3.5 h-3.5 text-blue-500" /> Virtual</>
                         ) : (
-                          <><User className="w-3 h-3" /> In-Person</>
+                          <><User className="w-3.5 h-3.5 text-purple-500" /> In-Person</>
                         )}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-right">
-                      <div className="flex items-center justify-end gap-1">
+                    <td className="px-5 py-3.5 whitespace-nowrap text-right">
+                      <div className="flex items-center justify-end gap-0.5">
                         <Button
                           variant="ghost"
                           size="icon"
