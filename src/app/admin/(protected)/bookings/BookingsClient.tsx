@@ -1,11 +1,12 @@
 "use client"
 
-import { BookingStatus, deleteBooking, updateBookingNotes, updateBookingStatus } from "@/app/actions/bookings"
+import { adminCancelBooking, adminRescheduleBooking, BookingStatus, deleteBooking, updateBookingNotes, updateBookingStatus } from "@/app/actions/bookings"
+import { fetchAvailability } from "@/app/actions/google-calendar"
 import { Button } from "@/components/ui/Button"
 import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/Dialog"
 import { Input } from "@/components/ui/Input"
-import { Calendar, CheckCircle, Clock, Eye, FileText, Search, Trash2, User, Video, XCircle } from "lucide-react"
+import { Calendar, CheckCircle, Clock, Copy, Eye, FileText, Loader2, RefreshCw, Search, Trash2, User, Video, XCircle } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useEffect, useState, useTransition } from "react"
 
@@ -20,6 +21,8 @@ interface Booking {
   scheduledAt: Date
   duration: number
   status: string
+  referenceCode: string | null
+  clientTimezone: string
   notes: string | null
   createdAt: Date
   updatedAt: Date
@@ -36,14 +39,45 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
   const [isPending, startTransition] = useTransition()
   const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null)
   const [bookingToDelete, setBookingToDelete] = useState<string | null>(null)
+  const [bookingToCancel, setBookingToCancel] = useState<string | null>(null)
   const [searchQuery, setSearchQuery] = useState("")
   const [statusFilter, setStatusFilter] = useState<"ALL" | BookingStatus>("ALL")
   const [timeFilter, setTimeFilter] = useState<"all" | "upcoming" | "past" | "today">("all")
   const [editNotes, setEditNotes] = useState("")
+  const [copiedCode, setCopiedCode] = useState<string | null>(null)
+
+  // Reschedule state
+  const [showReschedule, setShowReschedule] = useState(false)
+  const [rescheduleDate, setRescheduleDate] = useState("")
+  const [rescheduleTime, setRescheduleTime] = useState("")
+  const [isRescheduling, setIsRescheduling] = useState(false)
+  const [rescheduleError, setRescheduleError] = useState<string | null>(null)
+  const [availableSlots, setAvailableSlots] = useState<string[]>([])
+  const [isLoadingSlots, setIsLoadingSlots] = useState(false)
 
   useEffect(() => {
     setBookings(initialBookings)
   }, [initialBookings])
+
+  // Load slots when reschedule date changes
+  useEffect(() => {
+    if (!rescheduleDate) {
+      setAvailableSlots([])
+      return
+    }
+    async function load() {
+      setIsLoadingSlots(true)
+      const res = await fetchAvailability(rescheduleDate)
+      if (res.success && res.slots) {
+        setAvailableSlots(res.slots)
+      } else {
+        setAvailableSlots([])
+      }
+      setIsLoadingSlots(false)
+      setRescheduleTime("")
+    }
+    load()
+  }, [rescheduleDate])
 
   // Update URL with filter
   const handleTimeFilterChange = (filter: string) => {
@@ -57,6 +91,46 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
       await updateBookingStatus(id, status)
       setBookings(bookings.map(b => b.id === id ? { ...b, status } : b))
     })
+  }
+
+  const handleAdminCancel = () => {
+    if (!bookingToCancel) return
+    startTransition(async () => {
+      const res = await adminCancelBooking(bookingToCancel)
+      if (res.success) {
+        setBookings(bookings.map(b => b.id === bookingToCancel ? { ...b, status: "CANCELLED" } : b))
+        setBookingToCancel(null)
+        if (selectedBooking?.id === bookingToCancel) {
+          setSelectedBooking({ ...selectedBooking, status: "CANCELLED" })
+        }
+        router.refresh()
+      }
+    })
+  }
+
+  const handleAdminReschedule = async () => {
+    if (!selectedBooking || !rescheduleDate || !rescheduleTime) {
+      setRescheduleError("Please select both a date and time")
+      return
+    }
+    setIsRescheduling(true)
+    setRescheduleError(null)
+    try {
+      const res = await adminRescheduleBooking(selectedBooking.id, rescheduleDate, rescheduleTime)
+      if (res.success) {
+        setShowReschedule(false)
+        setRescheduleDate("")
+        setRescheduleTime("")
+        router.refresh()
+        setSelectedBooking(null)
+      } else {
+        setRescheduleError(res.error || "Failed to reschedule")
+      }
+    } catch {
+      setRescheduleError("An error occurred while rescheduling")
+    } finally {
+      setIsRescheduling(false)
+    }
   }
 
   const handleSaveNotes = (id: string) => {
@@ -82,12 +156,19 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
     })
   }
 
-  // Client-side filtering
+  const handleCopyCode = (code: string) => {
+    navigator.clipboard.writeText(code)
+    setCopiedCode(code)
+    setTimeout(() => setCopiedCode(null), 2000)
+  }
+
+  // Client-side filtering — now includes referenceCode search
   const filteredBookings = bookings.filter(booking => {
     const matchesSearch = 
       booking.clientName.toLowerCase().includes(searchQuery.toLowerCase()) || 
       booking.clientEmail.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      booking.serviceName.toLowerCase().includes(searchQuery.toLowerCase())
+      booking.serviceName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      (booking.referenceCode || "").toLowerCase().includes(searchQuery.toLowerCase())
     
     const matchesStatus = statusFilter === "ALL" || booking.status === statusFilter
     
@@ -124,6 +205,13 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
             No Show
           </span>
         )
+      case "PENDING":
+        return (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ring-inset bg-yellow-50 text-yellow-600 ring-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:ring-yellow-800">
+            <Clock className="w-3 h-3 mr-1" />
+            Pending
+          </span>
+        )
       default:
         return status
     }
@@ -144,8 +232,8 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
         <div className="relative w-full sm:w-auto">
           <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-neutral-500" />
           <Input
-            placeholder="Search by name, email, or service..."
-            className="pl-9 w-full sm:w-64 bg-white dark:bg-black/20 border-neutral-200 dark:border-white/10"
+            placeholder="Search by name, email, service, or ref code..."
+            className="pl-9 w-full sm:w-72 bg-white dark:bg-black/20 border-neutral-200 dark:border-white/10"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -157,6 +245,7 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
             onChange={(e) => setStatusFilter(e.target.value as any)}
           >
             <option value="ALL">All Statuses</option>
+            <option value="PENDING">Pending</option>
             <option value="CONFIRMED">Confirmed</option>
             <option value="COMPLETED">Completed</option>
             <option value="CANCELLED">Cancelled</option>
@@ -187,6 +276,7 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
               <th className="px-6 py-4 font-semibold">Client</th>
               <th className="px-6 py-4 font-semibold">Service</th>
               <th className="px-6 py-4 font-semibold">Date & Time</th>
+              <th className="px-6 py-4 font-semibold">Reference</th>
               <th className="px-6 py-4 font-semibold">Type</th>
               <th className="px-6 py-4 text-right font-semibold">Actions</th>
             </tr>
@@ -194,7 +284,7 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
           <tbody className="divide-y divide-neutral-100 dark:divide-white/5">
             {filteredBookings.length === 0 ? (
               <tr>
-                <td colSpan={6} className="px-6 py-12 text-center text-neutral-500">
+                <td colSpan={7} className="px-6 py-12 text-center text-neutral-500">
                   {bookings.length === 0 ? "No bookings found. Bookings will appear here when clients book consultations." : "No bookings match your filters."}
                 </td>
               </tr>
@@ -218,6 +308,24 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
                       <div className="text-xs text-neutral-400">{time} ({booking.duration} min)</div>
                     </td>
                     <td className="px-6 py-4">
+                      {booking.referenceCode ? (
+                        <button
+                          onClick={() => handleCopyCode(booking.referenceCode!)}
+                          className="group/code inline-flex items-center gap-1.5 font-mono text-xs font-bold text-brand-green bg-brand-green/5 px-2.5 py-1.5 rounded-lg hover:bg-brand-green/10 transition-colors"
+                          title="Click to copy"
+                        >
+                          {booking.referenceCode}
+                          {copiedCode === booking.referenceCode ? (
+                            <CheckCircle className="w-3 h-3 text-brand-green" />
+                          ) : (
+                            <Copy className="w-3 h-3 text-neutral-400 group-hover/code:text-brand-green transition-colors" />
+                          )}
+                        </button>
+                      ) : (
+                        <span className="text-xs text-neutral-400">—</span>
+                      )}
+                    </td>
+                    <td className="px-6 py-4">
                       <span className="inline-flex items-center gap-1 text-xs">
                         {booking.sessionType === "virtual" ? (
                           <><Video className="w-3 h-3" /> Virtual</>
@@ -235,6 +343,8 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
                           onClick={() => {
                             setSelectedBooking(booking)
                             setEditNotes(booking.notes || "")
+                            setShowReschedule(false)
+                            setRescheduleError(null)
                           }}
                           disabled={isPending}
                           data-tooltip="View Details"
@@ -274,8 +384,8 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
       </div>
 
       {/* Detail Modal */}
-      <Dialog open={!!selectedBooking} onOpenChange={(open) => !open && setSelectedBooking(null)}>
-        <DialogContent className="sm:max-w-xl">
+      <Dialog open={!!selectedBooking} onOpenChange={(open) => { if (!open) { setSelectedBooking(null); setShowReschedule(false); setRescheduleError(null) } }}>
+        <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           <div className="pr-8">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
@@ -295,6 +405,24 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
             </div>
           </div>
 
+          {/* Reference Code */}
+          {selectedBooking?.referenceCode && (
+            <div className="flex items-center gap-3 bg-brand-green/5 dark:bg-brand-green/10 p-3 rounded-xl border border-brand-green/20">
+              <span className="text-xs font-bold uppercase text-neutral-500 tracking-wider">Ref Code</span>
+              <button
+                onClick={() => handleCopyCode(selectedBooking.referenceCode!)}
+                className="font-mono text-lg font-bold text-brand-green hover:text-brand-green/80 transition-colors inline-flex items-center gap-2"
+              >
+                {selectedBooking.referenceCode}
+                {copiedCode === selectedBooking.referenceCode ? (
+                  <CheckCircle className="w-4 h-4" />
+                ) : (
+                  <Copy className="w-4 h-4 text-neutral-400" />
+                )}
+              </button>
+            </div>
+          )}
+
           {/* Booking Details */}
           <div className="bg-neutral-50 dark:bg-white/5 rounded-xl p-4 border border-neutral-100 dark:border-white/5 space-y-3">
             <div className="flex items-center gap-2">
@@ -302,6 +430,9 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
               <span className="font-medium text-olive dark:text-off-white">
                 {selectedBooking && formatDateTime(selectedBooking.scheduledAt).date} at {selectedBooking && formatDateTime(selectedBooking.scheduledAt).time}
               </span>
+              {selectedBooking?.clientTimezone && (
+                <span className="text-xs text-neutral-400">({selectedBooking.clientTimezone})</span>
+              )}
             </div>
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 text-brand-green" />
@@ -316,6 +447,71 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
               )}
             </div>
           </div>
+
+          {/* Admin Reschedule Form */}
+          {showReschedule && selectedBooking?.status === "CONFIRMED" && (
+            <div className="surface-secondary rounded-xl p-5 space-y-4 border border-brand-green/20 animate-in fade-in slide-in-from-top-2 duration-200">
+              <div className="flex items-center gap-2 text-brand-green font-bold text-sm">
+                <RefreshCw className="w-4 h-4" />
+                Reschedule Appointment
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase text-neutral-500 tracking-wider">New Date</label>
+                  <Input
+                    type="date"
+                    value={rescheduleDate}
+                    onChange={(e) => setRescheduleDate(e.target.value)}
+                    min={new Date(Date.now() + 86400000).toISOString().split("T")[0]}
+                    className="bg-white dark:bg-black/20"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <label className="text-xs font-bold uppercase text-neutral-500 tracking-wider">New Time</label>
+                  <select
+                    value={rescheduleTime}
+                    onChange={(e) => setRescheduleTime(e.target.value)}
+                    className="w-full h-10 rounded-md border border-neutral-200 dark:border-white/10 bg-white dark:bg-black/20 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green"
+                    disabled={isLoadingSlots || !rescheduleDate || availableSlots.length === 0}
+                  >
+                    <option value="">
+                      {!rescheduleDate ? "Pick a date first" : isLoadingSlots ? "Loading slots..." : availableSlots.length === 0 ? "No slots available" : "Select a time"}
+                    </option>
+                    {availableSlots.map(slot => (
+                      <option key={slot} value={slot}>
+                        {new Date(slot).toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", timeZone: selectedBooking?.clientTimezone || "Africa/Nairobi" })}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              {rescheduleError && (
+                <div className="text-sm text-red-500 font-medium bg-red-50 dark:bg-red-900/10 p-3 rounded-lg flex items-center gap-2">
+                  <XCircle className="w-4 h-4 shrink-0" />
+                  {rescheduleError}
+                </div>
+              )}
+
+              <div className="flex gap-3 justify-end">
+                <Button variant="outline" size="sm" onClick={() => { setShowReschedule(false); setRescheduleError(null) }}>
+                  Cancel
+                </Button>
+                <Button
+                  size="sm"
+                  className="bg-brand-green hover:bg-brand-green/90"
+                  onClick={handleAdminReschedule}
+                  disabled={isRescheduling || !rescheduleDate || !rescheduleTime}
+                >
+                  {isRescheduling ? (
+                    <><Loader2 className="w-4 h-4 animate-spin mr-2" /> Rescheduling...</>
+                  ) : (
+                    "Confirm Reschedule"
+                  )}
+                </Button>
+              </div>
+            </div>
+          )}
 
           {/* Notes Section */}
           <div className="space-y-2">
@@ -353,10 +549,20 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
                 <Button 
                   size="sm" 
                   variant="outline"
-                  className="border-red-300 text-red-600 hover:bg-red-50"
+                  className="border-blue-300 text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/20"
                   onClick={() => {
-                    if (selectedBooking) handleStatusChange(selectedBooking.id, "CANCELLED")
-                    setSelectedBooking(null)
+                    setShowReschedule(!showReschedule)
+                    setRescheduleError(null)
+                  }}
+                >
+                  <RefreshCw className="w-4 h-4 mr-2" /> Reschedule
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  className="border-red-300 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  onClick={() => {
+                    if (selectedBooking) setBookingToCancel(selectedBooking.id)
                   }}
                 >
                   <XCircle className="w-4 h-4 mr-2" /> Cancel
@@ -380,6 +586,18 @@ export function BookingsClient({ initialBookings }: BookingsClientProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Cancel Confirmation Modal */}
+      <ConfirmationDialog 
+        open={!!bookingToCancel} 
+        onOpenChange={(open) => !open && setBookingToCancel(null)}
+        title="Cancel Booking"
+        description="This will cancel the booking, remove it from Google Calendar, and send a cancellation email to the client. Continue?"
+        confirmText="Cancel Booking"
+        variant="destructive"
+        onConfirm={handleAdminCancel}
+        isLoading={isPending}
+      />
 
       {/* Delete Confirmation Modal */}
       <ConfirmationDialog 

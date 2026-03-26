@@ -9,6 +9,8 @@ import { AlertTriangle, Calendar, CheckCircle2, Clock, Loader2, RefreshCw, XCirc
 import { useParams, useRouter } from "next/navigation"
 import { useEffect, useState } from "react"
 
+// Styled error state for the actions
+
 export default function BookingDetailPage() {
     const params = useParams()
     const router = useRouter()
@@ -20,6 +22,7 @@ export default function BookingDetailPage() {
     const [error, setError] = useState<string | null>(null)
     const [isCancelling, setIsCancelling] = useState(false)
     const [showCancelConfirm, setShowCancelConfirm] = useState(false)
+    const [actionError, setActionError] = useState<string | null>(null)
 
     // Reschedule state
     const [showReschedule, setShowReschedule] = useState(false)
@@ -79,16 +82,17 @@ export default function BookingDetailPage() {
 
     const handleCancel = async () => {
         setIsCancelling(true)
+        setActionError(null)
         try {
             const res = await cancelBooking(referenceCode)
             if (res.success) {
                 loadBooking()
                 setShowCancelConfirm(false)
             } else {
-                alert("Failed to cancel: " + res.error)
+                setActionError("Failed to cancel: " + (res.error || "Unknown error"))
             }
         } catch (e) {
-            alert("Error cancelling booking")
+            setActionError("An error occurred while cancelling your booking. Please try again.")
         } finally {
             setIsCancelling(false)
         }
@@ -154,6 +158,23 @@ export default function BookingDetailPage() {
                         Reference: <span className="font-mono font-bold text-brand-green">{booking.referenceCode}</span>
                     </p>
                 </div>
+
+                {/* Styled Error Banner */}
+                {actionError && (
+                    <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800/30 rounded-xl flex items-start gap-3">
+                        <AlertTriangle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
+                        <div>
+                            <p className="text-sm font-medium text-red-700 dark:text-red-400">{actionError}</p>
+                            <button
+                                type="button"
+                                onClick={() => setActionError(null)}
+                                className="text-xs text-red-500 hover:text-red-700 dark:hover:text-red-300 mt-1 underline"
+                            >
+                                Dismiss
+                            </button>
+                        </div>
+                    </div>
+                )}
 
                 <Card className="surface-card shadow-2xl backdrop-blur-sm overflow-hidden">
                     <div className={`p-4 text-sm font-bold text-center flex items-center justify-center gap-2 ${

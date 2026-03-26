@@ -1,6 +1,7 @@
 "use server"
 
 import { BookingCancellationEmail } from "@/components/emails/BookingCancellation";
+import { BookingRescheduledEmail } from "@/components/emails/BookingRescheduled";
 import { logAudit } from "@/lib/audit";
 import { logEmailAttempt } from "@/lib/email-logger";
 import { decrypt } from "@/lib/encryption";
@@ -222,28 +223,58 @@ export async function rescheduleBooking(referenceCode: string, newDateStr: strin
                 const fromEmail = settings.ResendConfig.fromEmail || "onboarding@resend.dev";
                 const clientTimezone = updatedBooking.clientTimezone || "Africa/Nairobi";
 
+                // Format old time for email
+                const oldScheduledAt = new Date(booking.scheduledAt);
+                const oldFormattedDate = oldScheduledAt.toLocaleDateString("en-US", {
+                    weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
+                    timeZone: clientTimezone
+                });
+                const oldFormattedTime = oldScheduledAt.toLocaleTimeString("en-US", {
+                    hour: 'numeric', minute: '2-digit',
+                    timeZone: clientTimezone
+                });
+
                 const formattedDate = newScheduledAt.toLocaleDateString("en-US", {
                     weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
                     timeZone: clientTimezone
                 });
-
                 const formattedTime = newScheduledAt.toLocaleTimeString("en-US", {
                     hour: 'numeric', minute: '2-digit',
                     timeZone: clientTimezone
                 });
 
-                await resend.emails.send({
-                    from: `Edwak Nutrition <${fromEmail}>`,
-                    to: updatedBooking.clientEmail,
-                    subject: `Booking Rescheduled: ${updatedBooking.serviceName} (#${referenceCode})`,
-                    html: `
-                        <h2>Your appointment has been rescheduled</h2>
-                        <p>Hi ${updatedBooking.clientName},</p>
-                        <p>Your <strong>${updatedBooking.serviceName}</strong> appointment has been rescheduled to:</p>
-                        <p><strong>${formattedDate} at ${formattedTime} (${clientTimezone})</strong></p>
-                        <p>Reference: <strong>${referenceCode}</strong></p>
-                    `
-                });
+                const branding = {
+                    logoUrl: settings?.EmailBranding?.logoUrl || null,
+                    primaryColor: settings?.EmailBranding?.primaryColor || "#556B2F",
+                    accentColor: settings?.EmailBranding?.accentColor || "#E87A1E",
+                    footerText: settings?.EmailBranding?.footerText || "Edwak Nutrition, Nairobi, Kenya",
+                    websiteUrl: settings?.EmailBranding?.websiteUrl || "https://edwaknutrition.co.ke",
+                    supportEmail: settings?.EmailBranding?.supportEmail || "support@edwaknutrition.co.ke"
+                };
+
+                const emailSubject = `Booking Rescheduled: ${updatedBooking.serviceName} (#${referenceCode})`;
+                try {
+                    await resend.emails.send({
+                        from: `Edwak Nutrition <${fromEmail}>`,
+                        to: updatedBooking.clientEmail,
+                        subject: emailSubject,
+                        react: BookingRescheduledEmail({
+                            clientName: updatedBooking.clientName,
+                            serviceName: updatedBooking.serviceName,
+                            oldDate: oldFormattedDate,
+                            oldTime: `${oldFormattedTime} (${clientTimezone})`,
+                            newDate: formattedDate,
+                            newTime: `${formattedTime} (${clientTimezone})`,
+                            referenceCode: referenceCode,
+                            manageUrl: `${branding.websiteUrl}/booking/manage/${referenceCode}`,
+                            branding: branding
+                        })
+                    });
+                    await logEmailAttempt({ recipientEmail: updatedBooking.clientEmail, subject: emailSubject, context: "BOOKING_RESCHEDULED", entityId: referenceCode, success: true });
+                } catch (emailErr) {
+                    console.error("Reschedule email failed:", emailErr);
+                    await logEmailAttempt({ recipientEmail: updatedBooking.clientEmail, subject: emailSubject, context: "BOOKING_RESCHEDULED", entityId: referenceCode, success: false, errorMessage: emailErr instanceof Error ? emailErr.message : "Unknown" });
+                }
             }
         }
 
