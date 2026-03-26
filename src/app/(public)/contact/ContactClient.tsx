@@ -117,7 +117,7 @@ export default function ContactClient({ settings }: ContactClientProps) {
             className="mt-16 h-[350px] w-full rounded-2xl overflow-hidden relative border border-neutral-200 dark:border-white/10 shadow-lg"
           >
              <iframe 
-               src={`https://maps.google.com/maps?q=${encodeURIComponent(`${settings.businessName} ${settings.address}`)}&t=&z=16&ie=UTF8&iwloc=&output=embed`}
+               src={settings.googleMapsEmbedUrl || `https://maps.google.com/maps?q=${encodeURIComponent(`${settings.businessName} ${settings.address}`)}&t=&z=16&ie=UTF8&iwloc=&output=embed`}
                width="100%" 
                height="100%" 
                style={{ border: 0 }} 

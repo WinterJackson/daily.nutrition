@@ -46,6 +46,7 @@ export interface GeneralSettingsData {
     address: string
     latitude: number
     longitude: number
+    googleMapsEmbedUrl: string
     pageTitle: string
     metaDescription: string
     keywords: string
@@ -69,6 +70,7 @@ export interface SettingsData {
     address: string
     latitude: number
     longitude: number
+    googleMapsEmbedUrl: string
     pageTitle: string
     metaDescription: string
     keywords: string
@@ -152,6 +154,7 @@ export async function getSettings() {
                             address: "Nairobi, Kenya",
                             latitude: -1.2921,
                             longitude: 36.8219,
+                            googleMapsEmbedUrl: "",
                             pageTitle: "Edwak Nutrition | Expert Dietitian",
                             metaDescription: "Professional nutrition consulting and diet planning.",
                             keywords: "nutrition, health, diet, kenya",
@@ -175,6 +178,7 @@ export async function getSettings() {
                     hasGeminiKey: false,
                     latitude: settings.latitude,
                     longitude: settings.longitude,
+                    googleMapsEmbedUrl: settings.googleMapsEmbedUrl,
                     instagramUrl: settings.instagramUrl,
                     facebookUrl: settings.facebookUrl,
                     twitterUrl: settings.twitterUrl,

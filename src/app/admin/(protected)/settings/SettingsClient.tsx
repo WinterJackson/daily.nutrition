@@ -202,6 +202,15 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
     setSettings((prev) => ({ ...prev, [key]: value }))
   }
 
+  const handleMapEmbedChange = (value: string) => {
+    const match = value.match(/src="([^"]+)"/)
+    if (match && match[1]) {
+      handleChange("googleMapsEmbedUrl", match[1])
+    } else {
+      handleChange("googleMapsEmbedUrl", value)
+    }
+  }
+
   const handleEmailBrandingChange = (key: keyof import("@/app/actions/email-branding").EmailBrandingData, value: string | null) => {
     setSettings((prev) => ({
       ...prev,
@@ -435,26 +444,38 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                     />
                   </div>
                   
-                  {/* Map Coordinates Preview */}
-                  <div className="space-y-2 md:col-span-2 mt-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-caption mb-2 block flex items-center gap-2">
-                       <MapPin className="w-4 h-4 text-brand-green" />
-                       Free Google Maps Location Sync
-                    </label>
-                    <p className="text-xs text-neutral-500 mb-4 pr-10">Adjust your <b>Business Name</b> or <b>Address</b> above until the Google Map automatically centers on your exact desired public location.</p>
-                    <iframe 
-                      src={`https://maps.google.com/maps?q=${encodeURIComponent(`${settings.businessName || "Daily Nutrition"} ${settings.address || "Nairobi"}`)}&t=&z=16&ie=UTF8&iwloc=&output=embed`}
-                      width="100%" 
-                      height="300" 
-                      style={{ border: 0 }} 
-                      allowFullScreen 
-                      loading="lazy" 
-                      referrerPolicy="no-referrer-when-downgrade"
-                      title="Admin Map Preview"
-                      className="rounded-xl border border-neutral-200 dark:border-white/10 shadow-inner"
-                    />
-                    <div className="flex items-center gap-4 mt-3 text-xs font-mono text-neutral-600 dark:text-neutral-400 bg-neutral-50 border border-neutral-100 shadow-sm dark:border-white/5 dark:bg-black/20 px-3 py-2 rounded-lg w-fit">
-                       <span>Query: {settings.businessName} {settings.address}</span>
+                  <div className="space-y-4 md:col-span-2 pt-4 border-t border-neutral-100 dark:border-white/5">
+                    <div className="space-y-2">
+                       <label className="text-xs font-bold uppercase tracking-wider text-caption flex items-center gap-2">
+                         <MapPin className="w-4 h-4 text-brand-green" />
+                         Google Maps Embed HTML
+                       </label>
+                       <p className="text-xs text-neutral-500 pr-10">Paste the full <b>&lt;iframe&gt;</b> code from Google Maps here. We will securely extract your explicit Google Embed link to guarantee pixel-perfect UI synchronization on the public Contact page.</p>
+                       <Input
+                         value={settings.googleMapsEmbedUrl}
+                         onChange={(e) => handleMapEmbedChange(e.target.value)}
+                         placeholder='<iframe src="https://www.google.com/maps/embed?..." width="600" height="450"...></iframe>'
+                         className="surface-input h-14 font-mono text-xs text-neutral-500"
+                       />
+                    </div>
+                  
+                    {/* Map Coordinates Preview */}
+                    <div className="space-y-2 pt-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-caption mb-2 block flex items-center gap-2">
+                         <Globe className="w-4 h-4 text-brand-green" />
+                         Live Location Preview
+                      </label>
+                      <iframe 
+                        src={settings.googleMapsEmbedUrl || `https://maps.google.com/maps?q=${encodeURIComponent(`${settings.businessName || "Daily Nutrition"} ${settings.address || "Nairobi"}`)}&t=&z=16&ie=UTF8&iwloc=&output=embed`}
+                        width="100%" 
+                        height="300" 
+                        style={{ border: 0 }} 
+                        allowFullScreen 
+                        loading="lazy" 
+                        referrerPolicy="no-referrer-when-downgrade"
+                        title="Admin Map Preview"
+                        className="rounded-xl border border-neutral-200 dark:border-white/10 shadow-inner"
+                      />
                     </div>
                   </div>
                 </div>

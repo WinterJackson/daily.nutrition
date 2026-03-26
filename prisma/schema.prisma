@@ -508,6 +508,7 @@ model SiteSettings {
   address              String                @default("Nairobi, Kenya")
   latitude             Float                 @default(-1.2921)
   longitude            Float                 @default(36.8219)
+  googleMapsEmbedUrl   String                @default("")
   pageTitle            String                @default("Daily Nutrition | Professional Nutrition Consultancy")
   metaDescription      String                @default("Expert nutrition advice.")
   keywords             String                @default("nutrition, health, diet")
