@@ -13,7 +13,7 @@ const steps = [
   {
     id: 2,
     title: "Choose Method",
-    description: "Decide between Virtual (Zoom) or In-Person visits.",
+    description: "Decide between Virtual (Google Meet) or In-Person visits.",
     icon: Monitor,
   },
   {

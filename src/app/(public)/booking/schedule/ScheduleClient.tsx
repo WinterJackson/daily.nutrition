@@ -120,7 +120,7 @@ export function ScheduleClient({ calendarId, businessName, blockedDates, googleC
                 <div className="space-y-4 text-sm text-neutral-600 dark:text-neutral-300">
                     <div className="flex items-center gap-3">
                         {sessionType === "virtual" ? <Globe className="w-4 h-4 text-brand-green" /> : <MapPin className="w-4 h-4 text-brand-green" />}
-                        <span className="font-medium">{sessionType === "virtual" ? "Virtual Session (Zoom)" : "In-Person (Karen)"}</span>
+                        <span className="font-medium">{sessionType === "virtual" ? "Virtual Session (Google Meet)" : "In-Person (Karen)"}</span>
                     </div>
                     <div className="flex items-center gap-3">
                         <Clock className="w-4 h-4 text-brand-green" />

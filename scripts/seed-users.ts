@@ -16,9 +16,9 @@ const users = [
         role: "SUPER_ADMIN",
     },
     {
-        email: "admin@dailynutrition.co.ke",
-        password: "Admin@2026!",
-        name: "Admin User",
+        email: "admin@edwaknutrition.co.ke",
+        password: "AdminEdwak@2026!",
+        name: "Edna Righa",
         role: "ADMIN",
     },
     {

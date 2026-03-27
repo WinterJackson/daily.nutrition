@@ -41,7 +41,7 @@ const services = [
         targetAudience: "Individuals newly diagnosed, undergoing treatment (chemotherapy, radiation, surgery), or in remission.",
         color: "text-orange",
         bgColor: "bg-orange/10",
-        priceVirtual: 3500,
+        priceVirtual: 3000,
         priceInPerson: 4000,
         isVisible: true,
         displayOrder: 2
@@ -63,7 +63,7 @@ const services = [
         color: "text-brand-green",
         bgColor: "bg-brand-green/10",
         priceVirtual: 3000,
-        priceInPerson: 3500,
+        priceInPerson: 4000,
         isVisible: true,
         displayOrder: 3
     },
@@ -84,7 +84,7 @@ const services = [
         color: "text-olive",
         bgColor: "bg-olive/10",
         priceVirtual: 3000,
-        priceInPerson: 3500,
+        priceInPerson: 4000,
         isVisible: true,
         displayOrder: 4
     },
@@ -104,8 +104,8 @@ const services = [
         targetAudience: "Anyone seeking to improve their general health and prevent chronic diseases.",
         color: "text-olive",
         bgColor: "bg-olive/10",
-        priceVirtual: 2500,
-        priceInPerson: 3000,
+        priceVirtual: 3000,
+        priceInPerson: 4000,
         isVisible: true,
         displayOrder: 5
     },

@@ -49,9 +49,9 @@ export function BookingModal({
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">
               <div className="flex items-center gap-2 mb-2">
                 <Video className="w-4 h-4 text-gold" />
-                <span className="text-sm font-semibold">Virtual Session</span>
+                <p className="font-semibold text-white">Virtual Option</p>
               </div>
-              <p className="text-xs text-white/70">Via Zoom or Google Meet</p>
+              <p className="text-xs text-white/70">Via Google Meet</p>
               <p className="text-lg font-bold text-gold mt-2">Ksh 2,500</p>
             </div>
             <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/10">

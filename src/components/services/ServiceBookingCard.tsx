@@ -89,7 +89,7 @@ export function ServiceBookingCard({
             >
               <Video className={cn("w-5 h-5 mb-2", sessionType === "virtual" ? "text-brand-green" : "text-neutral-400")} />
               <p className="text-sm font-semibold text-olive dark:text-off-white">Virtual</p>
-              <p className="text-xs text-neutral-500">via Zoom</p>
+              <p className="text-xs text-neutral-500">via Google Meet</p>
               <p className="text-lg font-bold text-brand-green mt-2">
                   {serviceId === "discovery-call" ? "Free" : `Ksh ${servicePricing.virtual.toLocaleString()}`}
               </p>

@@ -10,7 +10,7 @@ export const services = [
         fullDescription: "Not sure where to start? Book a free 5-15 Minute virtual discovery call with our nutritionists. We'll briefly discuss your health goals and help you choose the right plan for your journey.",
         features: [
             "5-15 Minute duration",
-            "Virtual only (via Zoom)",
+            "Virtual only (via Google Meet)",
             "Available Mon-Fri, 1:30 - 2:30 PM",
             "No obligation"
         ],
@@ -92,11 +92,11 @@ export const services = [
 export const pricing = {
     default: {
         virtual: 3000,
-        inPerson: 3500,
+        inPerson: 4000,
     },
     diabetes: {
         virtual: 3000,
-        inPerson: 3500,
+        inPerson: 4000,
         note: "Includes a personalized meal plan / guidelines."
     },
     packages: [
