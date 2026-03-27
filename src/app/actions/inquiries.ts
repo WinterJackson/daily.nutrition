@@ -258,13 +258,17 @@ export async function replyToInquiry(id: string, replyContent: string) {
         }
 
         const brandingSettings = await prisma.siteSettings.findUnique({ where: { id: "default" }, include: { EmailBranding: true } })
-        const branding = brandingSettings?.EmailBranding || {
-            logoUrl: null,
-            primaryColor: "#4A5D23",
-            accentColor: "#E87A1E",
-            footerText: "Edwak Nutrition",
-            websiteUrl: "https://edwaknutrition.co.ke",
-            supportEmail: "info@edwaknutrition.co.ke"
+        const branding: import("./email-branding").EmailBrandingData = {
+            logoUrl: brandingSettings?.EmailBranding?.logoUrl || null,
+            primaryColor: brandingSettings?.EmailBranding?.primaryColor || "#4A5D23",
+            accentColor: brandingSettings?.EmailBranding?.accentColor || "#E87A1E",
+            footerText: brandingSettings?.EmailBranding?.footerText || "Edwak Nutrition",
+            websiteUrl: brandingSettings?.EmailBranding?.websiteUrl || "https://edwaknutrition.co.ke",
+            supportEmail: brandingSettings?.EmailBranding?.supportEmail || "info@edwaknutrition.co.ke",
+            clinicLocation: brandingSettings?.address,
+            contactPhone: brandingSettings?.phoneNumber,
+            paymentTill: brandingSettings?.paymentTillNumber,
+            paymentPaybill: brandingSettings?.paymentPaybill
         }
 
         // Store reply explicitly

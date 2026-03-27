@@ -12,7 +12,7 @@ import { bookingLimiter } from "@/lib/rate-limit"
 import { revalidatePath } from "next/cache"
 import { Resend } from "resend"
 
-export type BookingStatus = "CONFIRMED" | "COMPLETED" | "CANCELLED" | "NO_SHOW"
+export type BookingStatus = "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED" | "NO_SHOW"
 
 export interface BookingData {
     clientName: string
@@ -277,7 +277,7 @@ async function getEmailConfig() {
 
     if (!apiKey) return null
 
-    const settings = await prisma.siteSettings.findUnique({
+    const settings: any = await prisma.siteSettings.findUnique({
         where: { id: "default" },
         include: { ResendConfig: true, EmailBranding: true }
     })
@@ -290,7 +290,11 @@ async function getEmailConfig() {
         accentColor: settings?.EmailBranding?.accentColor || "#E87A1E",
         footerText: settings?.EmailBranding?.footerText || "Edwak Nutrition, Nairobi, Kenya",
         websiteUrl: settings?.EmailBranding?.websiteUrl || "https://edwaknutrition.co.ke",
-        supportEmail: settings?.EmailBranding?.supportEmail || "info@edwaknutrition.co.ke"
+        supportEmail: settings?.EmailBranding?.supportEmail || "info@edwaknutrition.co.ke",
+        clinicLocation: settings?.address,
+        contactPhone: settings?.phoneNumber,
+        paymentTill: settings?.paymentTillNumber,
+        paymentPaybill: settings?.paymentPaybill
     }
 
     return { resend, fromEmail, branding }
@@ -491,3 +495,87 @@ export async function adminRescheduleBooking(id: string, newDateStr: string, new
         return { success: false, error: "Failed to reschedule booking" }
     }
 }
+
+/**
+ * Admin: Verify Payment and Release Meeting Links
+ */
+export async function approvePaymentAndSendLink(id: string) {
+    const session = await verifySession()
+    if (!session) return { success: false, error: "Unauthorized" }
+
+    try {
+        const booking = await prisma.booking.findUnique({ where: { id } })
+        if (!booking) return { success: false, error: "Booking not found" }
+        if (booking.bookingStatus !== "PENDING") return { success: false, error: "Booking is not pending" }
+
+        // Update DB
+        const updatedBooking = await prisma.booking.update({
+            where: { id },
+            data: { bookingStatus: "CONFIRMED" }
+        })
+
+        // Decrypt google meet link if it exists
+        let meetLink = ""
+        if (updatedBooking.encryptedMeetLink) {
+            try {
+                const { decrypt } = await import("@/lib/encryption")
+                meetLink = decrypt(updatedBooking.encryptedMeetLink)
+            } catch (decErr) {
+                console.error("Failed to decrypt Google Meet link during payment verification:", decErr)
+            }
+        }
+
+        // Send Payment Verified Email
+        const emailConfig = await getEmailConfig()
+        if (emailConfig) {
+            const clientTimezone = updatedBooking.clientTimezone || "Africa/Nairobi"
+            const scheduledDate = new Date(updatedBooking.scheduledAt)
+
+            const formattedDate = scheduledDate.toLocaleDateString("en-US", {
+                weekday: "long", month: "long", day: "numeric", year: "numeric",
+                timeZone: clientTimezone
+            })
+            const formattedTime = scheduledDate.toLocaleTimeString("en-US", {
+                hour: "numeric", minute: "2-digit", timeZone: clientTimezone
+            })
+
+            const emailSubject = `Payment Verified: ${updatedBooking.serviceName} Confirmed (#${updatedBooking.referenceCode || ""})`
+            try {
+                const { PaymentVerifiedEmail } = await import("@/components/emails/PaymentVerifiedEmail")
+                await emailConfig.resend.emails.send({
+                    from: `Edwak Nutrition <${emailConfig.fromEmail}>`,
+                    to: updatedBooking.clientEmail,
+                    subject: emailSubject,
+                    react: PaymentVerifiedEmail({
+                        clientName: updatedBooking.clientName,
+                        serviceName: updatedBooking.serviceName,
+                        date: formattedDate,
+                        time: `${formattedTime} (${clientTimezone})`,
+                        meetLink: meetLink,
+                        referenceCode: updatedBooking.referenceCode || "",
+                        sessionType: updatedBooking.sessionType as "virtual" | "in-person",
+                        branding: emailConfig.branding
+                    })
+                })
+                await logEmailAttempt({ recipientEmail: updatedBooking.clientEmail, subject: emailSubject, context: "PAYMENT_VERIFIED", entityId: updatedBooking.referenceCode || id, success: true })
+            } catch (emailErr) {
+                console.error("Payment verified email failed:", emailErr)
+                await logEmailAttempt({ recipientEmail: updatedBooking.clientEmail, subject: emailSubject, context: "PAYMENT_VERIFIED", entityId: updatedBooking.referenceCode || id, success: false, errorMessage: emailErr instanceof Error ? emailErr.message : "Unknown" })
+            }
+        }
+
+        logAudit({
+            action: "PAYMENT_VERIFIED",
+            entity: "Booking",
+            entityId: id,
+            metadata: { referenceCode: updatedBooking.referenceCode },
+        })
+
+        revalidatePath("/admin/bookings")
+        return { success: true }
+    } catch (error) {
+        console.error("Payment Verification Error:", error)
+        return { success: false, error: "Failed to verify payment" }
+    }
+}
+

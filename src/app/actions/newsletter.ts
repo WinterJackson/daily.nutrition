@@ -131,7 +131,11 @@ export async function dispatchCampaign(campaignId: string) {
             accentColor: brandingSettings?.EmailBranding?.accentColor || "#E87A1E",
             footerText: brandingSettings?.EmailBranding?.footerText || "Edwak Nutrition",
             websiteUrl: brandingSettings?.EmailBranding?.websiteUrl || "https://edwaknutrition.co.ke",
-            supportEmail: brandingSettings?.EmailBranding?.supportEmail || "info@edwaknutrition.co.ke"
+            supportEmail: brandingSettings?.EmailBranding?.supportEmail || "info@edwaknutrition.co.ke",
+            clinicLocation: brandingSettings?.address,
+            contactPhone: brandingSettings?.phoneNumber,
+            paymentTill: brandingSettings?.paymentTillNumber,
+            paymentPaybill: brandingSettings?.paymentPaybill
         }
 
         const replyToEmail = branding.supportEmail

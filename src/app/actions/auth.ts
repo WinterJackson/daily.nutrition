@@ -139,7 +139,11 @@ export async function forgotPassword(email: string) {
                     accentColor: settings?.EmailBranding?.accentColor || "#E87A1E",
                     footerText: settings?.EmailBranding?.footerText || "Edwak Nutrition",
                     websiteUrl: settings?.EmailBranding?.websiteUrl || "https://edwaknutrition.co.ke",
-                    supportEmail: settings?.EmailBranding?.supportEmail || "info@edwaknutrition.co.ke"
+                    supportEmail: settings?.EmailBranding?.supportEmail || "info@edwaknutrition.co.ke",
+                    clinicLocation: settings?.address,
+                    contactPhone: settings?.phoneNumber,
+                    paymentTill: settings?.paymentTillNumber,
+                    paymentPaybill: settings?.paymentPaybill
                 }
             })
         )

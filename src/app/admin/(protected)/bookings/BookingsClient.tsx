@@ -1,6 +1,6 @@
 "use client"
 
-import { adminCancelBooking, adminRescheduleBooking, BookingStatus, deleteBooking, updateBookingNotes, updateBookingStatus } from "@/app/actions/bookings"
+import { adminCancelBooking, adminRescheduleBooking, approvePaymentAndSendLink, BookingStatus, deleteBooking, updateBookingNotes, updateBookingStatus } from "@/app/actions/bookings"
 import { fetchAvailability } from "@/app/actions/google-calendar"
 import { TablePagination } from "@/components/admin/TablePagination"
 import { Button } from "@/components/ui/Button"
@@ -702,6 +702,43 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
                 </Button>
               </>
             )}
+
+            {selectedBooking?.status === "PENDING" && (
+              <>
+                 <Button 
+                  size="sm" 
+                  className="bg-brand-green hover:bg-brand-green/90 animate-pulse border-brand-green shadow-xl shadow-brand-green/20"
+                  onClick={() => {
+                    startTransition(async () => {
+                      if (selectedBooking) {
+                         const res = await approvePaymentAndSendLink(selectedBooking.id)
+                         if (res.success) {
+                           setBookings(bookings.map(b => b.id === selectedBooking.id ? { ...b, status: "CONFIRMED" } : b))
+                           setSelectedBooking({...selectedBooking, status: "CONFIRMED"})
+                           router.refresh()
+                         } else {
+                           alert(res.error || "Failed to verify payment and release link.")
+                         }
+                      }
+                    })
+                  }}
+                  disabled={isPending}
+                >
+                  <CheckCircle className="w-4 h-4 mr-2" /> Verify Payment & Send Link
+                </Button>
+                <Button 
+                  size="sm" 
+                  variant="outline"
+                  className="border-red-300 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
+                  onClick={() => {
+                    if (selectedBooking) setBookingToCancel(selectedBooking.id)
+                  }}
+                >
+                  <XCircle className="w-4 h-4 mr-2" /> Reject & Cancel
+                </Button>
+              </>
+            )}
+
             <Button variant="outline" size="sm" onClick={() => setSelectedBooking(null)}>
               Close
             </Button>

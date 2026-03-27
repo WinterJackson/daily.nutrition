@@ -5,19 +5,18 @@ import {
 } from "@react-email/components";
 import { BrandedEmailLayout, EmailBrandingData } from "./BrandedEmailLayout";
 
-interface BookingConfirmationProps {
+interface PaymentVerifiedProps {
   clientName: string;
   serviceName: string;
   date: string;
   time: string;
   meetLink?: string;
-  rescheduleLink?: string;
   referenceCode?: string;
   sessionType?: "virtual" | "in-person";
   branding: EmailBrandingData;
 }
 
-export const BookingConfirmationEmail = ({
+export const PaymentVerifiedEmail = ({
   clientName = "Client",
   serviceName = "Consultation",
   date = "October 24, 2026",
@@ -26,25 +25,22 @@ export const BookingConfirmationEmail = ({
   referenceCode = "DN-123456",
   sessionType = "virtual",
   branding
-}: BookingConfirmationProps) => {
+}: PaymentVerifiedProps) => {
   const isVirtual = sessionType === "virtual";
-  const previewText = `Action Required: Complete Payment for ${serviceName}`;
+  const previewText = `Payment Verified: ${serviceName} Confirmed`;
 
   return (
     <BrandedEmailLayout
       branding={branding}
       previewText={previewText}
-      heading="Action Required: Complete Payment"
+      heading="Payment Verified & Booking Confirmed"
     >
         <Text className="text-black text-[14px] leading-[24px]">
         Hello <strong>{clientName}</strong>,
         </Text>
         <Text className="text-black text-[14px] leading-[24px]">
-        Your reservation for <strong>{serviceName}</strong> is currently <strong>PENDING</strong>.
-        To secure this time slot, please complete your M-Pesa payment using the instructions located in the Secure Payment block at the bottom of this email.
-        </Text>
-        <Text className="text-black text-[14px] leading-[24px]">
-        Once payment is verified by our team, you will receive a final confirmation containing your Google Meet link or check-in instructions.
+        We have successfully received and verified your M-Pesa payment. Your appointment for <strong>{serviceName}</strong> is now fully confirmed.
+        We look forward to meeting with you!
         </Text>
         
         <Section className="bg-offwhite p-6 rounded-lg my-6">
@@ -74,20 +70,31 @@ export const BookingConfirmationEmail = ({
         )}
         </Section>
 
-        <Section className="text-center mt-[32px] mb-[32px]">
+        {isVirtual && meetLink ? (
+          <Section className="text-center mt-[32px] mb-[32px]">
+            <Button
+              className="bg-brand rounded text-white text-[12px] font-semibold no-underline text-center px-5 py-3"
+              href={meetLink}
+            >
+              Join Virtual Meeting
+            </Button>
+          </Section>
+        ) : (
+          <Section className="text-center mt-[32px] mb-[32px]">
             <Button
               className="bg-brand rounded text-white text-[12px] font-semibold no-underline text-center px-5 py-3"
               href={`${branding.websiteUrl}/booking/manage/${referenceCode}`}
             >
-              Track Booking Status
+              Manage Booking
             </Button>
-        </Section>
+          </Section>
+        )}
         
         <Text className="text-black text-[14px] leading-[24px]">
-        If you need to cancel this reservation or have any questions, please reply directly to this email. Unpaid slots will be automatically released.
+        If you need to reschedule or have any questions, please reply directly to this email at least 24 hours in advance.
         </Text>
     </BrandedEmailLayout>
   );
 };
 
-export default BookingConfirmationEmail;
+export default PaymentVerifiedEmail;

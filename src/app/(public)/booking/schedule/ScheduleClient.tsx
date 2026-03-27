@@ -3,7 +3,7 @@
 import { BookingWidget } from "@/components/booking/BookingWidget";
 import { AnimatedBackground } from "@/components/ui/AnimatedBackground";
 import { Button } from "@/components/ui/Button";
-import { services } from "@/lib/data";
+import { pricing, services } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, Calendar, Check, Clock, Globe, Info, MapPin } from "lucide-react";
 import Link from "next/link";
@@ -67,7 +67,6 @@ export function ScheduleClient({ calendarId, businessName, blockedDates, googleC
   const sessionType = isDiscovery ? "virtual" : (rawSessionType || "virtual")
 
   // Pricing Strategy
-  const { pricing } = require("@/lib/data")
   const servicePricing = isDiabetes ? pricing.diabetes : pricing.default
   const currentPrice = isDiscovery ? 0 : (sessionType === "in-person" ? servicePricing.inPerson : servicePricing.virtual)
 

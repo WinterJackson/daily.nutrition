@@ -90,6 +90,8 @@ export const settingsSchema = z.object({
     pageTitle: z.string(),
     metaDescription: z.string(),
     keywords: z.string(),
+    paymentTillNumber: z.string().optional(),
+    paymentPaybill: z.string().optional(),
     themePreference: z.enum(["light", "dark", "system"]).default("light"),
     googleCalendarId: z.string().optional(),
     instagramUrl: z.string().optional(),

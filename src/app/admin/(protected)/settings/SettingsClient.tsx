@@ -443,6 +443,31 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                       className="surface-input"
                     />
                   </div>
+                  <div className="space-y-4 md:col-span-2 pt-4 border-t border-neutral-100 dark:border-white/5">
+                    <h3 className="font-semibold text-olive dark:text-off-white text-base">Payment Credentials</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="space-y-2">
+                           <label className="text-xs font-bold uppercase tracking-wider text-caption">Safaricom Till Number</label>
+                           <Input
+                             value={settings.paymentTillNumber || ""}
+                             onChange={(e) => handleChange("paymentTillNumber", e.target.value)}
+                             placeholder="e.g. 123456"
+                             className="surface-input"
+                           />
+                           <p className="text-xs text-neutral-500">Leaving this blank hides it from confirmation emails.</p>
+                        </div>
+                        <div className="space-y-2">
+                           <label className="text-xs font-bold uppercase tracking-wider text-caption">Safaricom Paybill</label>
+                           <Input
+                             value={settings.paymentPaybill || ""}
+                             onChange={(e) => handleChange("paymentPaybill", e.target.value)}
+                             placeholder="e.g. Paybill: XXXXXX, A/C: Name"
+                             className="surface-input"
+                           />
+                           <p className="text-xs text-neutral-500">Leaving this blank hides it from confirmation emails.</p>
+                        </div>
+                    </div>
+                  </div>
                   
                   <div className="space-y-4 md:col-span-2 pt-4 border-t border-neutral-100 dark:border-white/5">
                     <div className="space-y-2">

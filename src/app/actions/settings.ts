@@ -50,6 +50,8 @@ export interface GeneralSettingsData {
     pageTitle: string
     metaDescription: string
     keywords: string
+    paymentTillNumber: string
+    paymentPaybill: string
     googleCalendarId: string
     themePreference: string
     profileImageUrl?: string | null
@@ -74,6 +76,8 @@ export interface SettingsData {
     pageTitle: string
     metaDescription: string
     keywords: string
+    paymentTillNumber: string
+    paymentPaybill: string
     profileImageUrl?: string | null
     themePreference: string
     googlePlaceId: string
@@ -133,7 +137,8 @@ export async function getSettings() {
     try {
         const getCached = unstable_cache(
             async () => {
-                let settings = await prisma.siteSettings.findUnique({
+                // Explicitly declare as any to bypass strict Prisma relational stripping during object assignment
+                let settings: any = await prisma.siteSettings.findUnique({
                     where: { id: "default" },
                     include: {
                         GoogleCalendarConfig: true,
@@ -145,7 +150,7 @@ export async function getSettings() {
                 })
 
                 if (!settings) {
-                    settings = await prisma.siteSettings.create({
+                    settings = (await prisma.siteSettings.create({
                         data: {
                             id: "default",
                             businessName: "Edwak Nutrition",
@@ -158,6 +163,8 @@ export async function getSettings() {
                             pageTitle: "Edwak Nutrition | Expert Dietitian",
                             metaDescription: "Professional nutrition consulting and diet planning.",
                             keywords: "nutrition, health, diet, kenya",
+                            paymentTillNumber: "",
+                            paymentPaybill: "",
                             themePreference: "light",
                             updatedAt: new Date()
                         },
@@ -168,7 +175,7 @@ export async function getSettings() {
                             CloudinaryConfig: true,
                             NotificationPreferences: true
                         }
-                    })
+                    })) as any // Bypass strict Prisma inference which strips uncreated relations from the TS shape
                 }
 
                 const { id: _id, updatedAt: _updatedAt, GoogleCalendarConfig, EmailBranding, CloudinaryConfig, NotificationPreferences, ResendConfig, version: _version, ...rest } = settings
@@ -179,6 +186,8 @@ export async function getSettings() {
                     latitude: settings.latitude,
                     longitude: settings.longitude,
                     googleMapsEmbedUrl: settings.googleMapsEmbedUrl,
+                    paymentTillNumber: settings.paymentTillNumber,
+                    paymentPaybill: settings.paymentPaybill,
                     instagramUrl: settings.instagramUrl,
                     facebookUrl: settings.facebookUrl,
                     twitterUrl: settings.twitterUrl,

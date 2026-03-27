@@ -146,7 +146,7 @@ export async function bookAppointment(data: {
                     serviceName: data.serviceName,
                     scheduledAt: scheduledAt,
                     duration: duration,
-                    bookingStatus: "CONFIRMED",
+                    bookingStatus: "PENDING",
                     notes: data.notes,
                     googleEventId: googleEvent?.id || undefined,
                     encryptedMeetLink: encryptedMeetLink,
@@ -181,7 +181,7 @@ export async function bookAppointment(data: {
             // Use INTERNAL_getSecret which reads from SecretConfig table (where the key is stored)
             const apiKey = await INTERNAL_getSecret("RESEND_API_KEY")
 
-            const settings = await prisma.siteSettings.findUnique({
+            const settings: any = await prisma.siteSettings.findUnique({
                 where: { id: "default" },
                 include: {
                     ResendConfig: true,
@@ -198,7 +198,11 @@ export async function bookAppointment(data: {
                 accentColor: settings?.EmailBranding?.accentColor || "#E87A1E",
                 footerText: settings?.EmailBranding?.footerText || "Edwak Nutrition, Nairobi, Kenya",
                 websiteUrl: settings?.EmailBranding?.websiteUrl || "https://edwaknutrition.co.ke",
-                supportEmail: settings?.EmailBranding?.supportEmail || "info@edwaknutrition.co.ke"
+                supportEmail: settings?.EmailBranding?.supportEmail || "info@edwaknutrition.co.ke",
+                clinicLocation: settings?.address,
+                contactPhone: settings?.phoneNumber,
+                paymentTill: settings?.paymentTillNumber,
+                paymentPaybill: settings?.paymentPaybill
             }
 
             // Format Date/Time in Client Timezone
@@ -219,7 +223,7 @@ export async function bookAppointment(data: {
             if (apiKey) {
                 const resend = new Resend(apiKey)
                 const emailMeetLink = meetLink || ""
-                const emailSubject = `Booking Confirmed: ${data.serviceName} (#${referenceCode})`
+                const emailSubject = `Awaiting Payment: ${data.serviceName} (#${referenceCode})`
 
                 try {
                     await resend.emails.send({
@@ -231,7 +235,6 @@ export async function bookAppointment(data: {
                             serviceName: data.serviceName,
                             date: clientFormattedDate,
                             time: `${clientFormattedTime} (${clientTimezone})`,
-                            meetLink: emailMeetLink,
                             referenceCode: referenceCode,
                             sessionType: data.sessionType || "virtual",
                             branding: branding

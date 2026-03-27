@@ -51,7 +51,7 @@ export async function cancelBooking(referenceCode: string) {
         // 2. Fetch API key from SecretConfig (where it's actually stored)
         const apiKey = await INTERNAL_getSecret("RESEND_API_KEY")
 
-        const settings = await prisma.siteSettings.findUnique({
+        const settings: any = await prisma.siteSettings.findUnique({
             where: { id: "default" },
             include: { ResendConfig: true, EmailBranding: true }
         })
@@ -67,7 +67,11 @@ export async function cancelBooking(referenceCode: string) {
                 accentColor: settings?.EmailBranding?.accentColor || "#E87A1E",
                 footerText: settings?.EmailBranding?.footerText || "Edwak Nutrition, Nairobi, Kenya",
                 websiteUrl: settings?.EmailBranding?.websiteUrl || "https://edwaknutrition.co.ke",
-                supportEmail: settings?.EmailBranding?.supportEmail || "info@edwaknutrition.co.ke"
+                supportEmail: settings?.EmailBranding?.supportEmail || "info@edwaknutrition.co.ke",
+                clinicLocation: settings?.address,
+                contactPhone: settings?.phoneNumber,
+                paymentTill: settings?.paymentTillNumber,
+                paymentPaybill: settings?.paymentPaybill
             }
 
             // Format time for email
@@ -143,7 +147,11 @@ export async function getBookingDetails(referenceCode: string) {
             return { success: false, error: "Booking not found" };
         }
 
-        return { success: true, booking };
+        const settings: any = await prisma.siteSettings.findUnique({
+            where: { id: "default" }
+        });
+
+        return { success: true, booking, settings };
     } catch (error) {
         console.error("Get Booking Error:", error);
         return { success: false, error: "Failed to fetch booking" };
@@ -202,7 +210,7 @@ export async function rescheduleBooking(referenceCode: string, newDateStr: strin
         // Send rescheduled confirmation email
         const apiKey = await INTERNAL_getSecret("RESEND_API_KEY")
 
-        const settings = await prisma.siteSettings.findUnique({
+        const settings: any = await prisma.siteSettings.findUnique({
             where: { id: "default" },
             include: { ResendConfig: true, EmailBranding: true }
         });
@@ -238,7 +246,11 @@ export async function rescheduleBooking(referenceCode: string, newDateStr: strin
                 accentColor: settings?.EmailBranding?.accentColor || "#E87A1E",
                 footerText: settings?.EmailBranding?.footerText || "Edwak Nutrition, Nairobi, Kenya",
                 websiteUrl: settings?.EmailBranding?.websiteUrl || "https://edwaknutrition.co.ke",
-                supportEmail: settings?.EmailBranding?.supportEmail || "info@edwaknutrition.co.ke"
+                supportEmail: settings?.EmailBranding?.supportEmail || "info@edwaknutrition.co.ke",
+                clinicLocation: settings?.address,
+                contactPhone: settings?.phoneNumber,
+                paymentTill: settings?.paymentTillNumber,
+                paymentPaybill: settings?.paymentPaybill
             };
 
             const emailSubject = `Booking Rescheduled: ${updatedBooking.serviceName} (#${referenceCode})`;

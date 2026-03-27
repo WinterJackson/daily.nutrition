@@ -19,6 +19,7 @@ export type AuditAction =
     | "BOOKING_RESCHEDULED"
     | "BOOKING_NO_SHOW"
     | "BOOKING_CREATED_VIA_GCAL"
+    | "PAYMENT_VERIFIED"
 
     | "BLOG_POST_CREATED"
     | "BLOG_POST_UPDATED"

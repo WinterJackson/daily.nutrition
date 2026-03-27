@@ -105,7 +105,8 @@ export default function AuditLogPage() {
                 setKnownActions(actions)
             }
         })
-    }, [page, pageSize, actionFilter, entityFilter, debouncedSearch])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [page, pageSize, actionFilter, entityFilter, debouncedSearch, knownEntities])
 
     useEffect(() => {
         loadLogs()

@@ -18,6 +18,7 @@ export default function BookingDetailPage() {
     
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const [booking, setBooking] = useState<any | null>(null)
+    const [settings, setSettings] = useState<any | null>(null)
     const [isLoading, setIsLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
     const [isCancelling, setIsCancelling] = useState(false)
@@ -68,6 +69,7 @@ export default function BookingDetailPage() {
             const res = await getBookingDetails(referenceCode)
             if (res.success && res.booking) {
                 setBooking(res.booking)
+                if (res.settings) setSettings(res.settings)
                 const rescheduleCheck = await checkCanReschedule(referenceCode)
                 setCanReschedule(rescheduleCheck.allowed)
             } else {
@@ -143,6 +145,7 @@ export default function BookingDetailPage() {
 
     const isCancelled = booking.bookingStatus === "CANCELLED" || booking.status === "CANCELLED"
     const isCompleted = booking.bookingStatus === "COMPLETED" || booking.status === "COMPLETED"
+    const isPending = booking.bookingStatus === "PENDING" || booking.status === "PENDING"
     const scheduledDate = new Date(booking.scheduledAt)
 
     return (
@@ -180,9 +183,10 @@ export default function BookingDetailPage() {
                     <div className={`p-4 text-sm font-bold text-center flex items-center justify-center gap-2 ${
                         isCancelled ? "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400" :
                         isCompleted ? "surface-secondary text-caption" :
+                        isPending ? "bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400" :
                         "bg-green-100 text-green-700 dark:bg-green-900/20 dark:text-green-400"
                     }`}>
-                        {isCancelled ? <XCircle className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
+                        {isCancelled ? <XCircle className="w-5 h-5" /> : isPending ? <AlertTriangle className="w-5 h-5" /> : <CheckCircle2 className="w-5 h-5" />}
                         {booking.bookingStatus || booking.status}
                     </div>
 
@@ -197,6 +201,31 @@ export default function BookingDetailPage() {
                                     <div className="text-brand-orange font-bold text-lg">{booking.duration} min</div>
                                 </div>
                             </div>
+
+                            {isPending && settings && (
+                                <div className="bg-amber-50 dark:bg-amber-900/10 border border-amber-200 dark:border-amber-900/30 rounded-2xl p-6">
+                                    <h3 className="text-amber-800 dark:text-amber-500 font-bold text-lg mb-2 flex items-center gap-2">
+                                        <AlertTriangle className="w-5 h-5" />
+                                        Action Required: Awaiting Payment
+                                    </h3>
+                                    <p className="text-amber-700 dark:text-amber-400 text-sm mb-4">
+                                        Your booking is currently pending. To confirm this reservation and prevent it from automatically expiring, please complete payment via M-Pesa.
+                                    </p>
+                                    <div className="bg-white dark:bg-charcoal p-4 rounded-xl border border-amber-100 dark:border-amber-900/20 grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                        <div>
+                                            <p className="text-xs uppercase font-bold text-caption">M-Pesa Till Number</p>
+                                            <p className="font-mono text-xl font-bold text-body">{settings.paymentTillNumber || "N/A"}</p>
+                                        </div>
+                                        <div>
+                                            <p className="text-xs uppercase font-bold text-caption">Alternative Paybill</p>
+                                            <p className="font-mono text-lg font-bold text-body">{settings.paymentPaybill || "N/A"}</p>
+                                        </div>
+                                    </div>
+                                    <p className="text-amber-700 dark:text-amber-400 text-xs mt-4">
+                                        Once your payment is manually verified by our team, you will receive a confirmation email with instructions or a Google Meet link (for virtual sessions).
+                                    </p>
+                                </div>
+                            )}
 
                             <div className="surface-secondary rounded-2xl p-6 grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div className="flex items-center gap-4">

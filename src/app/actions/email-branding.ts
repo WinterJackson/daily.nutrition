@@ -11,6 +11,10 @@ export interface EmailBrandingData {
     footerText: string
     websiteUrl: string
     supportEmail: string
+    clinicLocation?: string
+    contactPhone?: string
+    paymentTill?: string
+    paymentPaybill?: string
 }
 
 const DEFAULT_BRANDING: EmailBrandingData = {
@@ -27,7 +31,7 @@ const DEFAULT_BRANDING: EmailBrandingData = {
  */
 export async function getEmailBranding(): Promise<EmailBrandingData> {
     try {
-        const settings = await prisma.siteSettings.findUnique({
+        const settings: any = await prisma.siteSettings.findUnique({
             where: { id: "default" },
             include: { EmailBranding: true }
         })
@@ -42,7 +46,11 @@ export async function getEmailBranding(): Promise<EmailBrandingData> {
             accentColor: settings.EmailBranding.accentColor,
             footerText: settings.EmailBranding.footerText,
             websiteUrl: settings.EmailBranding.websiteUrl,
-            supportEmail: settings.EmailBranding.supportEmail
+            supportEmail: settings.EmailBranding.supportEmail,
+            clinicLocation: settings.address,
+            contactPhone: settings.phoneNumber,
+            paymentTill: settings.paymentTillNumber,
+            paymentPaybill: settings.paymentPaybill
         }
     } catch (error) {
         console.error("Failed to fetch email branding:", error)

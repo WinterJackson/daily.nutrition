@@ -512,6 +512,8 @@ model SiteSettings {
   pageTitle            String                @default("Daily Nutrition | Professional Nutrition Consultancy")
   metaDescription      String                @default("Expert nutrition advice.")
   keywords             String                @default("nutrition, health, diet")
+  paymentTillNumber    String                @default("")
+  paymentPaybill       String                @default("")
   version              Int                   @default(0)
   updatedAt            DateTime              @updatedAt
   profileImageUrl      String?               @default("")
