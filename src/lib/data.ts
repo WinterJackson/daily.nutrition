@@ -91,12 +91,12 @@ export const services = [
 
 export const pricing = {
     default: {
-        virtual: 3000,
-        inPerson: 4000,
+        virtual: 4000,
+        inPerson: 5500,
     },
     diabetes: {
-        virtual: 3000,
-        inPerson: 4000,
+        virtual: 4000,
+        inPerson: 5500,
         note: "Includes a personalized meal plan / guidelines."
     },
     packages: [

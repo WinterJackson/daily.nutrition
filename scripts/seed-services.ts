@@ -62,8 +62,8 @@ const services = [
         targetAudience: "Newly diagnosed diabetics, pre-diabetics, and those seeking better control.",
         color: "text-brand-green",
         bgColor: "bg-brand-green/10",
-        priceVirtual: 3000,
-        priceInPerson: 4000,
+        priceVirtual: 4000,
+        priceInPerson: 5500,
         isVisible: true,
         displayOrder: 3
     },
@@ -83,8 +83,8 @@ const services = [
         targetAudience: "Individuals with persistent digestive discomfort or diagnosed conditions.",
         color: "text-olive",
         bgColor: "bg-olive/10",
-        priceVirtual: 3000,
-        priceInPerson: 4000,
+        priceVirtual: 4000,
+        priceInPerson: 5500,
         isVisible: true,
         displayOrder: 4
     },
@@ -104,8 +104,8 @@ const services = [
         targetAudience: "Anyone seeking to improve their general health and prevent chronic diseases.",
         color: "text-olive",
         bgColor: "bg-olive/10",
-        priceVirtual: 3000,
-        priceInPerson: 4000,
+        priceVirtual: 4000,
+        priceInPerson: 5500,
         isVisible: true,
         displayOrder: 5
     },
