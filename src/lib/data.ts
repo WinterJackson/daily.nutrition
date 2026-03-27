@@ -94,6 +94,10 @@ export const pricing = {
         virtual: 4000,
         inPerson: 5500,
     },
+    cancer: {
+        virtual: 3000,
+        inPerson: 4000,
+    },
     diabetes: {
         virtual: 4000,
         inPerson: 5500,

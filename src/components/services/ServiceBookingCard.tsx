@@ -49,8 +49,8 @@ export function ServiceBookingCard({
   const [sessionType, setSessionType] = useState<"virtual" | "in-person">("virtual")
   const message = serviceMessages[serviceId] || serviceMessages["general-counselling"]
   
-  // Use service-specific pricing for diabetes, default for others
-  const servicePricing = serviceId === "diabetes-management" ? pricing.diabetes : pricing.default
+  // Use service-specific pricing for cancer and diabetes, default for others
+  const servicePricing = serviceId === "cancer-nutrition" ? pricing.cancer : serviceId === "diabetes-management" ? pricing.diabetes : pricing.default
   const isDiabetes = serviceId === "diabetes-management"
 
   return (
