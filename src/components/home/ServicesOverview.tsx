@@ -108,7 +108,7 @@ export function ServicesOverview({ services }: { services: Service[] }) {
         )}
 
         {/* Strict CSS grid guarantees exactly the requested column layout per breakpoint */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
           {gridServices.map((service, index) => (
             <motion.div
               key={service.id}

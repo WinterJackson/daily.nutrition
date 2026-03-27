@@ -47,7 +47,7 @@ export function Hero() {
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-serif tracking-tight text-olive dark:text-off-white leading-[1.1]">
               Nutrition Care, <br/>
               <span className="text-brand-green">
-                that satisfies.
+                That satisfies.
               </span>
             </h1>
             
