@@ -1,9 +1,8 @@
 "use client"
 
 import { AnimatedBackground } from "@/components/ui/AnimatedBackground"
-import { Button } from "@/components/ui/Button"
 import { motion } from "framer-motion"
-import { ArrowRight, Quote } from "lucide-react"
+import { Quote } from "lucide-react"
 
 export function MissionStatement() {
   return (
@@ -58,9 +57,6 @@ export function MissionStatement() {
                 <span>Virtual and in-person consultations</span>
               </li>
             </ul>
-            <Button variant="outline" className="mt-6 border-olive/20 text-olive hover:bg-olive/5 dark:border-white/20 dark:text-off-white dark:hover:bg-white/10">
-              Read Our Full Story <ArrowRight className="ml-2 w-4 h-4" />
-            </Button>
           </motion.div>
           
         </div>

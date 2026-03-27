@@ -85,8 +85,7 @@ export default function ContactClient({ settings }: ContactClientProps) {
                              <Clock className="w-5 h-5" />
                         </div>
                         <div className="text-sm text-white/70 space-y-1">
-                           <p><strong className="text-white">Virtual:</strong> Tue - Fri, 9AM - 4PM</p>
-                           <p><strong className="text-white">In-Person:</strong> Mon & Wed, 9AM - 5PM</p>
+                           <p><strong className="text-white">Operating Hours:</strong> 9AM - 6PM</p>
                         </div>
                      </div>
                   </div>
@@ -94,7 +93,7 @@ export default function ContactClient({ settings }: ContactClientProps) {
                 
                 <div className="relative z-10 pt-8 border-t border-white/10 mt-8 flex items-center gap-3">
                     <Globe className="w-4 h-4 opacity-50" />
-                    <span className="text-xs opacity-50">Remote consultations available via Zoom.</span>
+                    <span className="text-xs opacity-50">Remote consultations available via Google Meet.</span>
                 </div>
              </div>
              

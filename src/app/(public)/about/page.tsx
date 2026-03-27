@@ -37,8 +37,6 @@ export default async function AboutPage() {
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
                   "Registered Dietitian (MSc. Nutrition & Dietetics)",
-                  "Oncology Nutrition Specialist",
-                  "Diabetes Educator Specialist", // Removed "Certified" per feedback
                   "8+ Years Clinical Experience",
                   "Member, Nutrition Association of Kenya", // Updated per feedback
                   "Evidence-Based Practice Advocate"
@@ -60,7 +58,7 @@ export default async function AboutPage() {
              <div className="relative z-10 max-w-3xl mx-auto text-center space-y-6">
                 <h3 className="text-sm font-bold tracking-[0.15em] uppercase text-brand-green">My Philosophy</h3>
                 <p className="text-2xl md:text-3xl text-olive dark:text-off-white leading-relaxed font-serif">
-                  "I realized there is no <span className="text-orange">one-size-fits-all</span> approach when it comes to healthy lifestyle. I work one-on-one with my patients to devise comprehensive nutrition programs tailored specifically to their needs."
+                  "Managing a health condition should not feel like a second job. Whether you are navigating a new diagnosis or managing a long-term clinical need, your relationship with food should be a source of strength, not stress."
                 </p>
              </div>
           </section>
