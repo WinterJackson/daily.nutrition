@@ -49,7 +49,7 @@ export default function ContactClient({ settings }: ContactClientProps) {
                 <div className="absolute top-0 right-0 w-64 h-64 bg-brand-green/20 rounded-full blur-[80px] pointer-events-none -translate-y-1/2 translate-x-1/2"></div>
                 
                 <div className="relative z-10">
-                  <h3 className="text-2xl font-serif font-bold mb-8">Contact Information</h3>
+                  <h3 className="text-2xl font-serif font-bold text-white mb-8">Contact Information</h3>
                   
                   <div className="space-y-6">
                      <div className="flex items-start gap-4">
@@ -80,13 +80,11 @@ export default function ContactClient({ settings }: ContactClientProps) {
                         <p className="text-white/80 font-medium">{settings.contactEmail}</p>
                      </div>
 
-                     <div className="flex items-start gap-4">
+                     <div className="flex items-center gap-4">
                         <div className="p-3 rounded-xl bg-white/10 shrink-0">
                              <Clock className="w-5 h-5" />
                         </div>
-                        <div className="text-sm text-white/70 space-y-1">
-                           <p><strong className="text-white">Operating Hours:</strong> 9AM - 6PM</p>
-                        </div>
+                        <p className="text-white/80 font-medium">Operating Hours: 9AM - 6PM</p>
                      </div>
                   </div>
                 </div>

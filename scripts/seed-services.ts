@@ -94,9 +94,10 @@ const services = [
         slug: "general-counselling",
         icon: "Scale",
         shortDescription: "Weight management, hypertension control, and general wellness guidance.",
-        fullDescription: "Holistic support for healthy weight loss or gain, cholesterol management, and hypertension control. We also offer renal nutrition guidance and general preventive care.",
+        fullDescription: "Holistic support for healthy weight loss or gain, Maternal and pediatric Nutrition, cholesterol management, and hypertension control. We also offer renal nutrition guidance and general preventive care.",
         features: [
             "Weight Management (Loss/Gain)",
+            "Maternal and pediatric Nutrition",
             "Hypertension & Cholesterol Control",
             "Renal (Kidney) Nutrition",
             "Preventive Care"
