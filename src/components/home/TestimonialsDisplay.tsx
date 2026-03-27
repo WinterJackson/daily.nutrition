@@ -2,9 +2,9 @@
 
 import { AnimatedBackground } from "@/components/ui/AnimatedBackground"
 import { Card, CardContent } from "@/components/ui/Card"
+import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from "@/components/ui/Carousel"
 import { motion } from "framer-motion"
-import { ChevronDown, ChevronUp, Quote, Star } from "lucide-react"
-import { useState } from "react"
+import { Quote, Star } from "lucide-react"
 
 interface Testimonial {
   id: string
@@ -18,10 +18,7 @@ interface TestimonialsDisplayProps {
   testimonials: Testimonial[]
 }
 
-export function TestimonialsDisplay({ testimonials }: TestimonialsDisplayProps) {
-  const [visibleCount, setVisibleCount] = useState(6)
-
-  // If no testimonials in DB, show placeholder
+export function TestimonialsDisplay({ testimonials }: TestimonialsDisplayProps) {  // If no testimonials in DB, show placeholder
   if (testimonials.length === 0) {
     return (
       <section className="py-24 bg-gradient-to-b from-off-white to-soft-green/10 dark:from-charcoal dark:to-charcoal relative overflow-hidden">
@@ -62,77 +59,73 @@ export function TestimonialsDisplay({ testimonials }: TestimonialsDisplayProps) 
           </p>
         </motion.div>
 
-        {/* Testimonials Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {testimonials.slice(0, visibleCount).map((testimonial, index) => (
-            <motion.div
-              key={testimonial.id}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ delay: index * 0.15 }}
-            >
-              <Card className="h-full bg-white/90 dark:bg-white/5 backdrop-blur-md border-none shadow-lg hover:shadow-xl transition-shadow group flex flex-col">
-                <CardContent className="p-6 flex flex-col flex-1">
-                  {/* Quote Icon */}
-                  <Quote className="w-8 h-8 text-brand-green/20 mb-4 group-hover:text-brand-green/40 transition-colors" />
+        {/* Testimonials Carousel */}
+        <Carousel
+          opts={{
+            align: "start",
+            loop: true,
+          }}
+          className="w-full relative px-6 md:px-12"
+        >
+          <CarouselContent className="-ml-2 md:-ml-4">
+            {testimonials.map((testimonial, index) => (
+              <CarouselItem key={testimonial.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3">
+                <motion.div
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: Math.min(index * 0.15, 0.6) }}
+                  className="h-full mt-2 mb-6"
+                >
+                  <Card className="h-full bg-white/90 dark:bg-white/5 backdrop-blur-md border-none shadow-lg hover:shadow-xl transition-shadow group flex flex-col">
+                    <CardContent className="p-6 flex flex-col flex-1">
+                      {/* Quote Icon */}
+                      <Quote className="w-8 h-8 text-brand-green/20 mb-4 group-hover:text-brand-green/40 transition-colors" />
 
-                  {/* Content */}
-                  <p className="text-neutral-600 dark:text-neutral-300 leading-relaxed mb-6 text-sm flex-1">
-                    &quot;{testimonial.content}&quot;
-                  </p>
-
-                  {/* Rating */}
-                  <div className="flex gap-1 mb-4 mt-auto">
-                    {Array.from({ length: testimonial.rating }).map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-gold text-gold" />
-                    ))}
-                  </div>
-
-                  {/* Author */}
-                  <div className="flex items-center gap-3 pt-4 border-t border-neutral-100 dark:border-white/10 shrink-0">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-green/20 to-orange/20 flex items-center justify-center overflow-hidden shrink-0">
-                      <span className="text-lg font-bold text-olive dark:text-off-white">
-                        {testimonial.authorName.charAt(0)}
-                      </span>
-                    </div>
-                    <div className="min-w-0">
-                      <p className="font-semibold text-olive dark:text-off-white text-sm truncate">
-                        {testimonial.authorName}
+                      {/* Content */}
+                      <p className="text-neutral-600 dark:text-neutral-300 leading-relaxed mb-6 text-sm flex-1">
+                        &quot;{testimonial.content}&quot;
                       </p>
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400">
-                        Verified Client
-                      </p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            </motion.div>
-          ))}
-        </div>
 
-        {/* Load More Button */}
-        {testimonials.length > 6 && (
-          <div className="mt-12 text-center flex justify-center">
-            {visibleCount < testimonials.length ? (
-              <button
-                onClick={() => setVisibleCount(testimonials.length)}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-white dark:bg-charcoal border border-brand-green/30 text-brand-green hover:bg-brand-green/10 transition-colors shadow-sm font-semibold text-sm"
-              >
-                Read More Reviews
-                <ChevronDown className="w-4 h-4" />
-              </button>
-            ) : (
-              <button
-                onClick={() => setVisibleCount(6)}
-                className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-white dark:bg-charcoal border border-neutral-200 dark:border-white/10 text-neutral-500 hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors shadow-sm font-semibold text-sm"
-              >
-                Show Less
-                <ChevronUp className="w-4 h-4" />
-              </button>
-            )}
+                      {/* Rating */}
+                      <div className="flex gap-1 mb-4 mt-auto">
+                        {Array.from({ length: testimonial.rating }).map((_, i) => (
+                          <Star key={i} className="w-4 h-4 fill-gold text-gold" />
+                        ))}
+                      </div>
+
+                      {/* Author */}
+                      <div className="flex items-center gap-3 pt-4 border-t border-neutral-100 dark:border-white/10 shrink-0">
+                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-brand-green/20 to-orange/20 flex items-center justify-center overflow-hidden shrink-0">
+                          <span className="text-lg font-bold text-olive dark:text-off-white">
+                            {testimonial.authorName.charAt(0)}
+                          </span>
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-semibold text-olive dark:text-off-white text-sm truncate">
+                            {testimonial.authorName}
+                          </p>
+                          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                            Verified Client
+                          </p>
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              </CarouselItem>
+            ))}
+          </CarouselContent>
+          <div className="hidden md:block">
+            <CarouselPrevious className="absolute -left-2 lg:-left-6 top-1/2 -translate-y-1/2 bg-white dark:bg-charcoal text-brand-green border-brand-green hover:bg-brand-green hover:text-white transition-all shadow-md h-12 w-12" />
+            <CarouselNext className="absolute -right-2 lg:-right-6 top-1/2 -translate-y-1/2 bg-white dark:bg-charcoal text-brand-green border-brand-green hover:bg-brand-green hover:text-white transition-all shadow-md h-12 w-12" />
           </div>
-        )}
+          {/* Mobile Arrows positioned nicely below */}
+          <div className="flex w-full justify-center gap-4 mt-6 md:hidden">
+            <CarouselPrevious className="relative inset-0 translate-transform-none bg-white dark:bg-charcoal text-brand-green border-brand-green hover:bg-brand-green hover:text-white transition-all shadow-md h-10 w-10" />
+            <CarouselNext className="relative inset-0 translate-transform-none bg-white dark:bg-charcoal text-brand-green border-brand-green hover:bg-brand-green hover:text-white transition-all shadow-md h-10 w-10" />
+          </div>
+        </Carousel>
 
         {/* Trust Indicator */}
         <motion.div

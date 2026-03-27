@@ -57,7 +57,7 @@ export function ServicesOverview({ services }: { services: Service[] }) {
             className="text-lg text-neutral-600 dark:text-neutral-300"
           >
             We focus on complex health conditions where nutrition plays a vital therapeutic role. 
-            No generic advice—just science-backed, personalized strategies.
+            No generic advice, just science-backed, personalized strategies.
           </motion.p>
         </div>
 
