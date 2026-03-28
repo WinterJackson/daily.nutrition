@@ -499,7 +499,7 @@ export async function adminRescheduleBooking(id: string, newDateStr: string, new
 /**
  * Admin: Verify Payment and Release Meeting Links
  */
-export async function approvePaymentAndSendLink(id: string) {
+export async function approvePaymentAndSendLink(id: string, manualMeetLink?: string) {
     const session = await verifySession()
     if (!session) return { success: false, error: "Unauthorized" }
 
@@ -508,15 +508,22 @@ export async function approvePaymentAndSendLink(id: string) {
         if (!booking) return { success: false, error: "Booking not found" }
         if (booking.bookingStatus !== "PENDING") return { success: false, error: "Booking is not pending" }
 
+        const dataToUpdate: any = { bookingStatus: "CONFIRMED" }
+
+        if (manualMeetLink?.trim()) {
+            const { encrypt } = await import("@/lib/encryption")
+            dataToUpdate.encryptedMeetLink = encrypt(manualMeetLink.trim())
+        }
+
         // Update DB
         const updatedBooking = await prisma.booking.update({
             where: { id },
-            data: { bookingStatus: "CONFIRMED" }
+            data: dataToUpdate
         })
 
-        // Decrypt google meet link if it exists
-        let meetLink = ""
-        if (updatedBooking.encryptedMeetLink) {
+        // Decrypt google meet link if it exists OR use the one provided
+        let meetLink = manualMeetLink || ""
+        if (!meetLink && updatedBooking.encryptedMeetLink) {
             try {
                 const { decrypt } = await import("@/lib/encryption")
                 meetLink = decrypt(updatedBooking.encryptedMeetLink)

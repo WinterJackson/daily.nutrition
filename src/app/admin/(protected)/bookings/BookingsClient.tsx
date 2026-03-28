@@ -48,6 +48,7 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
   const [statusFilter, setStatusFilter] = useState<"ALL" | BookingStatus>((searchParams.get("status") as any) || "ALL")
   const [timeFilter, setTimeFilter] = useState<"all" | "upcoming" | "past" | "today">((searchParams.get("filter") as any) || "all")
   const [editNotes, setEditNotes] = useState("")
+  const [manualMeetLink, setManualMeetLink] = useState("")
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
 
   // Bulk selection
@@ -704,39 +705,59 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
             )}
 
             {selectedBooking?.status === "PENDING" && (
-              <>
-                 <Button 
-                  size="sm" 
-                  className="bg-brand-green hover:bg-brand-green/90 animate-pulse border-brand-green shadow-xl shadow-brand-green/20"
-                  onClick={() => {
-                    startTransition(async () => {
-                      if (selectedBooking) {
-                         const res = await approvePaymentAndSendLink(selectedBooking.id)
-                         if (res.success) {
-                           setBookings(bookings.map(b => b.id === selectedBooking.id ? { ...b, status: "CONFIRMED" } : b))
-                           setSelectedBooking({...selectedBooking, status: "CONFIRMED"})
-                           router.refresh()
-                         } else {
-                           alert(res.error || "Failed to verify payment and release link.")
-                         }
-                      }
-                    })
-                  }}
-                  disabled={isPending}
-                >
-                  <CheckCircle className="w-4 h-4 mr-2" /> Verify Payment & Send Link
-                </Button>
-                <Button 
-                  size="sm" 
-                  variant="outline"
-                  className="border-red-300 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20"
-                  onClick={() => {
-                    if (selectedBooking) setBookingToCancel(selectedBooking.id)
-                  }}
-                >
-                  <XCircle className="w-4 h-4 mr-2" /> Reject & Cancel
-                </Button>
-              </>
+              <div className="flex flex-col gap-3 w-full">
+                {selectedBooking.sessionType === "virtual" && (
+                  <div className="space-y-2 surface-secondary p-4 rounded-xl border border-neutral-100 dark:border-white/5">
+                    <label className="text-xs font-bold uppercase text-neutral-500 tracking-wider flex items-center gap-2">
+                       <Video className="w-4 h-4 text-blue-500" /> Manual Meeting Link
+                    </label>
+                    <p className="text-xs text-neutral-400 leading-relaxed mb-2">
+                      Because you are using a standard @gmail.com account, the system cannot auto-generate Google Meet links. Paste a Meet or Zoom link below to instantly sync it to the client's confirmation email.
+                    </p>
+                    <Input 
+                      placeholder="e.g. https://meet.google.com/xxx-xxxx-xxx" 
+                      value={manualMeetLink}
+                      onChange={(e) => setManualMeetLink(e.target.value)}
+                      className="bg-white dark:bg-black/20 font-mono text-sm border-neutral-200 dark:border-white/10"
+                    />
+                  </div>
+                )}
+                
+                <div className="flex flex-wrap items-center gap-2 mt-2">
+                  <Button 
+                    size="sm" 
+                    className="bg-brand-green hover:bg-brand-green/90 animate-pulse border-brand-green shadow-xl shadow-brand-green/20 flex-1 sm:flex-none"
+                    onClick={() => {
+                      startTransition(async () => {
+                        if (selectedBooking) {
+                           const res = await approvePaymentAndSendLink(selectedBooking.id, manualMeetLink)
+                           if (res.success) {
+                             setBookings(bookings.map(b => b.id === selectedBooking.id ? { ...b, status: "CONFIRMED" } : b))
+                             setSelectedBooking({...selectedBooking, status: "CONFIRMED"})
+                             setManualMeetLink("") // Clear on success
+                             router.refresh()
+                           } else {
+                             alert(res.error || "Failed to verify payment and release link.")
+                           }
+                        }
+                      })
+                    }}
+                    disabled={isPending}
+                  >
+                    <CheckCircle className="w-4 h-4 mr-2" /> Verify Payment & Send Link
+                  </Button>
+                  <Button 
+                    size="sm" 
+                    variant="outline"
+                    className="border-red-300 text-red-600 hover:bg-red-50 dark:hover:bg-red-900/20 flex-1 sm:flex-none"
+                    onClick={() => {
+                      if (selectedBooking) setBookingToCancel(selectedBooking.id)
+                    }}
+                  >
+                    <XCircle className="w-4 h-4 mr-2" /> Reject & Cancel
+                  </Button>
+                </div>
+              </div>
             )}
 
             <Button variant="outline" size="sm" onClick={() => setSelectedBooking(null)}>

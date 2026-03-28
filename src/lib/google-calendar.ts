@@ -222,9 +222,6 @@ export async function createCalendarEvent(
             dateTime: endDateTime.toISOString(),
             timeZone: 'Africa/Nairobi',
         },
-        attendees: [
-            { email: clientData.email },
-        ],
         conferenceData: {
             createRequest: {
                 requestId: Math.random().toString(36).substring(7),
@@ -233,14 +230,29 @@ export async function createCalendarEvent(
         },
     };
 
-    const res = await calendar.events.insert({
-        calendarId: calendarId,
-        requestBody: event,
-        sendUpdates: 'all',
-        conferenceDataVersion: 1,
-    });
+    try {
+        const res = await calendar.events.insert({
+            calendarId: calendarId,
+            requestBody: event,
+            conferenceDataVersion: 1,
+        });
+        return res.data;
+    } catch (error: any) {
+        // Fallback: If the target calendar is a free @gmail.com account, Google explicitly blocks
+        // Service Accounts from auto-generating Meet links and throws a 400 Invalid conference type value.
+        // We catch this specifically and retry creating the event WITHOUT the Meet link payload so it at least syncs.
+        if (error.message && error.message.includes("Invalid conference type value")) {
+            console.warn("Target calendar does not support Service Account Meet link generation. Retrying without Meet link...");
+            delete (event as any).conferenceData;
 
-    return res.data;
+            const retryRes = await calendar.events.insert({
+                calendarId: calendarId,
+                requestBody: event,
+            });
+            return retryRes.data;
+        }
+        throw error;
+    }
 }
 
 /**
@@ -270,7 +282,6 @@ export async function updateCalendarEvent(
                 timeZone: 'Africa/Nairobi',
             },
         },
-        sendUpdates: 'all',
     });
 
     return res.data;
@@ -286,6 +297,5 @@ export async function deleteCalendarEvent(eventId: string) {
     await calendar.events.delete({
         calendarId: calendarId,
         eventId: eventId,
-        sendUpdates: 'all',
     });
 }
