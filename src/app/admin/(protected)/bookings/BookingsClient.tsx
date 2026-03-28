@@ -1,13 +1,13 @@
 "use client"
 
-import { adminCancelBooking, adminRescheduleBooking, approvePaymentAndSendLink, BookingStatus, deleteBooking, updateBookingNotes, updateBookingStatus } from "@/app/actions/bookings"
+import { adminCancelBooking, adminRescheduleBooking, adminUpdateMeetLink, approvePaymentAndSendLink, BookingStatus, deleteBooking, updateBookingNotes, updateBookingStatus } from "@/app/actions/bookings"
 import { fetchAvailability } from "@/app/actions/google-calendar"
 import { TablePagination } from "@/components/admin/TablePagination"
 import { Button } from "@/components/ui/Button"
 import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog"
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/Dialog"
 import { Input } from "@/components/ui/Input"
-import { Calendar, CheckCircle, Clock, Copy, Eye, FileText, Loader2, RefreshCw, Search, Trash2, User, Video, XCircle } from "lucide-react"
+import { Calendar, CheckCircle, Clock, Copy, Edit3, Eye, FileText, Loader2, RefreshCw, Search, Trash2, User, Video, XCircle } from "lucide-react"
 import { useRouter, useSearchParams } from "next/navigation"
 import { useCallback, useEffect, useRef, useState, useTransition } from "react"
 
@@ -25,6 +25,7 @@ interface Booking {
   referenceCode: string | null
   clientTimezone: string
   notes: string | null
+  meetLink?: string
   createdAt: Date
   updatedAt: Date
 }
@@ -49,6 +50,8 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
   const [timeFilter, setTimeFilter] = useState<"all" | "upcoming" | "past" | "today">((searchParams.get("filter") as any) || "all")
   const [editNotes, setEditNotes] = useState("")
   const [manualMeetLink, setManualMeetLink] = useState("")
+  const [isEditingLink, setIsEditingLink] = useState(false)
+  const [newMeetLink, setNewMeetLink] = useState("")
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
 
   // Bulk selection
@@ -569,6 +572,97 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
               )}
             </div>
           </div>
+
+          {/* Admin Meet Link Editor (for CONFIRMED Virtual Sessions) */}
+          {selectedBooking?.sessionType === "virtual" && selectedBooking?.status === "CONFIRMED" && (
+              <div className="surface-secondary rounded-xl p-5 space-y-4 border border-blue-500/20">
+                <div className="flex items-center gap-2 text-blue-500 font-bold text-sm">
+                  <Video className="w-4 h-4" />
+                  Meeting Link
+                </div>
+                
+                {isEditingLink ? (
+                  <div className="space-y-3">
+                    <Input 
+                      placeholder="https://meet.google.com/xxx-xxxx-xxx"
+                      value={newMeetLink}
+                      onChange={(e) => setNewMeetLink(e.target.value)}
+                      className="bg-white dark:bg-black/20 font-mono text-sm"
+                      autoFocus
+                    />
+                    <div className="flex gap-2">
+                      <Button 
+                        size="sm" 
+                        className="bg-blue-600 hover:bg-blue-700"
+                        onClick={() => {
+                          startTransition(async () => {
+                            if (selectedBooking) {
+                               const res = await adminUpdateMeetLink(selectedBooking.id, newMeetLink)
+                               if (res.success) {
+                                 setBookings(bookings.map(b => b.id === selectedBooking.id ? { ...b, meetLink: newMeetLink.trim() } : b))
+                                 setSelectedBooking({...selectedBooking, meetLink: newMeetLink.trim()})
+                                 setIsEditingLink(false)
+                                 setNewMeetLink("")
+                                 router.refresh()
+                                 alert("Meeting link updated and client notified!")
+                               } else {
+                                 alert(res.error || "Failed to update link")
+                               }
+                            }
+                          })
+                        }}
+                        disabled={isPending || !newMeetLink.trim()}
+                      >
+                        {isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : <CheckCircle className="w-4 h-4 mr-2" />}
+                        Save & Notify Client
+                      </Button>
+                      <Button size="sm" variant="outline" onClick={() => { setIsEditingLink(false); setNewMeetLink(""); }} disabled={isPending}>
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3">
+                    {selectedBooking.meetLink ? (
+                      <>
+                        <Button size="sm" className="bg-blue-600 hover:bg-blue-700 w-full sm:w-auto" asChild>
+                          <a href={selectedBooking.meetLink} target="_blank" rel="noreferrer">
+                            Join Call
+                          </a>
+                        </Button>
+                        <Button 
+                          size="sm" 
+                          variant="outline" 
+                          onClick={() => {
+                            navigator.clipboard.writeText(selectedBooking.meetLink!)
+                            setCopiedCode("link_" + selectedBooking.id)
+                            setTimeout(() => setCopiedCode(null), 2000)
+                          }}
+                        >
+                          {copiedCode === "link_" + selectedBooking.id ? <CheckCircle className="w-4 h-4 mr-2 text-green-500" /> : <Copy className="w-4 h-4 mr-2" />}
+                          Copy Link
+                        </Button>
+                      </>
+                    ) : (
+                      <span className="text-sm text-neutral-500 italic">No link available.</span>
+                    )}
+                    
+                    <Button 
+                      size="sm" 
+                      variant="ghost" 
+                      className="text-neutral-500 sm:ml-auto"
+                      onClick={() => { 
+                        setNewMeetLink(selectedBooking.meetLink || "")
+                        setIsEditingLink(true) 
+                      }}
+                    >
+                      <Edit3 className="w-4 h-4 mr-2" />
+                      Change Link
+                    </Button>
+                  </div>
+                )}
+              </div>
+          )}
 
           {/* Admin Reschedule Form */}
           {showReschedule && selectedBooking?.status === "CONFIRMED" && (

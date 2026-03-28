@@ -20,6 +20,7 @@ export type AuditAction =
     | "BOOKING_NO_SHOW"
     | "BOOKING_CREATED_VIA_GCAL"
     | "PAYMENT_VERIFIED"
+    | "MEET_LINK_UPDATED"
 
     | "BLOG_POST_CREATED"
     | "BLOG_POST_UPDATED"

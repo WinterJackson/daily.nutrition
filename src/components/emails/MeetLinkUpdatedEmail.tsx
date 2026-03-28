@@ -5,42 +5,41 @@ import {
 } from "@react-email/components";
 import { BrandedEmailLayout, EmailBrandingData } from "./BrandedEmailLayout";
 
-interface PaymentVerifiedProps {
+interface MeetLinkUpdatedProps {
   clientName: string;
   serviceName: string;
   date: string;
   time: string;
-  meetLink?: string;
+  meetLink: string;
   referenceCode?: string;
   sessionType?: "virtual" | "in-person";
   branding: EmailBrandingData;
 }
 
-export const PaymentVerifiedEmail = ({
+export const MeetLinkUpdatedEmail = ({
   clientName = "Client",
   serviceName = "Consultation",
   date = "October 24, 2026",
   time = "10:00 AM",
-  meetLink = "",
+  meetLink = "https://meet.google.com/xxx-xxxx-xxx",
   referenceCode = "DN-123456",
   sessionType = "virtual",
   branding
-}: PaymentVerifiedProps) => {
+}: MeetLinkUpdatedProps) => {
   const isVirtual = sessionType === "virtual";
-  const previewText = `Payment Verified: ${serviceName} Confirmed`;
+  const previewText = `Update: Meeting Link for ${serviceName}`;
 
   return (
     <BrandedEmailLayout
       branding={branding}
       previewText={previewText}
-      heading="Payment Verified & Booking Confirmed"
+      heading="Virtual Meeting Link Updated"
     >
         <Text className="text-black text-[14px] leading-[24px]">
         Hello <strong>{clientName}</strong>,
         </Text>
         <Text className="text-black text-[14px] leading-[24px]">
-        We have successfully received and verified your M-Pesa payment. Your appointment for <strong>{serviceName}</strong> is now fully confirmed.
-        We look forward to meeting with you!
+        The meeting room link for your upcoming <strong>{serviceName}</strong> appointment has been updated by the administrator. Please use the new link below to join your session.
         </Text>
         
         <Section className="bg-offwhite p-6 rounded-lg my-6">
@@ -55,7 +54,7 @@ export const PaymentVerifiedEmail = ({
             Where
         </Text>
         <Text className="m-0 text-lg font-semibold">
-           {isVirtual ? (meetLink ? "Google Meet (Video Call)" : "Virtual (Link pending sync)") : "In-Person — PMC Park Medical Center, Parklands"}
+           {isVirtual ? "Google Meet (Video Call)" : "In-Person"}
         </Text>
         
         {referenceCode && (
@@ -71,12 +70,13 @@ export const PaymentVerifiedEmail = ({
         </Section>
 
         {isVirtual && meetLink && (
-          <Section className="bg-white p-5 rounded-lg border border-gray-200 mt-[32px] text-center">
+          <Section className="bg-white p-5 rounded-lg border border-blue-200 mt-[32px] text-center">
             <Text className="m-0 text-black font-semibold text-[14px] mb-4">
-              Here is your secure video meeting link for the session:
+              Your new, active secure video meeting link is:
             </Text>
             <Button
-              className="bg-brand rounded text-white text-[14px] font-semibold no-underline text-center px-6 py-4"
+              className="bg-blue-600 rounded text-white text-[14px] font-semibold no-underline text-center px-6 py-4"
+              style={{ backgroundColor: branding.primaryColor || '#556B2F' }}
               href={meetLink}
             >
               Join Virtual Meeting
@@ -87,6 +87,7 @@ export const PaymentVerifiedEmail = ({
         <Section className="text-center mt-[32px] mb-[32px]">
           <Button
             className="bg-brand rounded text-white text-[12px] font-semibold no-underline text-center px-5 py-3"
+            style={{ backgroundColor: branding.accentColor || '#E87A1E' }}
             href={`${branding.websiteUrl}/booking/manage/${referenceCode}`}
           >
             Manage Booking
@@ -95,11 +96,12 @@ export const PaymentVerifiedEmail = ({
             If you need to reschedule or cancel, please do so at least 24 hours in advance using the button above.
           </Text>
         </Section>
+        
         <Text className="text-black text-[14px] leading-[24px]">
-        If you need to reschedule or have any questions, please reply directly to this email at least 24 hours in advance.
+        If you have any further questions, please reply directly to this email.
         </Text>
     </BrandedEmailLayout>
   );
 };
 
-export default PaymentVerifiedEmail;
+export default MeetLinkUpdatedEmail;

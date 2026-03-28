@@ -90,11 +90,24 @@ export async function getBookings(
             })
         ])
 
-        // Normalize bookingStatus to status for the UI
-        const bookings = bookingsData.map(b => ({
-            ...b,
-            status: b.bookingStatus
-        }))
+        const { decrypt } = await import("@/lib/encryption")
+
+        // Normalize bookingStatus to status for the UI and decrypt meet links securely
+        const bookings = bookingsData.map(b => {
+            let pureMeetLink: string | undefined = undefined;
+            if (b.encryptedMeetLink) {
+                try {
+                    pureMeetLink = decrypt(b.encryptedMeetLink)
+                } catch (e) {
+                    console.error("Failed to decrypt meet link for admin:", e)
+                }
+            }
+            return {
+                ...b,
+                status: b.bookingStatus,
+                meetLink: pureMeetLink
+            }
+        })
 
         return { bookings, totalCount, error: null }
     } catch (error) {
@@ -586,3 +599,82 @@ export async function approvePaymentAndSendLink(id: string, manualMeetLink?: str
     }
 }
 
+/**
+ * Admin: Update Meeting Link Manually post-approval
+ */
+export async function adminUpdateMeetLink(id: string, newMeetLink: string) {
+    const session = await verifySession()
+    if (!session) return { success: false, error: "Unauthorized" }
+
+    if (!newMeetLink || !newMeetLink.trim()) {
+        return { success: false, error: "Meeting link cannot be empty" }
+    }
+
+    try {
+        const booking = await prisma.booking.findUnique({ where: { id } })
+        if (!booking) return { success: false, error: "Booking not found" }
+        // Only confirmed upcoming bookings should really have links changed, but we allow it as long as it's not cancelled.
+        if (booking.bookingStatus === "CANCELLED") return { success: false, error: "Cannot add link to cancelled booking" }
+
+        const { encrypt } = await import("@/lib/encryption")
+        const encryptedLink = encrypt(newMeetLink.trim())
+
+        const updatedBooking = await prisma.booking.update({
+            where: { id },
+            data: { encryptedMeetLink: encryptedLink }
+        })
+
+        // Send Email pointing to the new link
+        const emailConfig = await getEmailConfig()
+        if (emailConfig) {
+            const clientTimezone = updatedBooking.clientTimezone || "Africa/Nairobi"
+            const scheduledDate = new Date(updatedBooking.scheduledAt)
+
+            const formattedDate = scheduledDate.toLocaleDateString("en-US", {
+                weekday: "long", month: "long", day: "numeric", year: "numeric",
+                timeZone: clientTimezone
+            })
+            const formattedTime = scheduledDate.toLocaleTimeString("en-US", {
+                hour: "numeric", minute: "2-digit", timeZone: clientTimezone
+            })
+
+            const emailSubject = `Updated Meeting Link: ${updatedBooking.serviceName} (#${updatedBooking.referenceCode || ""})`
+            try {
+                // Ensure this template exists!
+                const { MeetLinkUpdatedEmail } = await import("@/components/emails/MeetLinkUpdatedEmail")
+                await emailConfig.resend.emails.send({
+                    from: `Edwak Nutrition <${emailConfig.fromEmail}>`,
+                    to: updatedBooking.clientEmail,
+                    subject: emailSubject,
+                    react: MeetLinkUpdatedEmail({
+                        clientName: updatedBooking.clientName,
+                        serviceName: updatedBooking.serviceName,
+                        date: formattedDate,
+                        time: `${formattedTime} (${clientTimezone})`,
+                        meetLink: newMeetLink.trim(),
+                        referenceCode: updatedBooking.referenceCode || "",
+                        sessionType: updatedBooking.sessionType as "virtual" | "in-person",
+                        branding: emailConfig.branding
+                    })
+                })
+                await logEmailAttempt({ recipientEmail: updatedBooking.clientEmail, subject: emailSubject, context: "MEET_LINK_UPDATED", entityId: updatedBooking.referenceCode || id, success: true })
+            } catch (emailErr) {
+                console.error("Meet link updated email failed:", emailErr)
+                await logEmailAttempt({ recipientEmail: updatedBooking.clientEmail, subject: emailSubject, context: "MEET_LINK_UPDATED", entityId: updatedBooking.referenceCode || id, success: false, errorMessage: emailErr instanceof Error ? emailErr.message : "Unknown" })
+            }
+        }
+
+        logAudit({
+            action: "MEET_LINK_UPDATED",
+            entity: "Booking",
+            entityId: id,
+            metadata: { referenceCode: updatedBooking.referenceCode },
+        })
+
+        revalidatePath("/admin/bookings")
+        return { success: true }
+    } catch (error) {
+        console.error("Update Meet Link Error:", error)
+        return { success: false, error: "Failed to update link" }
+    }
+}

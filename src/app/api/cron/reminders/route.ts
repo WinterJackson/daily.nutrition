@@ -1,3 +1,4 @@
+import { AdminUpcomingReminderEmail } from "@/components/emails/AdminUpcomingReminder"
 import { UpcomingReminderEmail } from "@/components/emails/UpcomingReminder"
 import { INTERNAL_getSecret } from "@/lib/ai/secrets"
 import { decrypt } from "@/lib/encryption"
@@ -88,6 +89,30 @@ export async function GET(request: Request) {
             }
         })
 
+        // 30 Min Admin Reminders
+        const bookings30mAdmin = await prisma.booking.findMany({
+            where: {
+                bookingStatus: "CONFIRMED",
+                adminReminder30mSent: false,
+                scheduledAt: {
+                    gt: now,
+                    lte: new Date(now.getTime() + 35 * 60 * 1000) // Within next 35 mins
+                }
+            }
+        })
+
+        // 15 Min Admin Reminders
+        const bookings15mAdmin = await prisma.booking.findMany({
+            where: {
+                bookingStatus: "CONFIRMED",
+                adminReminder15mSent: false,
+                scheduledAt: {
+                    gt: now,
+                    lte: new Date(now.getTime() + 20 * 60 * 1000) // Within next 20 mins
+                }
+            }
+        })
+
         console.log(`Found ${bookings6h.length} bookings for 6h reminder`)
         console.log(`Found ${bookings1h.length} bookings for 1h reminder`)
 
@@ -171,7 +196,69 @@ export async function GET(request: Request) {
             })
         }
 
-        return NextResponse.json({ success: true, processed: bookings6h.length + bookings1h.length })
+        // Send 30m Admin Reminders
+        for (const booking of bookings30mAdmin) {
+            const dateObj = new Date(booking.scheduledAt)
+            const clientTimezone = booking.clientTimezone || "Africa/Nairobi"
+
+            const formattedTime = dateObj.toLocaleTimeString('en-US', { timeZone: clientTimezone, hour: 'numeric', minute: '2-digit' })
+            const formattedDate = dateObj.toLocaleDateString('en-US', { timeZone: clientTimezone, weekday: 'long', month: 'long', day: 'numeric' })
+
+            await resend.emails.send({
+                from: `Edwak Nutrition <${fromEmail}>`,
+                to: settings.contactEmail || fromEmail, // Send to Admin
+                subject: `🚨 Admin Reminder: Meeting in 30 Mins (${booking.clientName})`,
+                react: AdminUpcomingReminderEmail({
+                    clientName: booking.clientName,
+                    serviceName: booking.serviceName,
+                    date: formattedDate,
+                    time: `${formattedTime} (${clientTimezone})`,
+                    meetLink: (booking.encryptedMeetLink && decrypt(booking.encryptedMeetLink)) || "",
+                    timeUntil: "30 Minutes",
+                    referenceCode: booking.referenceCode || "",
+                    sessionType: (booking.sessionType as "virtual" | "in-person") || "virtual",
+                    branding
+                })
+            })
+
+            await prisma.booking.update({
+                where: { id: booking.id },
+                data: { adminReminder30mSent: true }
+            })
+        }
+
+        // Send 15m Admin Reminders
+        for (const booking of bookings15mAdmin) {
+            const dateObj = new Date(booking.scheduledAt)
+            const clientTimezone = booking.clientTimezone || "Africa/Nairobi"
+
+            const formattedTime = dateObj.toLocaleTimeString('en-US', { timeZone: clientTimezone, hour: 'numeric', minute: '2-digit' })
+            const formattedDate = dateObj.toLocaleDateString('en-US', { timeZone: clientTimezone, weekday: 'long', month: 'long', day: 'numeric' })
+
+            await resend.emails.send({
+                from: `Edwak Nutrition <${fromEmail}>`,
+                to: settings.contactEmail || fromEmail, // Send to Admin
+                subject: `🚨 Starting Soon: Meeting in 15 Mins (${booking.clientName})`,
+                react: AdminUpcomingReminderEmail({
+                    clientName: booking.clientName,
+                    serviceName: booking.serviceName,
+                    date: formattedDate,
+                    time: `${formattedTime} (${clientTimezone})`,
+                    meetLink: (booking.encryptedMeetLink && decrypt(booking.encryptedMeetLink)) || "",
+                    timeUntil: "15 Minutes",
+                    referenceCode: booking.referenceCode || "",
+                    sessionType: (booking.sessionType as "virtual" | "in-person") || "virtual",
+                    branding
+                })
+            })
+
+            await prisma.booking.update({
+                where: { id: booking.id },
+                data: { adminReminder15mSent: true }
+            })
+        }
+
+        return NextResponse.json({ success: true, processed: bookings6h.length + bookings1h.length + bookings30mAdmin.length + bookings15mAdmin.length })
 
     } catch (error) {
         console.error("Cron Error:", error)

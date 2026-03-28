@@ -5,45 +5,60 @@ import {
 } from "@react-email/components";
 import { BrandedEmailLayout, EmailBrandingData } from "./BrandedEmailLayout";
 
-interface PaymentVerifiedProps {
+interface AdminUpcomingReminderProps {
   clientName: string;
   serviceName: string;
   date: string;
   time: string;
-  meetLink?: string;
+  meetLink: string;
   referenceCode?: string;
   sessionType?: "virtual" | "in-person";
+  timeUntil: "30 Minutes" | "15 Minutes";
   branding: EmailBrandingData;
 }
 
-export const PaymentVerifiedEmail = ({
+export const AdminUpcomingReminderEmail = ({
   clientName = "Client",
   serviceName = "Consultation",
   date = "October 24, 2026",
   time = "10:00 AM",
-  meetLink = "",
+  meetLink = "https://meet.google.com/xxx-xxxx-xxx",
   referenceCode = "DN-123456",
   sessionType = "virtual",
+  timeUntil = "30 Minutes",
   branding
-}: PaymentVerifiedProps) => {
+}: AdminUpcomingReminderProps) => {
   const isVirtual = sessionType === "virtual";
-  const previewText = `Payment Verified: ${serviceName} Confirmed`;
+  const previewText = `Action Required: Appointment in ${timeUntil}`;
 
   return (
     <BrandedEmailLayout
       branding={branding}
       previewText={previewText}
-      heading="Payment Verified & Booking Confirmed"
+      heading={`Upcoming Session in ${timeUntil}`}
     >
         <Text className="text-black text-[14px] leading-[24px]">
-        Hello <strong>{clientName}</strong>,
+        Hello Admin,
         </Text>
         <Text className="text-black text-[14px] leading-[24px]">
-        We have successfully received and verified your M-Pesa payment. Your appointment for <strong>{serviceName}</strong> is now fully confirmed.
-        We look forward to meeting with you!
+        You have an upcoming appointment with <strong>{clientName}</strong> in exactly <strong>{timeUntil}</strong>. Please ensure you are prepared and ready to join the session.
         </Text>
         
         <Section className="bg-offwhite p-6 rounded-lg my-6">
+        <Text className="m-0 text-olive font-bold uppercase text-xs mb-2">
+            Client
+        </Text>
+        <Text className="m-0 text-lg font-semibold mb-4">
+            {clientName}
+        </Text>
+        
+        <Text className="m-0 text-olive font-bold uppercase text-xs mb-2">
+            Service Let
+        </Text>
+        <Text className="m-0 text-lg font-semibold mb-4">
+            {serviceName}
+        </Text>
+
         <Text className="m-0 text-olive font-bold uppercase text-xs mb-2">
             When
         </Text>
@@ -52,10 +67,10 @@ export const PaymentVerifiedEmail = ({
         </Text>
         
         <Text className="m-0 text-olive font-bold uppercase text-xs mb-2">
-            Where
+            Where format
         </Text>
         <Text className="m-0 text-lg font-semibold">
-           {isVirtual ? (meetLink ? "Google Meet (Video Call)" : "Virtual (Link pending sync)") : "In-Person — PMC Park Medical Center, Parklands"}
+           {isVirtual ? "Google Meet (Video Call)" : "In-Person"}
         </Text>
         
         {referenceCode && (
@@ -71,35 +86,31 @@ export const PaymentVerifiedEmail = ({
         </Section>
 
         {isVirtual && meetLink && (
-          <Section className="bg-white p-5 rounded-lg border border-gray-200 mt-[32px] text-center">
+          <Section className="bg-white p-5 rounded-lg border border-brand-green/20 mt-[32px] mb-[32px] text-center shadow-sm">
             <Text className="m-0 text-black font-semibold text-[14px] mb-4">
-              Here is your secure video meeting link for the session:
+              Your meeting link is ready. Click below to join the room:
             </Text>
             <Button
-              className="bg-brand rounded text-white text-[14px] font-semibold no-underline text-center px-6 py-4"
+              className="bg-brand rounded text-white text-[16px] font-bold no-underline text-center px-8 py-4"
+              style={{ backgroundColor: branding.primaryColor || '#556B2F' }}
               href={meetLink}
             >
-              Join Virtual Meeting
+              Join Video Session Now
             </Button>
           </Section>
         )}
         
         <Section className="text-center mt-[32px] mb-[32px]">
           <Button
-            className="bg-brand rounded text-white text-[12px] font-semibold no-underline text-center px-5 py-3"
-            href={`${branding.websiteUrl}/booking/manage/${referenceCode}`}
+            className="bg-neutral-800 rounded text-white text-[12px] font-semibold no-underline text-center px-5 py-3"
+            href={`${branding.websiteUrl}/admin/bookings`}
           >
-            Manage Booking
+            Open Admin Dashboard
           </Button>
-          <Text className="text-gray-500 text-[12px] mt-4">
-            If you need to reschedule or cancel, please do so at least 24 hours in advance using the button above.
-          </Text>
         </Section>
-        <Text className="text-black text-[14px] leading-[24px]">
-        If you need to reschedule or have any questions, please reply directly to this email at least 24 hours in advance.
-        </Text>
+        
     </BrandedEmailLayout>
   );
 };
 
-export default PaymentVerifiedEmail;
+export default AdminUpcomingReminderEmail;

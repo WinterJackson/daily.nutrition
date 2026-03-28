@@ -201,6 +201,8 @@ model Booking {
   referenceCode     String?  @unique
   reminder1hSent    Boolean  @default(false)
   reminder6hSent    Boolean  @default(false)
+  adminReminder30mSent Boolean @default(false)
+  adminReminder15mSent Boolean @default(false)
   
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
