@@ -826,8 +826,8 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
                         if (selectedBooking) {
                            const res = await approvePaymentAndSendLink(selectedBooking.id, manualMeetLink)
                            if (res.success) {
-                             setBookings(bookings.map(b => b.id === selectedBooking.id ? { ...b, status: "CONFIRMED" } : b))
-                             setSelectedBooking({...selectedBooking, status: "CONFIRMED"})
+                             setBookings(bookings.map(b => b.id === selectedBooking.id ? { ...b, status: "CONFIRMED", meetLink: res.meetLink } : b))
+                             setSelectedBooking({...selectedBooking, status: "CONFIRMED", meetLink: res.meetLink})
                              setManualMeetLink("") // Clear on success
                              router.refresh()
                            } else {

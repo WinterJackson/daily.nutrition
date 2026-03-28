@@ -592,7 +592,7 @@ export async function approvePaymentAndSendLink(id: string, manualMeetLink?: str
         })
 
         revalidatePath("/admin/bookings")
-        return { success: true }
+        return { success: true, meetLink }
     } catch (error) {
         console.error("Payment Verification Error:", error)
         return { success: false, error: "Failed to verify payment" }
