@@ -185,10 +185,26 @@ export async function updateBookingStatus(id: string, status: BookingStatus) {
     if (!session) return { success: false, error: "Unauthorized" }
 
     try {
+        // Fetch prior booking state to inspect calendar linkage
+        const existingBooking = await prisma.booking.findUnique({
+            where: { id },
+            select: { googleEventId: true, bookingStatus: true }
+        })
+
         const booking = await prisma.booking.update({
             where: { id },
             data: { bookingStatus: status }
         })
+
+        // Edge Case: If an admin explicitly uses a generic dropdown to change Status -> CANCELLED, cleanly decouple the blocked calendar slot to prevent ghost meetings.
+        if (status === "CANCELLED" && existingBooking?.bookingStatus !== "CANCELLED" && existingBooking?.googleEventId) {
+            try {
+                const { deleteCalendarEvent } = await import("@/lib/google-calendar")
+                await deleteCalendarEvent(existingBooking.googleEventId)
+            } catch (gcErr) {
+                console.warn("Failed to delete Google Calendar event during generic status update:", gcErr)
+            }
+        }
 
         revalidatePath("/admin/bookings")
 
@@ -235,10 +251,23 @@ export async function deleteBooking(id: string) {
     if (!session) return { success: false, error: "Unauthorized" }
 
     try {
+        const booking = await prisma.booking.findUnique({
+            where: { id },
+            select: { googleEventId: true }
+        })
+
         await prisma.booking.update({
             where: { id },
             data: { deletedAt: new Date() }
         })
+
+        if (booking?.googleEventId) {
+            try {
+                await deleteCalendarEvent(booking.googleEventId)
+            } catch (gcErr) {
+                console.error("Failed to delete Google Calendar event during admin deletion:", gcErr)
+            }
+        }
 
         logAudit({
             action: "BOOKING_DELETED",
