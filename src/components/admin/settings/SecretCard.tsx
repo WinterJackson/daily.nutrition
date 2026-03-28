@@ -2,7 +2,7 @@
 
 import { AnimatePresence, motion } from "framer-motion"
 import { CheckCircle2, ChevronDown, ExternalLink, Eye, EyeOff, Lock } from "lucide-react"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 
 export interface SecretCardProps {
     title: string
@@ -15,6 +15,7 @@ export interface SecretCardProps {
     onChange: (val: string) => void
     setupSteps?: { step: number; title: string; description: string; url?: string }[]
     placeholder?: string
+    saveSuccess?: boolean
 }
 
 export function SecretCard({
@@ -27,12 +28,20 @@ export function SecretCard({
     value,
     onChange,
     setupSteps,
-    placeholder
+    placeholder,
+    saveSuccess
 }: SecretCardProps) {
     const [showPreview, setShowPreview] = useState(false)
     const [isFocused, setIsFocused] = useState(false)
     const [showGuide, setShowGuide] = useState(false)
     const [isEditing, setIsEditing] = useState(false)
+
+    useEffect(() => {
+        if (saveSuccess) {
+            setIsEditing(false)
+            setShowPreview(false)
+        }
+    }, [saveSuccess])
 
     // When in edit mode or user has typed a value, show the raw value
     // Otherwise show the dot mask for configured secrets

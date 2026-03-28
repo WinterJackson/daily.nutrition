@@ -254,7 +254,17 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
 
       // Critically: Update local state with the newly incremented version integer
       if (result && result.success) {
-        setSettings(prev => ({ ...prev, version: (prev.version || 0) + 1 }))
+        setSettings(prev => ({ 
+            ...prev, 
+            version: (prev.version || 0) + 1,
+            // Clear the locally typed credentials so the UI reverts to the "••••" mask
+            googleCalendarConfig: prev.googleCalendarConfig ? {
+                ...prev.googleCalendarConfig,
+                clientEmail: "",
+                privateKey: "",
+                hasCredentials: true // Force it to show as connected
+            } : undefined
+        }))
       }
 
       // Save integrations encrypted
@@ -725,7 +735,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                   </CardDescription>
               </CardHeader>
               <CardContent className="flex flex-col gap-6 surface-secondary rounded-xl p-6">
-                   <SecretCard
+                   <SecretCard saveSuccess={saveSuccess}
                        title="Resend API Key"
                        description="Used for dispatching transactional emails."
                        secretKey="RESEND_API_KEY"
@@ -737,7 +747,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                        setupSteps={resendSetupSteps}
                    />
 
-                   <SecretCard
+                   <SecretCard saveSuccess={saveSuccess}
                        title="Gemini API Key"
                        description="Powers the AI content workflows."
                        secretKey="GEMINI_API_KEY"
@@ -755,7 +765,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                            Cloudinary Media Pipeline
                        </h4>
                        <div className="flex flex-col gap-4">
-                           <SecretCard
+                           <SecretCard saveSuccess={saveSuccess}
                                title="Cloud Name"
                                description="Your Cloudinary instance name."
                                secretKey="CLOUDINARY_CLOUD_NAME"
@@ -766,7 +776,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                                onChange={(v) => setSecrets(p => ({ ...p, CLOUDINARY_CLOUD_NAME: v }))}
                                setupSteps={cloudinarySetupSteps}
                            />
-                           <SecretCard
+                           <SecretCard saveSuccess={saveSuccess}
                                title="API Key"
                                description="The public API key."
                                secretKey="CLOUDINARY_API_KEY"
@@ -778,7 +788,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                                setupSteps={cloudinarySetupSteps}
                            />
                        </div>
-                       <SecretCard
+                       <SecretCard saveSuccess={saveSuccess}
                            title="API Secret"
                            description="The high-security API secret. Never expose this."
                            secretKey="CLOUDINARY_API_SECRET"
@@ -870,7 +880,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                 </div>
 
                 {/* Google Maps API Key Secret */}
-                <SecretCard
+                <SecretCard saveSuccess={saveSuccess}
                     title="Google Maps API Key"
                     description="Powers the Google Reviews sync. Must have the Places API enabled."
                     secretKey="GOOGLE_MAPS_API_KEY"
@@ -987,7 +997,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                      These credentials allow the platform to securely read your calendar's free/busy status and automatically create events when clients book. They come from the JSON key file that you downloaded from the Google Cloud Console (Step 4 above). All credentials are encrypted before being stored in the database.
                    </p>
                    
-                   <SecretCard
+                   <SecretCard saveSuccess={saveSuccess}
                        title="Client Email"
                        description="Extract this from your Service Account JSON file."
                        secretKey="GOOGLE_CALENDAR_CLIENT_EMAIL"
@@ -999,7 +1009,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                        setupSteps={googleCalendarSetupSteps}
                        placeholder="e.g. calendar-sync@edwak-nutrition-live.iam.gserviceaccount.com"
                    />
-                   <SecretCard
+                   <SecretCard saveSuccess={saveSuccess}
                        title="Private Key"
                        description="The large RSA private key from the JSON file. Ensure you copy the entire string including -----BEGIN PRIVATE KEY-----."
                        secretKey="GOOGLE_CALENDAR_PRIVATE_KEY"
