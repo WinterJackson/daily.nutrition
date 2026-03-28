@@ -125,7 +125,8 @@ export async function getAvailableSlots(dateStr: string): Promise<TimeSlotAvaila
             },
             bookingStatus: {
                 not: "CANCELLED"
-            }
+            },
+            deletedAt: null
         },
         select: {
             scheduledAt: true,
