@@ -53,6 +53,12 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
   const [isEditingLink, setIsEditingLink] = useState(false)
   const [newMeetLink, setNewMeetLink] = useState("")
   const [copiedCode, setCopiedCode] = useState<string | null>(null)
+  const [toast, setToast] = useState<{message: string, type: 'success' | 'error'} | null>(null)
+
+  const showToast = (message: string, type: 'success' | 'error' = 'success') => {
+    setToast({ message, type })
+    setTimeout(() => setToast(null), 4000)
+  }
 
   // Bulk selection
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set())
@@ -604,9 +610,9 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
                                  setIsEditingLink(false)
                                  setNewMeetLink("")
                                  router.refresh()
-                                 alert("Meeting link updated and client notified!")
+                                 showToast("Meeting link updated and client notified!")
                                } else {
-                                 alert(res.error || "Failed to update link")
+                                 showToast(res.error || "Failed to update link", "error")
                                }
                             }
                           })
@@ -830,8 +836,9 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
                              setSelectedBooking({...selectedBooking, status: "CONFIRMED", meetLink: res.meetLink})
                              setManualMeetLink("") // Clear on success
                              router.refresh()
+                             showToast("Payment verified and meeting link dispatched!")
                            } else {
-                             alert(res.error || "Failed to verify payment and release link.")
+                             showToast(res.error || "Failed to verify payment and release link.", "error")
                            }
                         }
                       })
@@ -858,8 +865,19 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
               Close
             </Button>
           </div>
-        </DialogContent>
-      </Dialog>
+          </DialogContent>
+        </Dialog>
+
+      {/* Modern Inline Toast */}
+      {toast && (
+        <div className="fixed bottom-6 right-6 z-[100] animate-in fade-in slide-in-from-bottom-5 duration-300">
+          <div className={`px-5 py-4 rounded-xl shadow-2xl border flex items-center gap-3 ${toast.type === 'success' ? 'bg-green-500/10 border-green-500/20 text-green-700 dark:text-green-400 backdrop-blur-md' : 'bg-red-500/10 border-red-500/20 text-red-700 dark:text-red-400 backdrop-blur-md'}`}>
+            {toast.type === 'success' ? <CheckCircle className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
+            <span className="font-semibold text-sm">{toast.message}</span>
+          </div>
+        </div>
+      )}
+
 
       {/* Cancel Confirmation Modal */}
       <ConfirmationDialog 
