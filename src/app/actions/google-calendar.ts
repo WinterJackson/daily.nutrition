@@ -124,7 +124,7 @@ export async function bookAppointment(data: {
         let encryptedMeetLink: string | undefined
         let meetLink: string | undefined
         if (googleEvent) {
-            meetLink = googleEvent.hangoutLink || googleEvent.conferenceData?.entryPoints?.find((e: any) => e.entryPointType === 'video')?.uri || googleEvent.htmlLink
+            meetLink = googleEvent.hangoutLink || googleEvent.conferenceData?.entryPoints?.find((e: any) => e.entryPointType === 'video')?.uri
             encryptedMeetLink = meetLink ? encrypt(meetLink) : undefined
         }
 
