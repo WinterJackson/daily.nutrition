@@ -439,7 +439,7 @@ export async function getServerEnvStatus() {
     if (!session) return null
 
     return {
-        DATABASE_URL: !!process.env.POSTGRES_URL,
+        DATABASE_URL: !!(process.env.DATABASE_URL || process.env.POSTGRES_URL),
         ENCRYPTION_KEY: !!process.env.ENCRYPTION_KEY,
         NEXT_PUBLIC_APP_URL: !!process.env.NEXT_PUBLIC_APP_URL,
         RESEND_WEBHOOK_SECRET: !!process.env.RESEND_WEBHOOK_SECRET,
