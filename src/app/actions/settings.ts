@@ -6,7 +6,7 @@ import { encrypt } from "@/lib/encryption"
 import { prisma } from "@/lib/prisma"
 import { checkRateLimit, RATE_LIMITS } from "@/lib/rate-limit"
 import bcrypt from "bcryptjs"
-import { revalidatePath, unstable_cache } from "next/cache"
+import { revalidatePath, revalidateTag, unstable_cache } from "next/cache"
 import { EmailBrandingData } from "./email-branding"
 
 const GLOBAL_SETTINGS_TAG = "global-settings"
@@ -352,6 +352,7 @@ export async function updateSettings(data: SettingsData) {
         }
 
         revalidatePath("/", "layout")
+        revalidateTag(GLOBAL_SETTINGS_TAG, "default")
 
         return { success: true, settings }
     } catch (error) {
