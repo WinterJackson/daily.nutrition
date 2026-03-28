@@ -1,3 +1,5 @@
+import { AdminBookingCancelledEmail } from "@/components/emails/AdminBookingCancelled";
+import { AdminBookingRescheduledEmail } from "@/components/emails/AdminBookingRescheduled";
 import { AdminNewBookingEmail } from "@/components/emails/AdminNewBooking";
 import { AdminPasswordChangedEmail } from "@/components/emails/AdminPasswordChanged";
 import { EmailBrandingData } from "@/components/emails/BrandedEmailLayout";
@@ -134,29 +136,22 @@ export const NotificationManager = {
                     if (payload.bookingCancelled) {
                         subject = `Booking Cancelled: ${payload.bookingCancelled.clientName}`;
                         replyToAddress = payload.bookingCancelled.clientEmail;
-                        htmlContent = `
-                            <div style="font-family: sans-serif; padding: 20px;">
-                                <h2 style="color: #d9534f;">A booking has been cancelled</h2>
-                                <p><strong>Client:</strong> ${payload.bookingCancelled.clientName}</p>
-                                <p><strong>Service:</strong> ${payload.bookingCancelled.serviceName}</p>
-                                <p><strong>Reference:</strong> ${payload.bookingCancelled.referenceCode}</p>
-                            </div>
-                        `;
+                        reactElement = AdminBookingCancelledEmail({
+                            branding,
+                            ...payload.bookingCancelled,
+                            dashboardUrl: `${branding.websiteUrl}/admin/bookings`
+                        });
                     }
                     break;
                 case "BOOKING_RESCHEDULED":
                     if (payload.bookingRescheduled) {
                         subject = `Booking Rescheduled: ${payload.bookingRescheduled.clientName}`;
                         replyToAddress = payload.bookingRescheduled.clientEmail;
-                        htmlContent = `
-                            <div style="font-family: sans-serif; padding: 20px;">
-                                <h2 style="color: #5bc0de;">A booking was rescheduled</h2>
-                                <p><strong>Client:</strong> ${payload.bookingRescheduled.clientName}</p>
-                                <p><strong>Service:</strong> ${payload.bookingRescheduled.serviceName}</p>
-                                <p><strong>Reference:</strong> ${payload.bookingRescheduled.referenceCode}</p>
-                                <p><strong>New Time:</strong> ${payload.bookingRescheduled.newDate} at ${payload.bookingRescheduled.newTime}</p>
-                            </div>
-                        `;
+                        reactElement = AdminBookingRescheduledEmail({
+                            branding,
+                            ...payload.bookingRescheduled,
+                            dashboardUrl: `${branding.websiteUrl}/admin/bookings`
+                        });
                     }
                     break;
             }

@@ -55,7 +55,7 @@ export const PaymentVerifiedEmail = ({
             Where
         </Text>
         <Text className="m-0 text-lg font-semibold">
-           {isVirtual ? "Google Meet (Video Call)" : "In-Person — PMC Park Medical Center, Parklands"}
+           {isVirtual ? (meetLink ? "Google Meet (Video Call)" : "Virtual (Link pending sync)") : "In-Person — PMC Park Medical Center, Parklands"}
         </Text>
         
         {referenceCode && (
@@ -71,13 +71,19 @@ export const PaymentVerifiedEmail = ({
         </Section>
 
         {isVirtual && meetLink ? (
-          <Section className="text-center mt-[32px] mb-[32px]">
+          <Section className="bg-white p-5 rounded-lg border border-gray-200 mt-[32px] mb-[32px] text-center">
+            <Text className="m-0 text-black font-semibold text-[14px] mb-4">
+              Here is your secure Google Meet link for the session:
+            </Text>
             <Button
-              className="bg-brand rounded text-white text-[12px] font-semibold no-underline text-center px-5 py-3"
+              className="bg-brand rounded text-white text-[14px] font-semibold no-underline text-center px-6 py-4"
               href={meetLink}
             >
               Join Virtual Meeting
             </Button>
+            <Text className="m-0 text-gray-500 text-[12px] mt-4">
+              Or copy and paste: <span className="text-brand">{meetLink}</span>
+            </Text>
           </Section>
         ) : (
           <Section className="text-center mt-[32px] mb-[32px]">
