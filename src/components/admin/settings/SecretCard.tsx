@@ -32,11 +32,12 @@ export function SecretCard({
     const [showPreview, setShowPreview] = useState(false)
     const [isFocused, setIsFocused] = useState(false)
     const [showGuide, setShowGuide] = useState(false)
+    const [isEditing, setIsEditing] = useState(false)
 
-    // Mask value when not editing/previewing and configured
-    const displayValue = isConfigured && !value && !showPreview
-        ? "••••••••••••••••••••••••••••••••"
-        : value
+    // When in edit mode or user has typed a value, show the raw value
+    // Otherwise show the dot mask for configured secrets
+    const isLocked = isConfigured && !value && !isEditing
+    const displayValue = isLocked ? "••••••••••••••••••••••••••••••••" : value
 
     return (
         <div className={`relative p-5 rounded-xl border transition-all duration-300 ${
@@ -50,10 +51,15 @@ export function SecretCard({
                         <h4 className="font-semibold text-neutral-800 dark:text-neutral-200">
                             {title}
                         </h4>
-                        {isConfigured && (
+                        {isConfigured && !isEditing && (
                             <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-green-100 text-green-700 text-[10px] font-bold tracking-wider uppercase">
                                 <Lock className="w-3 h-3" />
                                 Encrypted
+                            </span>
+                        )}
+                        {isEditing && (
+                            <span className="flex items-center gap-1 px-2 py-0.5 rounded-full bg-amber-100 text-amber-700 text-[10px] font-bold tracking-wider uppercase">
+                                Editing
                             </span>
                         )}
                     </div>
@@ -93,26 +99,24 @@ export function SecretCard({
                     type={showPreview ? "text" : "password"}
                     value={displayValue}
                     onChange={(e) => {
-                        // Prevent editing the proxy mask
-                        if (isConfigured && !value && !showPreview) return
                         onChange(e.target.value)
                     }}
                     onFocus={() => setIsFocused(true)}
                     onBlur={() => setIsFocused(false)}
-                    placeholder={isConfigured ? "Encrypted safely in database" : placeholder || `Enter ${title}`}
+                    placeholder={isEditing ? (placeholder || `Enter new ${title}`) : (isConfigured ? "Encrypted safely in database" : placeholder || `Enter ${title}`)}
                     className={`w-full bg-neutral-50 dark:bg-black/20 border transition-all duration-200 rounded-lg pr-12 pl-10 py-2.5 text-sm font-mono ${
                         isFocused
                           ? "border-olive ring-1 ring-olive/20"
                           : "border-neutral-200 dark:border-white/10"
-                    } ${isConfigured && !value ? "text-neutral-400 cursor-not-allowed" : "text-neutral-900 dark:text-neutral-100"}`}
-                    readOnly={isConfigured && !value && !showPreview}
+                    } ${isLocked ? "text-neutral-400 cursor-not-allowed" : "text-neutral-900 dark:text-neutral-100"}`}
+                    readOnly={isLocked}
                 />
                 
                 <div className="absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400">
                     <Lock className="w-4 h-4" />
                 </div>
 
-                {(!isConfigured || value) && (
+                {(!isConfigured || value || isEditing) && (
                     <button
                         type="button"
                         onClick={() => setShowPreview(!showPreview)}
@@ -123,10 +127,33 @@ export function SecretCard({
                 )}
             </div>
 
-            {isConfigured && !value && (
-                <div className="mt-2 flex items-center gap-1.5 text-xs text-neutral-500">
-                    <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
-                    Key is securely stored. Type above to overwrite.
+            {isConfigured && !value && !isEditing && (
+                <div className="mt-3 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-xs text-neutral-500">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
+                        Key is securely stored.
+                    </div>
+                    <button
+                        type="button"
+                        onClick={() => setIsEditing(true)}
+                        className="flex items-center gap-1.5 text-xs font-semibold px-3 py-1.5 rounded-lg bg-amber-50 text-amber-700 hover:bg-amber-100 border border-amber-200 transition-all dark:bg-amber-500/10 dark:text-amber-400 dark:border-amber-500/20 dark:hover:bg-amber-500/20"
+                    >
+                        Re-enter Credentials
+                    </button>
+                </div>
+            )}
+            {isEditing && !value && (
+                <div className="mt-2 flex items-center justify-between">
+                    <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
+                        Paste your new credential below, then click &quot;Save Changes&quot; at the top.
+                    </p>
+                    <button
+                        type="button"
+                        onClick={() => setIsEditing(false)}
+                        className="text-xs text-neutral-500 hover:text-neutral-700 transition-colors underline"
+                    >
+                        Cancel
+                    </button>
                 </div>
             )}
 
