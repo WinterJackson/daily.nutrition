@@ -78,7 +78,10 @@ export interface SettingsData {
     keywords: string
     paymentTillNumber: string
     paymentPaybill: string
+    paymentAccountNumber: string
     profileImageUrl?: string | null
+    aboutImageOne: string
+    aboutImageTwo: string
     themePreference: string
     googlePlaceId: string
 

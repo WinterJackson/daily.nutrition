@@ -24,6 +24,7 @@ export interface EmailBrandingData {
     contactPhone?: string;
     paymentTill?: string;
     paymentPaybill?: string;
+    paymentAccountNumber?: string;
 }
 
 interface BrandedEmailLayoutProps {
@@ -39,7 +40,7 @@ export const BrandedEmailLayout = ({
     heading,
     children,
 }: BrandedEmailLayoutProps) => {
-    const { primaryColor, accentColor, logoUrl, footerText, websiteUrl, supportEmail, clinicLocation, contactPhone, paymentTill, paymentPaybill } = branding;
+    const { primaryColor, accentColor, logoUrl, footerText, websiteUrl, supportEmail, clinicLocation, contactPhone, paymentTill, paymentPaybill, paymentAccountNumber } = branding;
     const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const resolvedLogoUrl = logoUrl || `${appBaseUrl}/logo.png`;
 
@@ -140,6 +141,11 @@ export const BrandedEmailLayout = ({
                                             {paymentPaybill && (
                                                 <Text className="m-0 text-[#666] text-[12px] leading-[20px] pb-1">
                                                     <strong>Paybill:</strong> {paymentPaybill}
+                                                </Text>
+                                            )}
+                                            {paymentAccountNumber && (
+                                                <Text className="m-0 text-[#666] text-[12px] leading-[20px] pb-1">
+                                                    <strong>Account Number:</strong> {paymentAccountNumber}
                                                 </Text>
                                             )}
                                         </>

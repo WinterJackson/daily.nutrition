@@ -336,7 +336,8 @@ async function getEmailConfig() {
         clinicLocation: settings?.address,
         contactPhone: settings?.phoneNumber,
         paymentTill: settings?.paymentTillNumber,
-        paymentPaybill: settings?.paymentPaybill
+        paymentPaybill: settings?.paymentPaybill,
+        paymentAccountNumber: settings?.paymentAccountNumber
     }
 
     return { resend, fromEmail, branding }

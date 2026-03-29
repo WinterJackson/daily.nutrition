@@ -71,7 +71,8 @@ export async function cancelBooking(referenceCode: string) {
                 clinicLocation: settings?.address,
                 contactPhone: settings?.phoneNumber,
                 paymentTill: settings?.paymentTillNumber,
-                paymentPaybill: settings?.paymentPaybill
+                paymentPaybill: settings?.paymentPaybill,
+                paymentAccountNumber: settings?.paymentAccountNumber
             }
 
             // Format time for email
@@ -250,7 +251,8 @@ export async function rescheduleBooking(referenceCode: string, newDateStr: strin
                 clinicLocation: settings?.address,
                 contactPhone: settings?.phoneNumber,
                 paymentTill: settings?.paymentTillNumber,
-                paymentPaybill: settings?.paymentPaybill
+                paymentPaybill: settings?.paymentPaybill,
+                paymentAccountNumber: settings?.paymentAccountNumber
             };
 
             const emailSubject = `Booking Rescheduled: ${updatedBooking.serviceName} (#${referenceCode})`;

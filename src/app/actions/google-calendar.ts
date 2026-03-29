@@ -202,7 +202,8 @@ export async function bookAppointment(data: {
                 clinicLocation: settings?.address,
                 contactPhone: settings?.phoneNumber,
                 paymentTill: settings?.paymentTillNumber,
-                paymentPaybill: settings?.paymentPaybill
+                paymentPaybill: settings?.paymentPaybill,
+                paymentAccountNumber: settings?.paymentAccountNumber
             }
 
             // Format Date/Time in Client Timezone

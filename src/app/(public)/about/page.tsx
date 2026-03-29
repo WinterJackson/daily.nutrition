@@ -16,7 +16,15 @@ export const metadata: Metadata = {
 
 export default async function AboutPage() {
   const settings = await getSettings()
-  const profileImageUrl = settings?.profileImageUrl || "/edna-portrait.png"
+  
+  const images: string[] = []
+  if (settings?.aboutImageOne) images.push(settings.aboutImageOne)
+  if (settings?.aboutImageTwo) images.push(settings.aboutImageTwo)
+  
+  // Fallback if no carousel images are set
+  if (images.length === 0) {
+      images.push(settings?.profileImageUrl || "/edna-portrait.png")
+  }
 
   return (
     <div className="pt-24 pb-16 min-h-screen bg-off-white dark:bg-charcoal overflow-hidden relative">
@@ -28,7 +36,7 @@ export default async function AboutPage() {
           
           {/* Header Section */}
           <div className="flex flex-col lg:flex-row gap-12 lg:gap-16 items-center mb-24">
-             <AboutClient profileImageUrl={profileImageUrl} />
+             <AboutClient images={images} />
           </div>
           
           {/* Credentials */}

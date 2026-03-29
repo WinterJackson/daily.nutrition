@@ -1,16 +1,34 @@
 "use client"
 
 import { Button } from "@/components/ui/Button"
+import useEmblaCarousel from "embla-carousel-react"
 import { motion } from "framer-motion"
 import { Calendar } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
+import { useCallback, useEffect } from "react"
 
 interface AboutClientProps {
-  profileImageUrl: string
+  images: string[]
 }
 
-export function AboutClient({ profileImageUrl }: AboutClientProps) {
+export function AboutClient({ images }: AboutClientProps) {
+  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true })
+
+  const scrollNext = useCallback(() => {
+      if (emblaApi) emblaApi.scrollNext()
+  }, [emblaApi])
+
+  useEffect(() => {
+      if (!emblaApi || images.length <= 1) return
+      
+      const intervalId = setInterval(() => {
+          scrollNext()
+      }, 5000)
+      
+      return () => clearInterval(intervalId)
+  }, [emblaApi, scrollNext, images.length])
+
   return (
     <>
       <motion.div 
@@ -55,13 +73,22 @@ export function AboutClient({ profileImageUrl }: AboutClientProps) {
         transition={{ duration: 0.8, delay: 0.2 }}
         className="flex-1 w-full max-w-lg relative"
       >
-        <div className="aspect-[2/3] rounded-3xl overflow-hidden shadow-2xl shadow-olive/10 relative z-10 border border-neutral-200 dark:border-white/10 glow-green">
-           <Image 
-             src={profileImageUrl} 
-             alt="Edna R. Portrait" 
-             fill 
-             className="object-cover object-top"
-           />
+        <div 
+          className="aspect-[2/3] rounded-3xl overflow-hidden shadow-2xl shadow-olive/10 relative z-10 border border-neutral-200 dark:border-white/10 glow-green"
+          ref={images.length > 1 ? emblaRef : null}
+        >
+           <div className="flex h-full">
+              {images.map((src, index) => (
+                 <div key={index} className="relative flex-[0_0_100%] min-w-0 h-full">
+                    <Image 
+                      src={src} 
+                      alt={`Edna R. Portrait ${index + 1}`} 
+                      fill 
+                      className="object-cover object-top"
+                    />
+                 </div>
+              ))}
+           </div>
         </div>
         {/* Decorative animated elements */}
         <motion.div 

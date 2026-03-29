@@ -143,7 +143,8 @@ export async function forgotPassword(email: string) {
                     clinicLocation: settings?.address,
                     contactPhone: settings?.phoneNumber,
                     paymentTill: settings?.paymentTillNumber,
-                    paymentPaybill: settings?.paymentPaybill
+                    paymentPaybill: settings?.paymentPaybill,
+                    paymentAccountNumber: settings?.paymentAccountNumber
                 }
             })
         )

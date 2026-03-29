@@ -83,12 +83,22 @@ export async function uploadFile(formData: FormData): Promise<{
         const arrayBuffer = await file.arrayBuffer()
         const buffer = Buffer.from(arrayBuffer)
 
+        const resourceType = getResourceType(file.type)
+
+        const uploadOptions: any = {
+            folder,
+            resource_type: resourceType,
+        }
+
+        // Apply intense WebP storage optimization to static images (bypassing SVGs and GIFs to preserve crisp vectors or animations)
+        if (resourceType === "image" && file.type !== "image/svg+xml" && file.type !== "image/gif") {
+            uploadOptions.format = "webp"
+            uploadOptions.quality = "auto"
+        }
+
         const result = await new Promise<any>((resolve, reject) => {
             cloudinary.uploader.upload_stream(
-                {
-                    folder,
-                    resource_type: "auto", // Crucial: handles images AND video in single endpoint
-                },
+                uploadOptions,
                 (error, result) => {
                     if (error) reject(error)
                     else resolve(result)
@@ -232,5 +242,71 @@ export async function getMediaFiles() {
     } catch (error: any) {
         console.error("Failed to fetch media files:", error)
         return { success: false, error: "Failed to fetch media files" }
+    }
+}
+
+// ═══════════════════════════════════════════════════════
+// Media Library Synchronization
+// ═══════════════════════════════════════════════════════
+
+export async function syncMediaLibrary() {
+    const session = await verifySession()
+    if (!session) return { success: false, error: "Unauthorized" }
+
+    try {
+        // Step 1: Gather all externally referenced image URLs from the Database
+        const blogs = await prisma.blogPost.findMany({ select: { image: true } })
+        const services = await prisma.service.findMany({ select: { image: true } })
+        const settings = await prisma.siteSettings.findUnique({ select: { profileImageUrl: true, aboutImageOne: true, aboutImageTwo: true }, where: { id: "default" } })
+
+        const targetUrls = new Set<string>()
+
+        blogs.forEach(b => b.image && targetUrls.add(b.image))
+        services.forEach(s => s.image && targetUrls.add(s.image))
+
+        if (settings) {
+            if (settings.profileImageUrl) targetUrls.add(settings.profileImageUrl)
+            if (settings.aboutImageOne) targetUrls.add(settings.aboutImageOne)
+            if (settings.aboutImageTwo) targetUrls.add(settings.aboutImageTwo)
+        }
+
+        let syncedCount = 0
+
+        // Step 2: Compare against central Media Library ledger
+        for (const url of Array.from(targetUrls)) {
+            const existing = await prisma.mediaFile.findFirst({ where: { url } })
+
+            if (!existing) {
+                // Determine mock dimensions or format from URL if possible, otherwise rely on fallback
+                const publicIdFallback = `external_${Math.random().toString(36).substring(7)}`
+                const filenameFallback = url.split('/').pop()?.split('?')[0] || "external-image"
+
+                await prisma.mediaFile.create({
+                    data: {
+                        publicId: publicIdFallback,
+                        url: url,
+                        filename: filenameFallback,
+                        size: 0, // 0 denotes external unmanaged size
+                        mimeType: "image/external",
+                    }
+                })
+                syncedCount++
+            }
+        }
+
+        if (syncedCount > 0) {
+            logAudit({
+                action: "MEDIA_SYNCED",
+                entity: "MediaFile",
+                entityId: "SYSTEM",
+                userId: session.user.id,
+                metadata: { syncedCount }
+            })
+        }
+
+        return { success: true, count: syncedCount }
+    } catch (error: any) {
+        console.error("Failed to sync media library:", error)
+        return { success: false, error: "Failed to synchronize platform media." }
     }
 }

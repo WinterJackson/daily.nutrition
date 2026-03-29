@@ -15,12 +15,15 @@ export const metadata: Metadata = {
 }
 
 export default async function BookingPage() {
-  const serviceConfig = await getServiceConfig()
+  const [serviceConfig, services] = await Promise.all([
+      getServiceConfig(),
+      import('@/app/actions/services').then(mod => mod.getServices())
+  ])
   const activeServiceIds = Object.keys(serviceConfig).filter(id => serviceConfig[id])
 
   return (
     <Suspense fallback={<div className="container py-24"><Skeleton className="h-[600px] w-full rounded-3xl" /></div>}>
-      <BookingClient activeServiceIds={activeServiceIds} />
+      <BookingClient activeServiceIds={activeServiceIds} services={services} />
     </Suspense>
   )
 }

@@ -135,7 +135,8 @@ export async function dispatchCampaign(campaignId: string) {
             clinicLocation: brandingSettings?.address,
             contactPhone: brandingSettings?.phoneNumber,
             paymentTill: brandingSettings?.paymentTillNumber,
-            paymentPaybill: brandingSettings?.paymentPaybill
+            paymentPaybill: brandingSettings?.paymentPaybill,
+            paymentAccountNumber: brandingSettings?.paymentAccountNumber
         }
 
         const replyToEmail = branding.supportEmail

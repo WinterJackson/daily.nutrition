@@ -12,9 +12,10 @@ import { useEffect, useState } from "react"
 
 interface BookingClientProps {
   activeServiceIds: string[]
+  services?: any[]
 }
 
-export function BookingClient({ activeServiceIds }: BookingClientProps) {
+export function BookingClient({ activeServiceIds, services = [] }: BookingClientProps) {
   const [selectedService, setSelectedService] = useState<string | undefined>()
   const [sessionType, setSessionType] = useState<"virtual" | "in-person">("virtual")
   const searchParams = useSearchParams()
@@ -94,6 +95,7 @@ export function BookingClient({ activeServiceIds }: BookingClientProps) {
           activeServiceIds={activeServiceIds}
           sessionType={sessionType}
           onSessionTypeChange={setSessionType}
+          services={services}
         />
       </section>
 

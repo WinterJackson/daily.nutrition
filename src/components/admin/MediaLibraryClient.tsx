@@ -1,9 +1,9 @@
 "use client"
 
-import { deleteFile, uploadFile } from "@/app/actions/media"
+import { deleteFile, syncMediaLibrary, uploadFile } from "@/app/actions/media"
 import { Button } from "@/components/ui/Button"
 import { MediaFile } from "@prisma/client"
-import { Copy, FileImage, FileVideo, Loader2, Trash2, UploadCloud } from "lucide-react"
+import { Copy, FileImage, FileVideo, Loader2, RefreshCw, Trash2, UploadCloud } from "lucide-react"
 import Image from "next/image"
 import { useRef, useState } from "react"
 
@@ -11,6 +11,7 @@ export default function MediaLibraryClient({ initialFiles }: { initialFiles: Med
     const [files, setFiles] = useState<MediaFile[]>(initialFiles)
     const [deletingId, setDeletingId] = useState<string | null>(null)
     const [uploading, setUploading] = useState(false)
+    const [isSyncing, setIsSyncing] = useState(false)
     const [error, setError] = useState("")
     const [success, setSuccess] = useState("")
     const fileInputRef = useRef<HTMLInputElement>(null)
@@ -100,6 +101,28 @@ export default function MediaLibraryClient({ initialFiles }: { initialFiles: Med
         setTimeout(() => setSuccess(""), 3000)
     }
 
+    const handleSync = async () => {
+        setIsSyncing(true)
+        setError("")
+        setSuccess("")
+        try {
+            const res = await syncMediaLibrary()
+            if (res.success) {
+                if (res.count && res.count > 0) {
+                    setSuccess(`Successfully synchronized ${res.count} orphaned platform assets! Please refresh the page.`)
+                } else {
+                    setSuccess("System media is already perfectly synchronized.")
+                }
+            } else {
+                setError(res.error || "Failed to synchronize system media.")
+            }
+        } catch (err) {
+            setError("An unexpected synchronization error occurred.")
+        } finally {
+            setIsSyncing(false)
+        }
+    }
+
     return (
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
@@ -116,7 +139,14 @@ export default function MediaLibraryClient({ initialFiles }: { initialFiles: Med
                         accept="image/*,video/mp4,video/webm"
                         multiple
                     />
-                    <Button onClick={handleUploadClick} disabled={uploading} className="shadow-lg shadow-brand-green/20">
+                    <Button onClick={handleSync} disabled={isSyncing || uploading} variant="outline" className="shadow-sm">
+                        {isSyncing ? (
+                            <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Syncing...</>
+                        ) : (
+                            <><RefreshCw className="w-4 h-4 mr-2" /> Sync Media</>
+                        )}
+                    </Button>
+                    <Button onClick={handleUploadClick} disabled={uploading || isSyncing} className="shadow-lg shadow-brand-green/20">
                         {uploading ? (
                             <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Uploading...</>
                         ) : (

@@ -56,6 +56,7 @@ export type AuditAction =
 
     | "MEDIA_UPLOADED"
     | "MEDIA_DELETED"
+    | "MEDIA_SYNCED"
 
 interface AuditLogParams {
     action: AuditAction

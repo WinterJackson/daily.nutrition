@@ -23,6 +23,7 @@ interface Service {
     targetAudience: string | null
     color: string
     bgColor: string
+    image?: string | null
 }
 
 export function ServicesPageContent({ services }: { services: Service[] }) {
@@ -85,14 +86,14 @@ export function ServicesPageContent({ services }: { services: Service[] }) {
                whileHover={{ y: -5 }}
                transition={{ duration: 0.5 }}
              >
-                <Card className="border-brand-green/30 dark:border-brand-green/20 shadow-xl shadow-brand-green/5 bg-white/60 dark:bg-white/5 backdrop-blur-md overflow-hidden">
-                   <div className="flex flex-col md:flex-row items-center">
-                      <div className="p-8 md:p-12 flex-shrink-0 bg-brand-green/10 md:h-full flex items-center justify-center min-h-[200px] md:min-h-0 w-full md:w-auto md:border-r border-brand-green/10">
+                <Card className="border-brand-green/30 dark:border-brand-green/20 shadow-xl shadow-brand-green/5 bg-white/60 dark:bg-white/5 backdrop-blur-md overflow-hidden relative">
+                   <div className="grid grid-cols-1 md:grid-cols-12 min-h-[300px]">
+                      <div className="md:col-span-3 p-8 md:p-12 bg-brand-green/10 flex items-center justify-center md:border-r border-brand-green/10 z-10">
                          <div className="w-20 h-20 rounded-2xl bg-white dark:bg-charcoal text-brand-green flex items-center justify-center shadow-sm">
                             <ServiceIcon name={discoveryService.icon} className="w-10 h-10" />
                          </div>
                       </div>
-                      <div className="flex-grow p-8 md:p-12 text-center md:text-left">
+                      <div className="md:col-span-5 lg:col-span-6 p-8 md:p-12 text-center md:text-left z-10">
                          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-green/10 text-brand-green text-xs font-bold uppercase tracking-wider mb-4">
                             <Sparkles className="w-3 h-3" />
                             Most Popular
@@ -116,6 +117,18 @@ export function ServicesPageContent({ services }: { services: Service[] }) {
                             </Button>
                          </div>
                       </div>
+                      <div className="hidden md:block md:col-span-4 lg:col-span-3 relative bg-neutral-100 dark:bg-white/5">
+                         {discoveryService.image ? (
+                             <>
+                               <div className="absolute inset-y-0 left-0 w-24 bg-gradient-to-r from-white to-transparent dark:from-charcoal z-10" />
+                               <Image src={discoveryService.image} alt={discoveryService.title} fill className="object-cover object-center opacity-90" />
+                             </>
+                         ) : (
+                             <div className="w-full h-full flex flex-col items-center justify-center text-brand-green/20">
+                                 <ServiceIcon name={discoveryService.icon} className="w-32 h-32 opacity-20" />
+                             </div>
+                         )}
+                      </div>
                    </div>
                 </Card>
              </motion.div>
@@ -138,13 +151,21 @@ export function ServicesPageContent({ services }: { services: Service[] }) {
                 <Card className="h-full hover:shadow-xl transition-all border-neutral-200/80 dark:border-white/10 overflow-hidden flex flex-col group bg-white/90 dark:bg-charcoal/90 backdrop-blur-sm">
                    <div className={`h-1 w-full ${service.bgColor.replace('/10', '')} origin-left transform duration-500 group-hover:scale-x-100 scale-x-0`}></div>
                    
-                   <CardHeader className="relative pb-2">
-                     <div className={`absolute top-4 right-4 p-2.5 rounded-xl ${service.bgColor} ${service.color} opacity-80 group-hover:scale-110 transition-transform`}>
-                        <ServiceIcon name={service.icon} className="w-5 h-5" />
+                   <CardHeader className="relative p-0 overflow-hidden">
+                     {service.image && (
+                         <div className="w-full h-40 relative">
+                             <Image src={service.image} alt={service.title} fill className="object-cover" />
+                             <div className="absolute inset-0 bg-gradient-to-t from-white dark:from-charcoal to-transparent opacity-90"></div>
+                         </div>
+                     )}
+                     <div className={`px-6 pb-2 relative ${!service.image ? 'pt-6' : '-mt-16 z-10'}`}>
+                         <div className={`absolute right-4 p-2.5 rounded-xl ${service.bgColor} ${service.color} group-hover:scale-110 transition-transform ${service.image ? 'top-0 shadow-md bg-white dark:bg-charcoal' : 'top-4 opacity-80'}`}>
+                            <ServiceIcon name={service.icon} className="w-5 h-5" />
+                         </div>
+                         <CardTitle className={`text-xl font-serif mb-1 group-hover:text-brand-green transition-colors leading-tight pr-12 ${!service.image ? 'mt-8' : ''}`}>
+                            {service.title}
+                         </CardTitle>
                      </div>
-                     <CardTitle className="text-xl font-serif mt-8 mb-1 group-hover:text-brand-green transition-colors leading-tight pr-12">
-                        {service.title}
-                     </CardTitle>
                    </CardHeader>
                    
                    <CardContent className="flex-grow pt-0">

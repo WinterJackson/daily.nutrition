@@ -516,9 +516,12 @@ model SiteSettings {
   keywords             String                @default("nutrition, health, diet")
   paymentTillNumber    String                @default("")
   paymentPaybill       String                @default("")
+  paymentAccountNumber String                @default("")
   version              Int                   @default(0)
   updatedAt            DateTime              @updatedAt
   profileImageUrl      String?               @default("")
+  aboutImageOne        String                @default("")
+  aboutImageTwo        String                @default("")
   themePreference      String                @default("light")
   googleCalendarId     String                @default("")
   CloudinaryConfig     CloudinaryConfig?

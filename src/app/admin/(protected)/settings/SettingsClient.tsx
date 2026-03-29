@@ -5,6 +5,7 @@ import { deleteImage, uploadImage } from "@/app/actions/upload"
 import { DataExport } from "@/components/admin/DataExport"
 import { EmailBrandingEditor } from "@/components/admin/EmailBrandingEditor"
 import { LegalContentConfig } from "@/components/admin/LegalContentConfig"
+import { MediaPickerModal } from "@/components/admin/MediaPickerModal"
 import { NotificationConfig } from "@/components/admin/NotificationConfig"
 import { SecurityConfig } from "@/components/admin/SecurityConfig"
 import { SessionManagement } from "@/components/admin/SessionManagement"
@@ -15,7 +16,7 @@ import { Button } from "@/components/ui/Button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
 import { getPublicIdFromUrl } from "@/lib/cloudinary-utils"
-import { Calendar, CheckCircle, ChevronDown, Clock, Database, Globe, ImageIcon, Key, Loader2, MapPin, Moon, Save, Sparkles, Star, Sun, Trash2, Upload } from "lucide-react"
+import { Calendar, CheckCircle, ChevronDown, Clock, Database, Globe, ImageIcon, Key, Loader2, MapPin, Moon, Save, Sparkles, Star, Sun, Trash2 } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState, useTransition } from "react"
@@ -182,6 +183,9 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
   const [expandedStep, setExpandedStep] = useState<number | null>(null)
   const [isUploading, setIsUploading] = useState(false)
   const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const [isMediaPickerOneOpen, setIsMediaPickerOneOpen] = useState(false)
+  const [isMediaPickerTwoOpen, setIsMediaPickerTwoOpen] = useState(false)
 
   // Collapsible section states
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({})
@@ -471,7 +475,17 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                            <Input
                              value={settings.paymentPaybill || ""}
                              onChange={(e) => handleChange("paymentPaybill", e.target.value)}
-                             placeholder="e.g. Paybill: XXXXXX, A/C: Name"
+                             placeholder="e.g. 123456"
+                             className="surface-input"
+                           />
+                           <p className="text-xs text-neutral-500">Leaving this blank hides it from confirmation emails.</p>
+                        </div>
+                        <div className="space-y-2">
+                           <label className="text-xs font-bold uppercase tracking-wider text-caption">Account Number</label>
+                           <Input
+                             value={settings.paymentAccountNumber || ""}
+                             onChange={(e) => handleChange("paymentAccountNumber", e.target.value)}
+                             placeholder="e.g. Edwak Nutrition"
                              className="surface-input"
                            />
                            <p className="text-xs text-neutral-500">Leaving this blank hides it from confirmation emails.</p>
@@ -519,70 +533,86 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
 
 
 
-            {/* Profile Image Card */}
+            {/* About Page Carousel Images */}
             <Card className="surface-card">
               <CardHeader>
                 <CardTitle className="flex items-center gap-2">
                   <ImageIcon className="w-5 h-5 text-brand-green" />
-                  Profile Image
+                  About Page Slideshow Images
                 </CardTitle>
-                <CardDescription>This image appears on the About page. Upload a professional photo.</CardDescription>
+                <CardDescription>These 2 images will be automatically displayed inside a beautiful slider on the About page interface. Please use professional portrait or clinic photos.</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
-                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6">
-                  {/* Image Preview */}
-                  <div className="relative w-32 h-32 rounded-2xl overflow-hidden surface-secondary border-2 border-dashed border-default flex items-center justify-center">
-                    {settings.profileImageUrl ? (
-                      <Image
-                        src={settings.profileImageUrl}
-                        alt="Profile"
-                        fill
-                        className="object-cover"
-                      />
-                    ) : (
-                      <ImageIcon className="w-10 h-10 text-muted" />
-                    )}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* Image One */}
+                  <div className="space-y-4">
+                    <label className="text-xs font-bold uppercase tracking-wider text-caption">Slideshow Image 1</label>
+                    <div className="relative w-full aspect-[2/3] max-h-[300px] rounded-2xl overflow-hidden surface-secondary border-2 border-dashed border-default flex flex-col items-center justify-center p-4">
+                      {settings.aboutImageOne ? (
+                        <>
+                          <Image src={settings.aboutImageOne} alt="About Slide 1" fill className="object-cover" />
+                        </>
+                      ) : (
+                        <div className="text-center text-muted">
+                           <ImageIcon className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                           <p className="text-xs">No image selected</p>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex gap-2">
+                       <Button type="button" variant="outline" onClick={() => setIsMediaPickerOneOpen(true)} className="flex-1">
+                          {settings.aboutImageOne ? "Change Image" : "Select Image"}
+                       </Button>
+                       {settings.aboutImageOne && (
+                          <Button type="button" variant="ghost" onClick={() => handleChange("aboutImageOne", "")} className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 px-3">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                       )}
+                    </div>
                   </div>
 
-                  {/* Actions */}
-                  <div className="space-y-3">
-                    <input
-                      type="file"
-                      ref={fileInputRef}
-                      onChange={handleImageUpload}
-                      accept="image/*"
-                      className="hidden"
-                    />
-                    <Button
-                      type="button"
-                      variant="outline"
-                      onClick={() => fileInputRef.current?.click()}
-                      disabled={isUploading}
-                      className="w-full sm:w-auto"
-                    >
-                      {isUploading ? (
-                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Uploading...</>
+                  {/* Image Two */}
+                  <div className="space-y-4">
+                    <label className="text-xs font-bold uppercase tracking-wider text-caption">Slideshow Image 2</label>
+                    <div className="relative w-full aspect-[2/3] max-h-[300px] rounded-2xl overflow-hidden surface-secondary border-2 border-dashed border-default flex flex-col items-center justify-center p-4">
+                      {settings.aboutImageTwo ? (
+                        <>
+                          <Image src={settings.aboutImageTwo} alt="About Slide 2" fill className="object-cover" />
+                        </>
                       ) : (
-                        <><Upload className="mr-2 h-4 w-4" /> Upload New Image</>
+                        <div className="text-center text-muted">
+                           <ImageIcon className="w-10 h-10 mx-auto mb-2 opacity-50" />
+                           <p className="text-xs">No image selected</p>
+                        </div>
                       )}
-                    </Button>
-                    {settings.profileImageUrl && (
-                      <Button
-                        type="button"
-                        variant="ghost"
-                        onClick={handleImageDelete}
-                        className="w-full sm:w-auto text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10"
-                      >
-                        <Trash2 className="mr-2 h-4 w-4" /> Remove Image
-                      </Button>
-                    )}
-                    <p className="text-xs text-caption">
-                      Recommended: Square image, at least 400x400px. JPG or PNG.
-                    </p>
+                    </div>
+                    <div className="flex gap-2">
+                       <Button type="button" variant="outline" onClick={() => setIsMediaPickerTwoOpen(true)} className="flex-1">
+                          {settings.aboutImageTwo ? "Change Image" : "Select Image"}
+                       </Button>
+                       {settings.aboutImageTwo && (
+                          <Button type="button" variant="ghost" onClick={() => handleChange("aboutImageTwo", "")} className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 px-3">
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                       )}
+                    </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
+
+            <MediaPickerModal 
+              open={isMediaPickerOneOpen}
+              onOpenChange={setIsMediaPickerOneOpen}
+              onSelect={(url) => handleChange("aboutImageOne", url)}
+              allowedTypes="image"
+            />
+            <MediaPickerModal 
+              open={isMediaPickerTwoOpen}
+              onOpenChange={setIsMediaPickerTwoOpen}
+              onSelect={(url) => handleChange("aboutImageTwo", url)}
+              allowedTypes="image"
+            />
 
             {/* Theme Preference Card */}
             <Card className="surface-card">
