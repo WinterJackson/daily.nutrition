@@ -9,7 +9,7 @@ import { deleteCalendarEvent } from "@/lib/google-calendar"
 import { NotificationManager } from "@/lib/notifications/manager"
 import { prisma } from "@/lib/prisma"
 import { bookingLimiter } from "@/lib/rate-limit"
-import { revalidatePath } from "next/cache"
+import { revalidatePath, revalidateTag } from "next/cache"
 import { Resend } from "resend"
 
 export type BookingStatus = "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED" | "NO_SHOW"
@@ -146,6 +146,20 @@ export async function createBooking(data: BookingData) {
             return { success: false, error: "Too many booking requests. Please wait before trying again." }
         }
 
+        // Snapshot the exact Service pricing to rigidly decouple historic revenue from future Admin DB updates
+        let finalAmountPaid = null;
+        if (data.serviceId) {
+            const service = await prisma.service.findUnique({
+                where: { id: data.serviceId },
+                select: { priceVirtual: true, priceInPerson: true }
+            })
+            if (service) {
+                finalAmountPaid = data.sessionType === "in-person"
+                    ? service.priceInPerson
+                    : service.priceVirtual;
+            }
+        }
+
         const booking = await prisma.booking.create({
             data: {
                 clientName: data.clientName,
@@ -158,10 +172,12 @@ export async function createBooking(data: BookingData) {
                 duration: data.duration || 60,
                 bookingStatus: data.status || "CONFIRMED",
                 notes: data.notes,
+                amountPaid: finalAmountPaid,
             }
         })
 
         revalidatePath("/admin/bookings")
+        revalidateTag("dashboard", "max")
 
         logAudit({
             action: "BOOKING_CREATED",
@@ -207,6 +223,7 @@ export async function updateBookingStatus(id: string, status: BookingStatus) {
         }
 
         revalidatePath("/admin/bookings")
+        revalidateTag("dashboard", "max")
 
         logAudit({
             action: "BOOKING_STATUS_UPDATED",
@@ -276,6 +293,7 @@ export async function deleteBooking(id: string) {
         })
 
         revalidatePath("/admin/bookings")
+        revalidateTag("dashboard", "max")
         return { success: true }
     } catch (error) {
         console.warn("Failed to delete booking:", error instanceof Error ? error.message : String(error))
@@ -635,6 +653,7 @@ export async function approvePaymentAndSendLink(id: string, manualMeetLink?: str
         })
 
         revalidatePath("/admin/bookings")
+        revalidateTag("dashboard", "max")
         return { success: true, meetLink }
     } catch (error) {
         console.error("Payment Verification Error:", error)
