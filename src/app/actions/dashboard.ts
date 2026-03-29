@@ -57,7 +57,8 @@ const getCachedCounts = unstable_cache(
             totalServices,
             totalPosts,
             blogViewsAgg,
-            completedBookings,
+            revenueAgg,
+            completedBookingsCount,
             newsletterSubs
         ] = await Promise.all([
             prisma.inquiry.count({ where: { deletedAt: null } }),
@@ -68,22 +69,18 @@ const getCachedCounts = unstable_cache(
             prisma.service.count({ where: { deletedAt: null } }),
             prisma.blogPost.count({ where: { deletedAt: null } }),
             prisma.blogPost.aggregate({ _sum: { views: true }, where: { deletedAt: null } }),
-            prisma.booking.findMany({
-                where: { deletedAt: null, bookingStatus: "COMPLETED" },
-                include: { service: { select: { priceVirtual: true, priceInPerson: true } } }
+            prisma.booking.aggregate({
+                _sum: { amountPaid: true },
+                where: { deletedAt: null, bookingStatus: { in: ["CONFIRMED", "COMPLETED"] } }
+            }),
+            prisma.booking.count({
+                where: { deletedAt: null, bookingStatus: { in: ["CONFIRMED", "COMPLETED"] } }
             }),
             prisma.newsletterSubscriber.count({ where: { isActive: true, deletedAt: null } })
         ])
 
-        // Calculate estimated revenue from completed bookings intelligently
-        const estimatedRevenue = completedBookings.reduce((sum, b) => {
-            if (!b.service) return sum
-            const price = b.sessionType === "in-person" || b.sessionType === "IN_PERSON"
-                ? b.service.priceInPerson
-                : b.service.priceVirtual
-
-            return sum + (price || 0)
-        }, 0)
+        // Calculate estimated revenue strictly from the immutable amountPaid snapshot.
+        const estimatedRevenue = revenueAgg._sum?.amountPaid || 0
 
         return {
             totalInquiries,
@@ -95,7 +92,7 @@ const getCachedCounts = unstable_cache(
             totalPosts,
             totalViews: blogViewsAgg._sum.views || 0,
             estimatedRevenue,
-            completedBookingsCount: completedBookings.length,
+            completedBookingsCount,
             newsletterSubs
         }
     },

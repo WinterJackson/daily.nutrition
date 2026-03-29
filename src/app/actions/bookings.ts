@@ -547,11 +547,24 @@ export async function approvePaymentAndSendLink(id: string, manualMeetLink?: str
     if (!session) return { success: false, error: "Unauthorized" }
 
     try {
-        const booking = await prisma.booking.findUnique({ where: { id } })
+        const booking = await prisma.booking.findUnique({
+            where: { id },
+            include: { service: { select: { priceVirtual: true, priceInPerson: true } } }
+        })
         if (!booking) return { success: false, error: "Booking not found" }
         if (booking.bookingStatus !== "PENDING") return { success: false, error: "Booking is not pending" }
 
-        const dataToUpdate: any = { bookingStatus: "CONFIRMED" }
+        let finalAmountPaid = null
+        if (booking.service) {
+            finalAmountPaid = booking.sessionType === "in-person" || booking.sessionType === "IN_PERSON"
+                ? booking.service.priceInPerson
+                : booking.service.priceVirtual
+        }
+
+        const dataToUpdate: any = {
+            bookingStatus: "CONFIRMED",
+            amountPaid: finalAmountPaid
+        }
 
         if (manualMeetLink?.trim()) {
             const { encrypt } = await import("@/lib/encryption")

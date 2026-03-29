@@ -195,6 +195,7 @@ model Booking {
   bookingStatus     BookingStatus @default(PENDING) @map("booking_status")
   
   notes             String?  @db.Text
+  amountPaid        Int?     // Snapshot of Revenue confirmed by Admin Admin Dashboard.
   googleEventId     String?  @unique
   encryptedMeetLink String?
   clientTimezone    String   @default("Africa/Nairobi")
