@@ -70,14 +70,19 @@ const getCachedCounts = unstable_cache(
             prisma.blogPost.aggregate({ _sum: { views: true }, where: { deletedAt: null } }),
             prisma.booking.findMany({
                 where: { deletedAt: null, bookingStatus: "COMPLETED" },
-                include: { service: { select: { priceVirtual: true } } }
+                include: { service: { select: { priceVirtual: true, priceInPerson: true } } }
             }),
             prisma.newsletterSubscriber.count({ where: { isActive: true, deletedAt: null } })
         ])
 
-        // Calculate estimated revenue from completed bookings
+        // Calculate estimated revenue from completed bookings intelligently
         const estimatedRevenue = completedBookings.reduce((sum, b) => {
-            return sum + (b.service?.priceVirtual || 0)
+            if (!b.service) return sum
+            const price = b.sessionType === "in-person" || b.sessionType === "IN_PERSON"
+                ? b.service.priceInPerson
+                : b.service.priceVirtual
+
+            return sum + (price || 0)
         }, 0)
 
         return {

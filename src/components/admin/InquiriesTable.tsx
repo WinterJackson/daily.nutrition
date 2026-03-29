@@ -12,6 +12,7 @@ import {
     updateInquiryStatus,
 } from "@/app/actions/inquiries"
 import { InquiryNotesDrawer } from "@/components/admin/inquiries/InquiryNotesDrawer"
+import { TablePagination } from "@/components/admin/TablePagination"
 import { Button } from "@/components/ui/Button"
 import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog"
 import { Input } from "@/components/ui/Input"
@@ -27,6 +28,7 @@ import {
     Star,
     Trash2
 } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { useEffect, useState, useTransition } from "react"
 
 // Types matching the Prisma include structure
@@ -78,7 +80,10 @@ export function InquiriesTable({
   inquiries: initialInquiries,
   users,
   totalCount,
+  currentPage,
+  pageSize,
 }: InquiriesTableProps) {
+  const router = useRouter()
   const [isPending, startTransition] = useTransition()
 
   // Local state for optimistic updates
@@ -503,6 +508,22 @@ export function InquiriesTable({
             </div>
           )}
         </div>
+        
+        {/* Pagination Footer */}
+        {totalCount > pageSize && (
+            <div className="border-t border-neutral-100 dark:border-white/5 bg-white dark:bg-black/20 shrink-0">
+                <TablePagination
+                    currentPage={currentPage}
+                    totalCount={totalCount}
+                    pageSize={pageSize}
+                    onPageChange={(p) => {
+                        const params = new URLSearchParams(window.location.search)
+                        params.set("page", p.toString())
+                        router.push(`/admin/inquiries?${params.toString()}`)
+                    }}
+                />
+            </div>
+        )}
       </div>
 
       {/* ----------------------------------------------------- */}
