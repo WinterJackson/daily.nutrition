@@ -313,7 +313,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
         setSettings(prev => ({ ...prev, profileImageUrl: result.url }))
         // Auto-save when image is uploaded
         const res = await updateSettings({ ...settings, profileImageUrl: result.url })
-        if (res.success) {
+        if (res?.success) {
           setSaveSuccess(true)
           setTimeout(() => setSaveSuccess(false), 3000)
         }
@@ -339,7 +339,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
     // Clear the profileImageUrl in DB
     setSettings(prev => ({ ...prev, profileImageUrl: "" }))
     const res = await updateSettings({ ...settings, profileImageUrl: "" })
-    if (res.success) {
+    if (res?.success) {
       setSaveSuccess(true)
       setTimeout(() => setSaveSuccess(false), 3000)
     }
