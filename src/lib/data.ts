@@ -18,6 +18,7 @@ export const services = [
         color: "text-brand-green",
         bgColor: "bg-brand-green/10",
         isVirtualOnly: true,
+        image: "/services/discovery-call.svg",
     },
     {
         id: "cancer-nutrition",
@@ -35,6 +36,7 @@ export const services = [
         targetAudience: "Individuals newly diagnosed, undergoing treatment (chemotherapy, radiation, surgery), or in remission.",
         color: "text-orange",
         bgColor: "bg-orange/10",
+        image: "/services/cancer-nutrition.svg",
     },
     {
         id: "diabetes-management",
@@ -52,6 +54,7 @@ export const services = [
         targetAudience: "Newly diagnosed diabetics, pre-diabetics, those seeking Type II diabetes remission and better glycemic control.",
         color: "text-brand-green",
         bgColor: "bg-brand-green/10",
+        image: "/services/diabetes-management.svg",
     },
     {
         id: "gut-health",
@@ -69,6 +72,7 @@ export const services = [
         targetAudience: "Individuals with persistent digestive discomfort or diagnosed conditions.",
         color: "text-olive",
         bgColor: "bg-olive/10",
+        image: "/services/gut-health.svg",
     },
     {
         id: "general-counselling",
@@ -87,6 +91,7 @@ export const services = [
         targetAudience: "Anyone seeking to improve their general health and prevent chronic diseases.",
         color: "text-olive",
         bgColor: "bg-olive/10",
+        image: "/services/general-counselling.svg",
     },
 ]
 

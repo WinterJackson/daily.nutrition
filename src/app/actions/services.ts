@@ -12,8 +12,7 @@ export async function getServices(includeHidden = false) {
             where: includeHidden ? { deletedAt: null } : { isVisible: true, deletedAt: null },
             orderBy: { displayOrder: 'asc' },
         })
-    } catch (error) {
-        console.error("Failed to fetch services:", error)
+    } catch {
         return []
     }
 }
@@ -21,8 +20,7 @@ export async function getServices(includeHidden = false) {
 export async function getService(id: string) {
     try {
         return await prisma.service.findUnique({ where: { id } })
-    } catch (error) {
-        console.error("Failed to fetch service:", error)
+    } catch {
         return null
     }
 }
@@ -30,8 +28,7 @@ export async function getService(id: string) {
 export async function getServiceBySlug(slug: string) {
     try {
         return await prisma.service.findUnique({ where: { slug } })
-    } catch (error) {
-        console.error("Failed to fetch service by slug:", error)
+    } catch {
         return null
     }
 }

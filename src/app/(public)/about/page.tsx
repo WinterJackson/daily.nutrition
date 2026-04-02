@@ -15,7 +15,12 @@ export const metadata: Metadata = {
 }
 
 export default async function AboutPage() {
-  const settings = await getSettings()
+  let settings = null
+  try {
+    settings = await getSettings()
+  } catch (error) {
+    console.warn("About page: Failed to fetch settings:", error instanceof Error ? error.message : String(error))
+  }
   
   const images: string[] = []
   if (settings?.aboutImageOne) images.push(settings.aboutImageOne)

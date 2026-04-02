@@ -20,7 +20,12 @@ export const metadata: Metadata = {
 }
 
 export default async function Home() {
-  const services = await getServices()
+  let services: any[] = []
+  try {
+    services = await getServices()
+  } catch {
+    // Database unavailable — render without services
+  }
 
   return (
     <>

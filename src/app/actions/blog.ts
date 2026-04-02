@@ -52,7 +52,7 @@ export async function getBlogStats() {
             categories: categories.map(c => ({ category: c.name, count: c._count.posts }))
         }
     } catch (error) {
-        console.error("Failed to fetch blog stats:", error)
+        console.warn("Failed to fetch blog stats:", error instanceof Error ? error.message : String(error))
         return { total: 0, published: 0, drafts: 0, categories: [] }
     }
 }
@@ -91,7 +91,7 @@ export async function getPosts(publishedOnly = false, page = 1, pageSize = 10, q
         ])
         return { posts, totalCount }
     } catch (error) {
-        console.error("Failed to fetch posts:", error)
+        console.warn("Failed to fetch posts:", error instanceof Error ? error.message : String(error))
         return { posts: [], totalCount: 0 }
     }
 }
@@ -111,7 +111,7 @@ export async function getRelatedPosts(categoryName: string, currentPostId: strin
         })
         return posts
     } catch (error) {
-        console.error("Failed to fetch related posts:", error)
+        console.warn("Failed to fetch related posts:", error instanceof Error ? error.message : String(error))
         return []
     }
 }
@@ -124,7 +124,7 @@ export async function getPostBySlug(slug: string) {
         })
         return post
     } catch (error) {
-        console.error("Failed to fetch post:", error)
+        console.warn("Failed to fetch post:", error instanceof Error ? error.message : String(error))
         return null
     }
 }
@@ -137,7 +137,7 @@ export async function getPost(id: string) {
         })
         return post
     } catch (error) {
-        console.error("Failed to fetch post:", error)
+        console.warn("Failed to fetch post:", error instanceof Error ? error.message : String(error))
         return null
     }
 }

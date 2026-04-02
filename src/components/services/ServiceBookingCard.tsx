@@ -2,9 +2,10 @@
 
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent } from "@/components/ui/Card"
+import { ServiceIcon as ServiceIconComponent } from "@/components/ui/ServiceIcon"
 import { pricing } from "@/lib/data"
 import { cn } from "@/lib/utils"
-import { Calendar, CheckCircle2, Clock, Globe, LucideIcon, MapPin, Sparkles, Video } from "lucide-react"
+import { Calendar, CheckCircle2, Clock, Globe, MapPin, Sparkles, Video } from "lucide-react"
 import Link from "next/link"
 import { useState } from "react"
 
@@ -13,7 +14,7 @@ interface ServiceBookingCardProps {
   serviceTitle: string
   serviceColor: string
   serviceBgColor: string
-  ServiceIcon: LucideIcon
+  ServiceIcon: string
 }
 
 const serviceMessages: Record<string, { headline: string; benefit: string; prep: string }> = {
@@ -58,7 +59,7 @@ export function ServiceBookingCard({
       {/* Service-colored header */}
       <div className={cn("p-4 flex items-center gap-3", serviceBgColor)}>
         <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center bg-white/20", serviceColor)}>
-          <ServiceIcon className="w-5 h-5" />
+          <ServiceIconComponent name={ServiceIcon} className="w-5 h-5" />
         </div>
         <div>
           <p className="text-xs font-semibold uppercase tracking-wider opacity-70">{serviceTitle}</p>

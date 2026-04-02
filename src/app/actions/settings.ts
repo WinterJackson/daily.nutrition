@@ -240,8 +240,7 @@ export async function getSettings() {
         )
 
         return await getCached()
-    } catch (error) {
-        console.error("Failed to fetch settings:", error)
+    } catch {
         return null
     }
 }
@@ -358,9 +357,8 @@ export async function updateSettings(data: SettingsData) {
         revalidateTag(GLOBAL_SETTINGS_TAG, "default")
 
         return { success: true, settings }
-    } catch (error) {
-        console.error("Failed to update settings:", error)
-        return { success: false, error: error instanceof Error ? error.message : "Failed to update settings" }
+    } catch {
+        return null
     }
 }
 

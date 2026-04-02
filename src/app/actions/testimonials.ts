@@ -35,22 +35,24 @@ export async function getTestimonials(status?: TestimonialStatus, page = 1, page
             prisma.testimonial.count({ where }),
         ])
         return { testimonials, totalCount }
-    } catch (error) {
-        console.error("Failed to fetch testimonials:", error)
+    } catch {
         return { testimonials: [], totalCount: 0 }
     }
 }
 
 export async function getApprovedTestimonials() {
-    const result = await getTestimonials("PUBLISHED")
-    return result.testimonials
+    try {
+        const result = await getTestimonials("PUBLISHED")
+        return result.testimonials
+    } catch {
+        return []
+    }
 }
 
 export async function getTestimonial(id: string) {
     try {
         return await prisma.testimonial.findUnique({ where: { id } })
-    } catch (error) {
-        console.error("Failed to fetch testimonial:", error)
+    } catch {
         return null
     }
 }

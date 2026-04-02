@@ -15,16 +15,21 @@ export function SearchInput({ placeholder = "Search..." }: { placeholder?: strin
   const [text, setText] = useState(currentQuery)
   const [query] = useDebounce(text, 500)
 
+  const searchParamsString = searchParams.toString()
+
   useEffect(() => {
-    const params = new URLSearchParams(searchParams)
-    if (query) {
+    const params = new URLSearchParams(searchParamsString)
+    
+    if (query && query !== (params.get("q") || "")) {
       params.set("q", query)
       params.set("page", "1") // Reset to page 1 on new search
-    } else {
+      router.push(`${pathname}?${params.toString()}`, { scroll: false })
+    } else if (!query && params.has("q")) {
       params.delete("q")
+      params.set("page", "1")
+      router.push(`${pathname}?${params.toString()}`, { scroll: false })
     }
-    router.push(`${pathname}?${params.toString()}`)
-  }, [query, router, pathname, searchParams])
+  }, [query, router, pathname, searchParamsString])
 
   return (
     <div className="relative w-full max-w-md mx-auto mb-8">

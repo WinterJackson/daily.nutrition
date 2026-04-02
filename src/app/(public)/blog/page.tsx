@@ -29,7 +29,16 @@ export default async function BlogIndexPage({ searchParams }: BlogIndexPageProps
   const category = params.category || "All"
   const pageSize = 9 // Grid of 3x3 looks better
 
-  const { posts, totalCount } = await getPosts(true, page, pageSize, query, category)
+  let posts: any[] = []
+  let totalCount = 0
+  
+  try {
+    const result = await getPosts(true, page, pageSize, query, category)
+    posts = result.posts
+    totalCount = result.totalCount
+  } catch (error) {
+    console.warn("Blog page: Failed to fetch posts", error instanceof Error ? error.message : String(error))
+  }
 
   const categories = ["All", "Education", "Nutrition Tips", "Research", "Recipe", "Announcement"]
 

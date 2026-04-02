@@ -5,8 +5,20 @@ import { Suspense } from "react"
 import { ScheduleClient } from "./ScheduleClient"
 
 export default async function SchedulePage() {
-  const calendarConfig = await getCalendarConfig()
-  const blockedRes = await getBlockedDates()
+  let calendarConfig = { calendarId: "", businessName: "Edwak Nutrition", googleConfig: undefined } as any
+  let blockedRes = { success: true, blockedDates: [] as any[] }
+  
+  try {
+    calendarConfig = await getCalendarConfig()
+  } catch (error) {
+    console.warn("Schedule page: Failed to fetch calendar config:", error instanceof Error ? error.message : String(error))
+  }
+
+  try {
+    blockedRes = await getBlockedDates()
+  } catch (error) {
+    console.warn("Schedule page: Failed to fetch blocked dates:", error instanceof Error ? error.message : String(error))
+  }
   
   // Convert Postgres Date objects to easily comparable YYYY-MM-DD strings
   const blockedDates = blockedRes.success && blockedRes.blockedDates 
