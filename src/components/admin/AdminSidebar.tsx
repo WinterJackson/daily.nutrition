@@ -1,6 +1,7 @@
 "use client"
 
 import { getSidebarNotificationCounts } from "@/app/actions/notifications"
+import { NotificationBell } from "@/components/admin/NotificationBell"
 import { Button } from "@/components/ui/Button"
 import { cn } from "@/lib/utils"
 import { AnimatePresence, motion } from "framer-motion"
@@ -121,15 +122,18 @@ export function AdminSidebar() {
               </div>
             </Link>
             
-            {/* Collapse Toggle - Desktop Only */}
+            {/* Collapse Toggle + Bell - Desktop Only */}
             {!isMobile && (
-              <button
-                onClick={() => setCollapsed(!collapsed)}
-                className="bg-orange text-white rounded-full p-1.5 shadow-lg hover:bg-orange/90 hover:scale-110 transition-all shrink-0 ml-2"
-                aria-label="Collapse sidebar"
-              >
-                <ChevronLeft size={16} />
-              </button>
+              <div className="flex items-center gap-1 shrink-0 ml-2">
+                <NotificationBell />
+                <button
+                  onClick={() => setCollapsed(!collapsed)}
+                  className="bg-orange text-white rounded-full p-1.5 shadow-lg hover:bg-orange/90 hover:scale-110 transition-all shrink-0"
+                  aria-label="Collapse sidebar"
+                >
+                  <ChevronLeft size={16} />
+                </button>
+              </div>
             )}
 
             {/* Close Button - Mobile Only */}
@@ -348,9 +352,12 @@ export function AdminSidebar() {
            </div>
         </Link>
 
-        {/* User Avatar on Mobile Header */}
-        <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white border border-white/10 shadow-inner">
-            <User className="w-5 h-5" />
+        {/* User Avatar + Notifications on Mobile Header */}
+        <div className="flex items-center gap-2">
+            <NotificationBell />
+            <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white border border-white/10 shadow-inner">
+                <User className="w-5 h-5" />
+            </div>
         </div>
       </div>
 
