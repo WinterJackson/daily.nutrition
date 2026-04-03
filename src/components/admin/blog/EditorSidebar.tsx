@@ -1,14 +1,15 @@
 "use client"
 
+import { generateSeoSuggestions } from "@/app/actions/ai"
 import { MediaPickerModal } from "@/components/admin/MediaPickerModal"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog"
 import { Input } from "@/components/ui/Input"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/Tooltip"
-import { Calendar, ImageIcon, Info, X } from "lucide-react"
+import { Calendar, ImageIcon, Info, Loader2, Sparkles, X } from "lucide-react"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useTransition } from "react"
 
 interface EditorSidebarProps {
   status: "Draft" | "Published"
@@ -17,6 +18,8 @@ interface EditorSidebarProps {
   image: string | null
   metaTitle: string
   metaDescription: string
+  title?: string
+  content?: string
   onChange: (key: string, value: string) => void
   onSave: (publishAction?: "publish" | "review") => void
   isSaving: boolean
@@ -26,15 +29,41 @@ interface EditorSidebarProps {
 
 const categories = ["Education", "Announcement", "Nutrition Tips", "Research", "Recipe"]
 
-export function EditorSidebar({ status, category, date, image, metaTitle, metaDescription, onChange, onSave, isSaving, savingAction, userRole = "ADMIN" }: EditorSidebarProps) {
+export function EditorSidebar({ 
+  status, category, date, image, metaTitle, metaDescription, 
+  title, content, onChange, onSave, isSaving, savingAction, userRole = "ADMIN" 
+}: EditorSidebarProps) {
   const canPublish = userRole === "SUPER_ADMIN" || userRole === "ADMIN"
   const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false)
+  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
+
+  // AI SEO States
+  const [isGeneratingSeo, startGeneratingSeo] = useTransition()
+  const [suggestedSeo, setSuggestedSeo] = useState<{title?: string, description?: string} | null>(null)
+
+  const handleSuggestSeo = () => {
+      if (!title || !content || (title.trim().length === 0 && content.trim().length === 0)) {
+          alert("Please write a draft first. The AI needs content to analyze.")
+          return
+      }
+
+      startGeneratingSeo(async () => {
+          try {
+              const res = await generateSeoSuggestions(title, content)
+              if (res.success && res.data) {
+                  setSuggestedSeo({ title: res.data.metaTitle, description: res.data.metaDescription })
+              } else {
+                  alert(res.error || "AI Generation failed")
+              }
+          } catch (e) {
+              alert("Network error occurred during AI generation")
+          }
+      })
+  }
 
   const handleMediaSelect = (url: string) => {
     onChange("image", url)
   }
-
-  const [showRemoveConfirm, setShowRemoveConfirm] = useState(false)
 
   const handleRemoveImageClick = (e: React.MouseEvent) => {
     e.stopPropagation()
@@ -194,43 +223,69 @@ export function EditorSidebar({ status, category, date, image, metaTitle, metaDe
         </CardHeader>
         <CardContent className="pt-4 space-y-4">
            <TooltipProvider delayDuration={200}>
-             <div className="space-y-1">
-                <label className="text-xs font-semibold text-neutral-600 dark:text-neutral-300 flex items-center gap-1.5">
-                   Meta Title
-                   <Tooltip>
-                     <TooltipTrigger asChild>
-                       <Info className="w-3.5 h-3.5 text-neutral-400 hover:text-brand-green cursor-help transition-colors" />
-                     </TooltipTrigger>
-                     <TooltipContent side="top" className="max-w-[280px] p-3 text-xs leading-relaxed">
-                       <p><strong>SEO Title (Max 60 characters):</strong> This will appear exactly as the large blue clickable link on Google Search. Include your main keywords. If left blank, your blog post's main title will be used instead.</p>
-                     </TooltipContent>
-                   </Tooltip>
-                </label>
+             <div className="space-y-1 relative">
+                <div className="flex items-center justify-between mb-1">
+                   <label className="text-xs font-semibold text-neutral-600 dark:text-neutral-300 flex items-center gap-1.5">
+                      Meta Title
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="w-3.5 h-3.5 text-neutral-400 hover:text-brand-green cursor-help transition-colors" />
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-[280px] p-3 text-xs leading-relaxed">
+                          <p><strong>SEO Title (Max 60 characters):</strong> This will appear exactly as the large blue clickable link on Google Search. Include your main keywords. If left blank, your blog post's main title will be used instead.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                   </label>
+                   <button onClick={handleSuggestSeo} disabled={isGeneratingSeo} type="button" className="text-[10px] font-semibold tracking-wide flex items-center gap-1.5 text-orange hover:text-orange/80 transition-colors uppercase disabled:opacity-50 border border-orange/20 hover:bg-orange/5 px-2 py-1 rounded-md">
+                      {isGeneratingSeo ? <Loader2 className="w-3 h-3 animate-spin" /> : <Sparkles className="w-3 h-3" />}
+                      {isGeneratingSeo ? "Scanning..." : "Ask AI"}
+                   </button>
+                </div>
                 <Input 
                   placeholder="Appears on Google Search results" 
                   className="text-xs" 
                   value={metaTitle}
                   onChange={(e) => onChange("metaTitle", e.target.value)}
                 />
+                {suggestedSeo?.title && (
+                   <div className="mt-2 p-2.5 bg-brand-green/10 border border-brand-green/20 rounded-md flex flex-col gap-2 shadow-inner">
+                      <p className="text-xs text-brand-green/90 italic font-medium leading-relaxed">"{suggestedSeo.title}"</p>
+                      <div className="flex gap-2">
+                        <Button type="button" size="sm" variant="accent" onClick={() => { onChange("metaTitle", suggestedSeo.title!); setSuggestedSeo((prev: any) => prev ? { ...prev, title: undefined } : null) }}>Apply Suggestion</Button>
+                        <Button type="button" size="sm" variant="ghost" className="text-neutral-500 hover:bg-white/50" onClick={() => setSuggestedSeo((prev: any) => prev ? { ...prev, title: undefined } : null)}>Discard</Button>
+                      </div>
+                   </div>
+                )}
              </div>
-             <div className="space-y-1">
-                <label className="text-xs font-semibold text-neutral-600 dark:text-neutral-300 flex items-center gap-1.5">
-                   Meta Description
-                   <Tooltip>
-                     <TooltipTrigger asChild>
-                       <Info className="w-3.5 h-3.5 text-neutral-400 hover:text-brand-green cursor-help transition-colors" />
-                     </TooltipTrigger>
-                     <TooltipContent side="top" className="max-w-[280px] p-3 text-xs leading-relaxed">
-                       <p><strong>SEO Description (Max 160 characters):</strong> The short summary snippet Google displays below the blue title. Write a compelling hook to encourage clicks. If left blank, Google automatically pulls the first paragraph.</p>
-                     </TooltipContent>
-                   </Tooltip>
-                </label>
+             <div className="space-y-1 relative">
+                <div className="flex items-center justify-between mb-1">
+                   <label className="text-xs font-semibold text-neutral-600 dark:text-neutral-300 flex items-center gap-1.5">
+                      Meta Description
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Info className="w-3.5 h-3.5 text-neutral-400 hover:text-brand-green cursor-help transition-colors" />
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="max-w-[280px] p-3 text-xs leading-relaxed">
+                          <p><strong>SEO Description (Max 160 characters):</strong> The short summary snippet Google displays below the blue title. Write a compelling hook to encourage clicks. If left blank, Google automatically pulls the first paragraph.</p>
+                        </TooltipContent>
+                      </Tooltip>
+                   </label>
+                </div>
                 <textarea 
                   className="w-full rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs h-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-green dark:border-white/10 dark:bg-white/5" 
                   placeholder="A compelling summary of the article..."
                   value={metaDescription}
                   onChange={(e) => onChange("metaDescription", e.target.value)}
                 />
+                {suggestedSeo?.description && (
+                   <div className="mt-2 p-2.5 bg-brand-green/10 border border-brand-green/20 rounded-md flex flex-col gap-2 shadow-inner">
+                      <p className="text-xs text-brand-green/90 italic font-medium leading-relaxed">"{suggestedSeo.description}"</p>
+                      <div className="flex gap-2">
+                        <Button type="button" size="sm" variant="accent" onClick={() => { onChange("metaDescription", suggestedSeo.description!); setSuggestedSeo((prev: any) => prev ? { ...prev, description: undefined } : null) }}>Apply Suggestion</Button>
+                        <Button type="button" size="sm" variant="ghost" className="text-neutral-500 hover:bg-white/50" onClick={() => setSuggestedSeo((prev: any) => prev ? { ...prev, description: undefined } : null)}>Discard</Button>
+                      </div>
+                   </div>
+                )}
              </div>
            </TooltipProvider>
         </CardContent>

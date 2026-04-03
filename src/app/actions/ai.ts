@@ -412,3 +412,49 @@ export async function generateRawDraft(topic: string, angle: string): Promise<{ 
         return { success: false, error: error.message || "Failed to generate raw draft. Check AI configuration." }
     }
 }
+
+// ═══════════════════════════════════════════════════════
+// AI SEO Generation (Meta Title & Meta Description)
+// ═══════════════════════════════════════════════════════
+
+export async function generateSeoSuggestions(title: string, content: string): Promise<{ success: boolean; data?: { metaTitle: string; metaDescription: string }; error?: string }> {
+    const session = await verifySession()
+    if (!session) return { success: false, error: "Unauthorized" }
+
+    const userId = (session?.user?.id) || "anonymous"
+    const rateCheck = await checkRateLimit(userId, "ai_seo", RATE_LIMITS.apiStandard)
+    if (!rateCheck.success) {
+        return { success: false, error: "Rate limit exceeded. Please wait before generating SEO suggestions." }
+    }
+
+    try {
+        const prompt = `You are an expert SEO specialist. Given the blog post title and content below, generate exactly one highly optimized SEO Meta Title (max 60 characters) and one SEO Meta Description (140-160 characters). Do NOT include markdown blocks around the JSON object. Do NOT include quotes around the JSON keys unless valid JSON format. Just return a raw valid JSON object in exactly this format: {"metaTitle": "Your Title", "metaDescription": "Your Description"}.
+
+Title: ${title}
+
+Content Extract: ${content.substring(0, 1500)}`
+
+        let rawResponse = await generateWithAI(prompt)
+
+        let cleanJson = rawResponse.trim()
+        if (cleanJson.startsWith("```")) {
+            cleanJson = cleanJson.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "")
+        }
+
+        const data = JSON.parse(cleanJson)
+        if (!data.metaTitle || !data.metaDescription) {
+            return { success: false, error: "AI returned incomplete data." }
+        }
+
+        return {
+            success: true,
+            data: {
+                metaTitle: data.metaTitle.slice(0, 60),
+                metaDescription: data.metaDescription.slice(0, 170)
+            }
+        }
+    } catch (error: any) {
+        console.error("AI SEO Generation failed:", error)
+        return { success: false, error: "Failed to generate SEO suggestions." }
+    }
+}
