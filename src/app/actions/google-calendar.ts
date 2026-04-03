@@ -20,6 +20,7 @@ import { BookingConfirmationEmail } from "@/components/emails/BookingConfirmatio
 import { NotificationManager } from "@/lib/notifications/manager"
 import { prisma } from "@/lib/prisma"
 import { bookingLimiter } from "@/lib/rate-limit"
+import { NotificationService } from "@/lib/services/notification-service"
 import { Resend } from 'resend'
 
 import { logAudit } from "@/lib/audit"
@@ -250,7 +251,7 @@ export async function bookAppointment(data: {
                 console.warn("Skipping email confirmation: No Resend API Key found in SecretConfig or ENV.")
             }
 
-            // Notify Admin (NotificationManager checks settings natively)
+            // Notify Admin via Email (NotificationManager checks settings natively)
             await NotificationManager.sendAdminNotification("NEW_BOOKING", {
                 newBooking: {
                     clientName: data.clientName.trim(),
@@ -264,6 +265,17 @@ export async function bookAppointment(data: {
                     bookingUrl: `/admin/bookings`
                 }
             })
+
+            // In-App Bell Notification — broadcast to all admin users
+            await NotificationService.broadcastToRoles({
+                roles: ["SUPER_ADMIN", "ADMIN"],
+                type: "SUCCESS",
+                title: "New Booking Received",
+                message: `${data.clientName.trim()} booked ${data.serviceName} on ${clientFormattedDate} at ${clientFormattedTime}.`,
+                priority: "HIGH",
+                link: `/admin/bookings`,
+                expiresInDays: 7
+            }).catch(console.error)
 
             // 7. Create corresponding Inquiry record for CRM visibility
             // This bridges the booking into the Inquiries page so admin can track follow-up

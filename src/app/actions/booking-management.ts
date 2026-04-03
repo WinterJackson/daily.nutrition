@@ -8,6 +8,7 @@ import { logEmailAttempt } from "@/lib/email-logger";
 import { deleteCalendarEvent } from "@/lib/google-calendar";
 import { NotificationManager } from "@/lib/notifications/manager";
 import { prisma } from "@/lib/prisma";
+import { NotificationService } from "@/lib/services/notification-service";
 import { Resend } from "resend";
 
 
@@ -130,6 +131,17 @@ export async function cancelBooking(referenceCode: string) {
                 referenceCode: referenceCode
             }
         });
+
+        // In-App Bell Notification — broadcast to all admin users
+        await NotificationService.broadcastToRoles({
+            roles: ["SUPER_ADMIN", "ADMIN"],
+            type: "WARNING",
+            title: "Booking Cancelled",
+            message: `${booking.clientName} cancelled their ${booking.serviceName} booking (${referenceCode}).`,
+            priority: "HIGH",
+            link: `/admin/bookings`,
+            expiresInDays: 7
+        }).catch(console.error);
 
         return { success: true };
     } catch (error) {
@@ -297,6 +309,17 @@ export async function rescheduleBooking(referenceCode: string, newDateStr: strin
                 newTime: newTime
             }
         });
+
+        // In-App Bell Notification — broadcast to all admin users
+        await NotificationService.broadcastToRoles({
+            roles: ["SUPER_ADMIN", "ADMIN"],
+            type: "INFO",
+            title: "Booking Rescheduled",
+            message: `${updatedBooking.clientName} rescheduled ${updatedBooking.serviceName} to ${newDateStr} at ${newTime}.`,
+            priority: "NORMAL",
+            link: `/admin/bookings`,
+            expiresInDays: 7
+        }).catch(console.error);
 
         return { success: true };
     } catch (error) {

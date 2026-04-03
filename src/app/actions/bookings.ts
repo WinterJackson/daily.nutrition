@@ -9,6 +9,7 @@ import { deleteCalendarEvent } from "@/lib/google-calendar"
 import { NotificationManager } from "@/lib/notifications/manager"
 import { prisma } from "@/lib/prisma"
 import { bookingLimiter } from "@/lib/rate-limit"
+import { NotificationService } from "@/lib/services/notification-service"
 import { revalidatePath, revalidateTag } from "next/cache"
 import { Resend } from "resend"
 
@@ -435,6 +436,17 @@ export async function adminCancelBooking(id: string) {
             }
         })
 
+        // In-App Bell Notification — broadcast to all admin users
+        await NotificationService.broadcastToRoles({
+            roles: ["SUPER_ADMIN", "ADMIN"],
+            type: "WARNING",
+            title: "Booking Cancelled by Admin",
+            message: `${booking.clientName}'s ${booking.serviceName} booking was cancelled.`,
+            priority: "HIGH",
+            link: `/admin/bookings`,
+            expiresInDays: 7
+        }).catch(console.error)
+
         revalidatePath("/admin/bookings")
         return { success: true }
     } catch (error) {
@@ -548,6 +560,17 @@ export async function adminRescheduleBooking(id: string, newDateStr: string, new
                 newTime: newTime
             }
         })
+
+        // In-App Bell Notification — broadcast to all admin users
+        await NotificationService.broadcastToRoles({
+            roles: ["SUPER_ADMIN", "ADMIN"],
+            type: "INFO",
+            title: "Booking Rescheduled by Admin",
+            message: `${updatedBooking.clientName}'s ${updatedBooking.serviceName} booking rescheduled to ${newDateStr} at ${newTime}.`,
+            priority: "NORMAL",
+            link: `/admin/bookings`,
+            expiresInDays: 7
+        }).catch(console.error)
 
         revalidatePath("/admin/bookings")
         return { success: true }
