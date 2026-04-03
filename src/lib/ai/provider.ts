@@ -1,68 +1,116 @@
 /**
- * Xinteck Pattern: AI Provider
- * Runtime-decrypted Gemini API key initialization.
+ * AI Provider — OpenRouter Integration
+ * 
+ * Uses OpenRouter's Chat Completions API to access free, high-quality models
+ * with no geographic restrictions (Gemini's free tier is geo-blocked in Kenya).
+ * 
+ * Default model: meta-llama/llama-3.3-70b-instruct:free (GPT-4 class quality, 131K context)
+ * Fallback model: deepseek/deepseek-r1:free (strong reasoning, 164K context)
  */
 
-import { GenerativeModel, GoogleGenerativeAI } from "@google/generative-ai"
 import { INTERNAL_getSecret } from "./secrets"
 
-let cachedModel: GenerativeModel | null = null
-let cachedKeyHash: string | null = null
+const OPENROUTER_API_URL = "https://openrouter.ai/api/v1/chat/completions"
+const PRIMARY_MODEL = "meta-llama/llama-3.3-70b-instruct:free"
+const FALLBACK_MODEL = "deepseek/deepseek-r1:free"
 
 /**
- * Get a configured Gemini model instance.
- * Uses runtime-decrypted API key from SecretConfig.
+ * Get the OpenRouter API key from encrypted SecretConfig or env fallback.
  */
-export async function getGeminiModel(): Promise<GenerativeModel> {
-    const apiKey = await INTERNAL_getSecret("GEMINI_API_KEY")
+async function getApiKey(): Promise<string> {
+    const apiKey = await INTERNAL_getSecret("OPENROUTER_API_KEY")
     if (!apiKey) {
-        throw new Error("GEMINI_API_KEY not configured. Go to Admin → Blog → AI → Config to set it.")
+        throw new Error(
+            "OpenRouter API Key not configured. Go to Admin → Settings → Integrations to set it up. " +
+            "Get your free key at openrouter.ai/keys — no credit card required."
+        )
     }
-
-    // Cache model if key hasn't changed
-    const keyHash = apiKey.slice(-8)
-    if (cachedModel && cachedKeyHash === keyHash) {
-        return cachedModel
-    }
-
-    const genAI = new GoogleGenerativeAI(apiKey)
-    cachedModel = genAI.getGenerativeModel({
-        model: "gemini-1.5-flash",
-    })
-    cachedKeyHash = keyHash
-    return cachedModel
+    return apiKey
 }
 
 /**
- * Generate text with Gemini, with error handling and cleanup.
+ * Call OpenRouter's Chat Completions API with automatic model fallback.
+ * Returns the raw text response from the AI model.
  */
-export async function generateWithGemini(prompt: string): Promise<string> {
-    const model = await getGeminiModel()
+async function callOpenRouter(prompt: string, model: string, apiKey: string): Promise<string> {
+    const response = await fetch(OPENROUTER_API_URL, {
+        method: "POST",
+        headers: {
+            "Authorization": `Bearer ${apiKey}`,
+            "Content-Type": "application/json",
+            "HTTP-Referer": "https://edwaknutrition.co.ke",
+            "X-Title": "Edwak Nutrition AI Hub",
+        },
+        body: JSON.stringify({
+            model,
+            messages: [
+                {
+                    role: "system",
+                    content: "You are a senior clinical nutritionist and content strategist for Edwak Nutrition, a premier nutrition consultancy in Nairobi, Kenya. You specialize in evidence-based nutrition content targeting the East African market. Always use Kenyan food examples, local health statistics, and metric units. Never mention AI tools, ChatGPT, or language models."
+                },
+                {
+                    role: "user",
+                    content: prompt,
+                },
+            ],
+            temperature: 0.7,
+            max_tokens: 4096,
+        }),
+    })
+
+    if (!response.ok) {
+        const errorBody = await response.text().catch(() => "")
+
+        if (response.status === 401) {
+            throw new Error("Invalid OpenRouter API key. Please update it in Admin → Settings → Integrations.")
+        }
+        if (response.status === 429) {
+            throw new Error("AI rate limit reached. Free tier allows 20 requests/minute and 50/day. Please wait a moment and try again.")
+        }
+        if (response.status === 402) {
+            throw new Error("OpenRouter credits exhausted. The free tier has a daily limit. Try again tomorrow or add credits at openrouter.ai.")
+        }
+
+        throw new Error(`OpenRouter API error (${response.status}): ${errorBody.slice(0, 200)}`)
+    }
+
+    const data = await response.json()
+    const text = data?.choices?.[0]?.message?.content
+
+    if (!text || text.trim().length === 0) {
+        throw new Error("AI returned an empty response. Please try again.")
+    }
+
+    return text.trim()
+}
+
+/**
+ * Generate text using OpenRouter with automatic fallback.
+ * Primary: Llama 3.3 70B (GPT-4 class, excellent for content)
+ * Fallback: DeepSeek R1 (strong reasoning, good for structured outputs)
+ */
+export async function generateWithAI(prompt: string): Promise<string> {
+    const apiKey = await getApiKey()
 
     try {
-        const result = await model.generateContent(prompt)
-        const response = result.response
-        const text = response.text()
-
-        if (!text || text.trim().length === 0) {
-            throw new Error("Gemini returned an empty response")
+        return await callOpenRouter(prompt, PRIMARY_MODEL, apiKey)
+    } catch (primaryError: any) {
+        // If primary model fails (not auth/rate issues), try fallback
+        const msg = primaryError.message || ""
+        if (msg.includes("API key") || msg.includes("rate limit") || msg.includes("credits")) {
+            throw primaryError // Don't retry on auth/rate issues
         }
 
-        return text.trim()
-    } catch (error: any) {
-        const msg = error.message || ""
-        if (msg.includes("API key")) {
-            throw new Error("Invalid Gemini API key. Please update it in Admin → Blog → AI.")
+        console.warn(`Primary model (${PRIMARY_MODEL}) failed, trying fallback (${FALLBACK_MODEL}):`, msg)
+        try {
+            return await callOpenRouter(prompt, FALLBACK_MODEL, apiKey)
+        } catch (fallbackError: any) {
+            throw new Error(`AI generation failed on both models. Primary: ${msg}. Fallback: ${fallbackError.message}`)
         }
-        if (msg.includes("User location is not supported") || msg.includes("location is not supported")) {
-            throw new Error("Google blocked this request: The completely free AI tier is not natively supported in your geographical region (Kenya) without verification. Please add a billing card to your Google Cloud project to immediately bypass this Geo-block.")
-        }
-        if (msg.includes("quota") || msg.includes("429") || msg.includes("limit: 0")) {
-            throw new Error("Google AI Quota strictly set to 0. This region requires you to attach a billing card to your Google Cloud API account to unlock the 15 RPM free tier limits.")
-        }
-        if (msg.includes("404") || msg.includes("not found")) {
-            throw new Error("The requested Gemini model is forcefully hidden by Google for your API Key's region setup. Please ensure billing is enabled on Google Cloud to unlock the models.")
-        }
-        throw error
     }
 }
+
+/**
+ * @deprecated Use generateWithAI instead. Kept for backward compatibility.
+ */
+export const generateWithGemini = generateWithAI

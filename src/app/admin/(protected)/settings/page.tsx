@@ -4,6 +4,8 @@ import { getCurrentUser } from "@/lib/auth"
 import { Loader2 } from "lucide-react"
 import SettingsClient from "./SettingsClient"
 
+export const dynamic = "force-dynamic"
+
 export default async function AdminSettingsPage() {
   const settings = await getSettings()
   const envStatus = await getServerEnvStatus()
@@ -15,7 +17,7 @@ export default async function AdminSettingsPage() {
     "CLOUDINARY_CLOUD_NAME",
     "CLOUDINARY_API_KEY",
     "CLOUDINARY_API_SECRET",
-    "GEMINI_API_KEY",
+    "OPENROUTER_API_KEY",
     "GOOGLE_MAPS_API_KEY",
     "GOOGLE_CALENDAR_CLIENT_EMAIL",
     "GOOGLE_CALENDAR_PRIVATE_KEY"

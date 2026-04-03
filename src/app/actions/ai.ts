@@ -1,7 +1,7 @@
 "use server"
 
 import { buildDraftPrompt, buildExclusionSuggestPrompt, buildScoutPrompt, DEFAULT_AI_CONFIG, type AiConfig } from "@/lib/ai/prompts"
-import { generateWithGemini } from "@/lib/ai/provider"
+import { generateWithAI } from "@/lib/ai/provider"
 import { calculateScore, type ScoringInput } from "@/lib/ai/scoring"
 import { hasSecret, setSecret } from "@/lib/ai/secrets"
 import { logAudit } from "@/lib/audit"
@@ -60,11 +60,11 @@ export async function updateAiConfig(config: AiConfig) {
 }
 
 // ═══════════════════════════════════════════════════════
-// Secret Management (Gemini API Key)
+// Secret Management (OpenRouter API Key)
 // ═══════════════════════════════════════════════════════
 
 export async function getSecretStatus() {
-    const hasKey = await hasSecret("GEMINI_API_KEY")
+    const hasKey = await hasSecret("OPENROUTER_API_KEY")
     return { configured: hasKey }
 }
 
@@ -78,13 +78,13 @@ export async function updateGeminiKey(apiKey: string) {
         return { success: false, error: "Invalid API key" }
     }
 
-    const result = await setSecret("GEMINI_API_KEY", apiKey.trim())
+    const result = await setSecret("OPENROUTER_API_KEY", apiKey.trim())
     if (!result) return { success: false, error: "Failed to encrypt and store key" }
 
     logAudit({
         action: "SETTINGS_UPDATED",
         entity: "SecretConfig",
-        entityId: "GEMINI_API_KEY",
+        entityId: "OPENROUTER_API_KEY",
         userId: (session?.user?.id),
     })
 
@@ -125,7 +125,7 @@ export async function scoutTrends(): Promise<{ success: boolean; ideas?: Scouted
     try {
         const config = await getAiConfig()
         const prompt = buildScoutPrompt(config)
-        const rawResponse = await generateWithGemini(prompt)
+        const rawResponse = await generateWithAI(prompt)
 
         // Parse JSON response (strip markdown wrappers if present)
         let cleanJson = rawResponse.trim()
@@ -281,7 +281,7 @@ export async function generateDraft(ideaId: string): Promise<{ success: boolean;
 
         const config = await getAiConfig()
         const prompt = buildDraftPrompt(idea.title, idea.angle, idea.keywords, config)
-        let markdown = await generateWithGemini(prompt)
+        let markdown = await generateWithAI(prompt)
 
         // Strip markdown code block wrappers if present
         markdown = markdown.replace(/^```(?:markdown|md)?\n?/, "").replace(/\n?```$/, "")
@@ -351,7 +351,7 @@ export async function autoSuggestExclusions(): Promise<{ success: boolean; sugge
     try {
         const config = await getAiConfig()
         const prompt = buildExclusionSuggestPrompt(config)
-        const rawResponse = await generateWithGemini(prompt)
+        const rawResponse = await generateWithAI(prompt)
 
         let cleanJson = rawResponse.trim()
         if (cleanJson.startsWith("```")) {
@@ -387,7 +387,7 @@ export async function generateRawDraft(topic: string, angle: string): Promise<{ 
     try {
         const config = await getAiConfig()
         const prompt = buildDraftPrompt(topic, angle, [], config)
-        let markdown = await generateWithGemini(prompt)
+        let markdown = await generateWithAI(prompt)
 
         // Strip markdown code block wrappers if present
         markdown = markdown.replace(/^```(?:markdown|md)?\n?/, "").replace(/\n?```$/, "")

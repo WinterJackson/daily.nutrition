@@ -114,23 +114,24 @@ const cloudinarySetupSteps = [
   }
 ]
 
-// Google Gemini Setup Steps
-const geminiSetupSteps = [
+// OpenRouter Setup Steps
+const openRouterSetupSteps = [
   {
     step: 1,
-    title: "Access Google AI Studio",
-    description: "Go to Google AI Studio and sign in with your Google account. This powers the AI features in your dashboard.",
-    url: "https://aistudio.google.com/"
+    title: "Create an OpenRouter Account",
+    description: "Go to openrouter.ai and sign up for a free account. No credit card required — the free tier gives you access to powerful AI models like Llama 3.3 70B.",
+    url: "https://openrouter.ai/"
   },
   {
     step: 2,
-    title: "Create an API Key",
-    description: "Click on 'Get API Key', then create a new key or select an existing Google Cloud project.",
+    title: "Generate an API Key",
+    description: "Go to your Dashboard → Keys → 'Create Key'. Give it a name like 'Edwak Nutrition'. The key starts with 'sk-or-'.",
+    url: "https://openrouter.ai/keys"
   },
   {
     step: 3,
-    title: "Secure Your Key",
-    description: "Copy the generated API key (it will be a long string of random characters) and paste it into the field below.",
+    title: "Paste Your Key Below",
+    description: "Copy the full API key and paste it into the field below. Free tier includes 50 requests/day (upgradable to 1000/day with a one-time $10 credit top-up).",
   }
 ]
 
@@ -196,7 +197,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
       CLOUDINARY_CLOUD_NAME: "",
       CLOUDINARY_API_KEY: "",
       CLOUDINARY_API_SECRET: "",
-      GEMINI_API_KEY: "",
+      OPENROUTER_API_KEY: "",
       GOOGLE_CALENDAR_CLIENT_EMAIL: "",
       GOOGLE_CALENDAR_PRIVATE_KEY: "",
       GOOGLE_MAPS_API_KEY: ""
@@ -288,7 +289,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
               CLOUDINARY_CLOUD_NAME: "",
               CLOUDINARY_API_KEY: "",
               CLOUDINARY_API_SECRET: "",
-              GEMINI_API_KEY: "",
+              OPENROUTER_API_KEY: "",
               GOOGLE_CALENDAR_CLIENT_EMAIL: "",
               GOOGLE_CALENDAR_PRIVATE_KEY: "",
               GOOGLE_MAPS_API_KEY: ""
@@ -778,15 +779,15 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                    />
 
                    <SecretCard saveSuccess={saveSuccess}
-                       title="Gemini API Key"
-                       description="Powers the AI content workflows."
-                       secretKey="GEMINI_API_KEY"
-                       docsLink="https://aistudio.google.com/app/apikey"
-                       docsLabel="Google AI Studio"
-                       isConfigured={secretStatuses["GEMINI_API_KEY"]}
-                       value={secrets.GEMINI_API_KEY}
-                       onChange={(v) => setSecrets(p => ({ ...p, GEMINI_API_KEY: v }))}
-                       setupSteps={geminiSetupSteps}
+                       title="OpenRouter API Key"
+                       description="Powers the AI content workflows (TrendScout, Draft Generation). Free tier uses Llama 3.3 70B."
+                       secretKey="OPENROUTER_API_KEY"
+                       docsLink="https://openrouter.ai/keys"
+                       docsLabel="OpenRouter Dashboard"
+                       isConfigured={secretStatuses["OPENROUTER_API_KEY"]}
+                       value={secrets.OPENROUTER_API_KEY}
+                       onChange={(v) => setSecrets(p => ({ ...p, OPENROUTER_API_KEY: v }))}
+                       setupSteps={openRouterSetupSteps}
                    />
 
                    <div className="space-y-4 pt-4 border-t border-subtle">
