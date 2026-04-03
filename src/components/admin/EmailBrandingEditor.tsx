@@ -43,7 +43,7 @@ export function EmailBrandingEditor({ branding, onChange }: EmailBrandingEditorP
         <div className="space-y-6">
             {/* Logo Upload */}
             <div className="space-y-3">
-                <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">
+                <label className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-neutral-500">
                     Email Header Logo
                 </label>
                 <div className="flex items-center gap-4">
@@ -72,10 +72,10 @@ export function EmailBrandingEditor({ branding, onChange }: EmailBrandingEditorP
                             className="w-32 h-16 bg-neutral-100 dark:bg-white/10 rounded-lg border-2 border-dashed border-neutral-300 dark:border-white/20 flex flex-col items-center justify-center cursor-pointer hover:border-brand-green transition-colors"
                         >
                             <ImageIcon className="w-5 h-5 text-neutral-400 mb-1" />
-                            <span className="text-xs text-neutral-400">Choose Logo</span>
+                            <span className="text-[10px] md:text-xs text-neutral-400">Choose Logo</span>
                         </div>
                     )}
-                    <p className="text-xs text-neutral-500">
+                    <p className="text-[10px] md:text-xs text-neutral-500">
                         Recommended: 200x80px, PNG with transparent background
                     </p>
                 </div>
@@ -84,7 +84,7 @@ export function EmailBrandingEditor({ branding, onChange }: EmailBrandingEditorP
             {/* Color Pickers */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">
-                    <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">
+                    <label className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-neutral-500">
                         Primary Color (Buttons, Headers)
                     </label>
                     <div className="flex items-center gap-3">
@@ -113,7 +113,7 @@ export function EmailBrandingEditor({ branding, onChange }: EmailBrandingEditorP
                 </div>
 
                 <div className="space-y-3">
-                    <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">
+                    <label className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-neutral-500">
                         Accent Color (Links, Highlights)
                     </label>
                     <div className="flex items-center gap-3">
@@ -144,7 +144,7 @@ export function EmailBrandingEditor({ branding, onChange }: EmailBrandingEditorP
 
             {/* Footer Text */}
             <div className="space-y-3">
-                <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">
+                <label className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-neutral-500">
                     Footer Text
                 </label>
                 <Input
@@ -153,13 +153,13 @@ export function EmailBrandingEditor({ branding, onChange }: EmailBrandingEditorP
                     placeholder="Edwak Nutrition, Nairobi, Kenya"
                     className="bg-white dark:bg-charcoal border-neutral-200 dark:border-white/10"
                 />
-                <p className="text-xs text-neutral-400">Appears at the bottom of every email</p>
+                <p className="text-[10px] md:text-xs text-neutral-400">Appears at the bottom of every email</p>
             </div>
 
             {/* Website & Support */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-3">
-                    <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">
+                    <label className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-neutral-500">
                         Website URL
                     </label>
                     <div className="relative">
@@ -174,7 +174,7 @@ export function EmailBrandingEditor({ branding, onChange }: EmailBrandingEditorP
                 </div>
 
                 <div className="space-y-3">
-                    <label className="text-xs font-bold uppercase tracking-widest text-neutral-500">
+                    <label className="text-[10px] md:text-xs font-bold uppercase tracking-widest text-neutral-500">
                         Support Email
                     </label>
                     <div className="relative">

@@ -154,10 +154,10 @@ export default function BookingDetailPage() {
 
             <div className="w-full max-w-2xl relative z-10 space-y-8">
                 <div className="text-center">
-                    <h1 className="text-2xl font-bold text-body mb-2">
+                    <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold text-body mb-2">
                         {isCancelled ? "Booking Cancelled" : "Your Booking"}
                     </h1>
-                    <p className="text-caption">
+                    <p className="text-sm md:text-base text-caption">
                         Reference: <span className="font-mono font-bold text-brand-green">{booking.referenceCode}</span>
                     </p>
                 </div>
@@ -180,7 +180,7 @@ export default function BookingDetailPage() {
                 )}
 
                 <Card className="surface-card shadow-2xl backdrop-blur-sm overflow-hidden">
-                    <div className={`p-4 text-sm font-bold text-center flex items-center justify-center gap-2 ${
+                    <div className={`p-4 text-sm md:text-base font-bold text-center flex items-center justify-center gap-2 ${
                         isCancelled ? "bg-red-100 text-red-700 dark:bg-red-900/20 dark:text-red-400" :
                         isCompleted ? "surface-secondary text-caption" :
                         isPending ? "bg-amber-100 text-amber-700 dark:bg-amber-900/20 dark:text-amber-400" :
@@ -194,8 +194,8 @@ export default function BookingDetailPage() {
                         <div className="grid gap-8">
                             <div className="flex items-start justify-between">
                                 <div>
-                                    <h2 className="text-xl font-bold text-body">{booking.serviceName}</h2>
-                                    <p className="text-caption">{booking.sessionType} Session</p>
+                                    <h2 className="text-xl md:text-2xl font-bold text-body">{booking.serviceName}</h2>
+                                    <p className="text-sm md:text-base text-caption">{booking.sessionType} Session</p>
                                 </div>
                                 <div className="text-right">
                                     <div className="text-brand-orange font-bold text-lg">{booking.duration} min</div>
@@ -233,8 +233,8 @@ export default function BookingDetailPage() {
                                         <Calendar className="w-5 h-5" />
                                     </div>
                                     <div>
-                                        <p className="text-xs font-bold uppercase text-caption">Date</p>
-                                        <p className="font-semibold text-body">
+                                        <p className="text-[10px] md:text-xs font-bold uppercase text-caption">Date</p>
+                                        <p className="text-sm md:text-base font-semibold text-body">
                                             {scheduledDate.toLocaleDateString("en-US", {
                                                 weekday: 'long', month: 'long', day: 'numeric', year: 'numeric',
                                                 timeZone: booking.clientTimezone || 'Africa/Nairobi'
@@ -247,8 +247,8 @@ export default function BookingDetailPage() {
                                         <Clock className="w-5 h-5" />
                                     </div>
                                     <div>
-                                        <p className="text-xs font-bold uppercase text-caption">Time</p>
-                                        <p className="font-semibold text-body">
+                                        <p className="text-[10px] md:text-xs font-bold uppercase text-caption">Time</p>
+                                        <p className="text-sm md:text-base font-semibold text-body">
                                             {scheduledDate.toLocaleTimeString("en-US", {
                                                 hour: 'numeric', minute: '2-digit',
                                                 timeZone: booking.clientTimezone || 'Africa/Nairobi'
@@ -268,7 +268,7 @@ export default function BookingDetailPage() {
                                     </div>
                                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <label className="text-xs font-bold uppercase text-caption">New Date</label>
+                                            <label className="text-[10px] md:text-xs font-bold uppercase text-caption">New Date</label>
                                             <Input
                                                 type="date"
                                                 value={rescheduleDate}
@@ -278,7 +278,7 @@ export default function BookingDetailPage() {
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-xs font-bold uppercase text-caption">New Time</label>
+                                            <label className="text-[10px] md:text-xs font-bold uppercase text-caption">New Time</label>
                                             <select
                                                 value={rescheduleTime}
                                                 onChange={(e) => setRescheduleTime(e.target.value)}

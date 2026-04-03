@@ -354,8 +354,8 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
     <div className="space-y-8 max-w-[1600px] mx-auto animate-in fade-in duration-500">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-3xl font-bold font-serif text-body flex items-center gap-3">Settings</h1>
-          <p className="text-caption mt-1">Configure your platform preferences.</p>
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold font-serif text-body flex items-center gap-3">Settings</h1>
+          <p className="text-sm md:text-base text-caption mt-1">Configure your platform preferences.</p>
         </div>
         <Button
           variant="accent"
@@ -461,7 +461,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                     />
                   </div>
                   <div className="space-y-4 md:col-span-2 pt-4 border-t border-neutral-100 dark:border-white/5">
-                    <h3 className="font-semibold text-olive dark:text-off-white text-base">Payment Credentials</h3>
+                    <h3 className="font-semibold text-olive dark:text-off-white text-sm md:text-base">Payment Credentials</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div className="space-y-2">
                            <label className="text-xs font-bold uppercase tracking-wider text-caption">Safaricom Till Number</label>
@@ -502,7 +502,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                          <MapPin className="w-4 h-4 text-brand-green" />
                          Google Maps Embed HTML
                        </label>
-                       <p className="text-xs text-neutral-500 pr-10">Paste the full <b>&lt;iframe&gt;</b> code from Google Maps here. We will securely extract your explicit Google Embed link to guarantee pixel-perfect UI synchronization on the public Contact page.</p>
+                       <p className="text-[10px] md:text-xs text-neutral-500 pr-10">Paste the full <b>&lt;iframe&gt;</b> code from Google Maps here. We will securely extract your explicit Google Embed link to guarantee pixel-perfect UI synchronization on the public Contact page.</p>
                        <Input
                          value={settings.googleMapsEmbedUrl}
                          onChange={(e) => handleMapEmbedChange(e.target.value)}
@@ -651,7 +651,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                     <span className="font-medium">Dark</span>
                   </button>
                 </div>
-                <p className="text-xs text-caption mt-3">
+                <p className="text-[10px] md:text-xs text-caption mt-3">
                   This sets the default theme for new visitors. Users can still toggle the theme manually.
                 </p>
               </CardContent>
@@ -713,7 +713,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                 
                 {/* Google Search Preview */}
                 <div className="bg-white dark:bg-charcoal p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm">
-                   <h3 className="text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-4 flex items-center gap-2">
+                   <h3 className="text-xs md:text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-4 flex items-center gap-2">
                        <Globe className="w-4 h-4" /> Google Search Preview
                    </h3>
                    <div className="max-w-[600px] break-words">
@@ -726,14 +726,14 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                                )}
                            </div>
                            <div className="leading-tight">
-                               <div className="text-[14px] text-neutral-800 dark:text-neutral-200 truncate max-w-[300px]">{settings.businessName || "Your Website"}</div>
-                               <div className="text-[12px] text-neutral-500 truncate max-w-[300px]">https://{settings.businessName?.toLowerCase().replace(/\s+/g, '') || "yourwebsite"}.co.ke</div>
+                               <div className="text-xs md:text-[14px] text-neutral-800 dark:text-neutral-200 truncate max-w-[300px]">{settings.businessName || "Your Website"}</div>
+                               <div className="text-[10px] md:text-[12px] text-neutral-500 truncate max-w-[300px]">https://{settings.businessName?.toLowerCase().replace(/\s+/g, '') || "yourwebsite"}.co.ke</div>
                            </div>
                        </div>
-                       <div className="text-[20px] text-[#1a0dab] dark:text-[#8ab4f8] hover:underline cursor-pointer mb-1 leading-snug">
+                       <div className="text-lg md:text-[20px] text-[#1a0dab] dark:text-[#8ab4f8] hover:underline cursor-pointer mb-1 leading-snug">
                            {settings.pageTitle || "Default Page Title"}
                        </div>
-                       <div className="text-[14px] text-[#4d5156] dark:text-[#bdc1c6] leading-snug">
+                       <div className="text-xs md:text-[14px] text-[#4d5156] dark:text-[#bdc1c6] leading-snug">
                            {settings.metaDescription || "Provide a clear and concise meta description to encourage users to click through to your site."}
                        </div>
                    </div>
@@ -755,7 +755,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                         className="surface-input"
                         placeholder="Primary Keyword - Secondary Keyword | Brand Name"
                       />
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400">Keep it between 50-60 characters for best results.</p>
+                      <p className="text-[10px] md:text-xs text-neutral-500 dark:text-neutral-400">Keep it between 50-60 characters for best results.</p>
                     </div>
 
                     <div className="space-y-2">
@@ -771,7 +771,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                         onChange={(e) => handleChange("metaDescription", e.target.value)}
                         placeholder="Write a compelling summary of your page. Highlight your unique selling proposition."
                       />
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400">Keep it between 150-160 characters for best results.</p>
+                      <p className="text-[10px] md:text-xs text-neutral-500 dark:text-neutral-400">Keep it between 150-160 characters for best results.</p>
                     </div>
 
                     <div className="space-y-2">
@@ -782,14 +782,14 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                         className="surface-input"
                         placeholder="nutrition, diet plan, kenya dietitian"
                       />
-                      <p className="text-xs text-neutral-500 dark:text-neutral-400 italic">Separate keywords with commas.</p>
+                      <p className="text-[10px] md:text-xs text-neutral-500 dark:text-neutral-400 italic">Separate keywords with commas.</p>
                     </div>
                   </div>
 
                   {/* Right Column: OG Image */}
                   <div className="space-y-2">
                      <label className="text-xs font-bold uppercase tracking-wider text-caption">Social Sharing Image (OG Image)</label>
-                     <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">This image appears when your site is shared on WhatsApp, Twitter, LinkedIn, etc. Recommended size: 1200x630px.</p>
+                     <p className="text-[10px] md:text-xs text-neutral-500 dark:text-neutral-400 mb-3">This image appears when your site is shared on WhatsApp, Twitter, LinkedIn, etc. Recommended size: 1200x630px.</p>
                      
                      <div className="border-2 border-dashed border-neutral-200 dark:border-white/10 rounded-xl overflow-hidden bg-neutral-50 dark:bg-white/5 aspect-[1200/630] flex flex-col items-center justify-center relative group">
                         {settings.ogImageUrl ? (

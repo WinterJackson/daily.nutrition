@@ -28,7 +28,7 @@ export default async function ServicePage({ params }: Props) {
             <div className="container max-w-7xl mx-auto mt-15 px-4 sm:px-6 lg:px-8 mb-8 relative z-10">
                 <Link
                     href="/services"
-                    className="inline-flex items-center text-sm font-medium text-neutral-500 hover:text-brand-green transition-colors"
+                    className="inline-flex items-center text-sm md:text-base font-medium text-neutral-500 hover:text-brand-green transition-colors"
                 >
                     <ArrowLeft className="mr-2 h-4 w-4" />
                     Back to Services
@@ -49,7 +49,7 @@ export default async function ServicePage({ params }: Props) {
                     ) : (
                         <div className="w-full h-full flex flex-col items-center justify-center bg-neutral-100 dark:bg-white/5 text-neutral-300 dark:text-neutral-600">
                             <ImageIcon className="w-16 h-16 mb-2" />
-                            <span className="text-sm font-medium">No image available</span>
+                            <span className="text-xs md:text-sm font-medium">No image available</span>
                         </div>
                     )}
                 </div>
@@ -65,16 +65,16 @@ export default async function ServicePage({ params }: Props) {
                             <ServiceIcon name={service.icon} className="w-8 h-8" />
                         </div>
 
-                        <h1 className="text-3xl md:text-5xl font-bold font-serif text-olive dark:text-off-white mb-6">
+                        <h1 className="text-3xl md:text-5xl lg:text-6xl font-bold font-serif text-olive dark:text-off-white mb-6">
                             {service.title}
                         </h1>
 
-                        <p className="text-xl text-neutral-600 dark:text-neutral-300 leading-relaxed mb-8">
+                        <p className="text-lg md:text-xl text-neutral-600 dark:text-neutral-300 leading-relaxed mb-8">
                             {service.fullDescription}
                         </p>
 
                         <div className="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-8 shadow-sm border border-neutral-100 dark:border-white/10 mb-12">
-                            <h3 className="text-xl font-semibold text-olive dark:text-off-white mb-6">
+                            <h3 className="text-xl md:text-2xl font-semibold text-olive dark:text-off-white mb-6">
                                 What We Cover
                             </h3>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -84,7 +84,7 @@ export default async function ServicePage({ params }: Props) {
                                         className="flex items-start gap-3"
                                     >
                                         <CheckCircle2 className="w-5 h-5 text-brand-green mt-0.5 shrink-0" />
-                                        <span className="text-neutral-700 dark:text-neutral-300">
+                                        <span className="text-base md:text-lg text-neutral-700 dark:text-neutral-300">
                                             {feature}
                                         </span>
                                     </div>
@@ -93,10 +93,10 @@ export default async function ServicePage({ params }: Props) {
                         </div>
 
                         <div className="bg-linear-to-br from-soft-green/10 to-brand-green/5 dark:from-white/5 dark:to-white/2 rounded-2xl p-8 mb-12">
-                            <h3 className="text-xl font-semibold text-olive dark:text-off-white mb-4">
+                            <h3 className="text-xl md:text-2xl font-semibold text-olive dark:text-off-white mb-4">
                                 Who This Is For
                             </h3>
-                            <p className="text-neutral-700 dark:text-neutral-300 leading-relaxed">
+                            <p className="text-base md:text-lg text-neutral-700 dark:text-neutral-300 leading-relaxed">
                                 {service.targetAudience}
                             </p>
                         </div>

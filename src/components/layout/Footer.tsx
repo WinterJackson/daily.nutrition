@@ -56,17 +56,17 @@ export async function Footer() {
                                 className="h-50 w-auto object-contain bg-white/10 rounded-xl p-2"
                             />
                         </Link>
-                        <p className="text-white/80 text-sm leading-relaxed max-w-xs">
+                        <p className="text-white/80 text-sm md:text-base leading-relaxed max-w-xs">
                             Nutrition Care, That satisfies.
                         </p>
                     </div>
 
                     {/* Quick Links */}
                     <div className="space-y-4 text-center md:text-left">
-                        <h4 className="font-semibold text-lg text-white">
+                        <h4 className="font-semibold text-lg md:text-xl text-white">
                             Quick Links
                         </h4>
-                        <ul className="space-y-2 text-sm text-white/80">
+                        <ul className="space-y-2 text-sm md:text-base text-white/80">
                             <li>
                                 <Link
                                     href="/services"
@@ -104,10 +104,10 @@ export async function Footer() {
 
                     {/* Services */}
                     <div className="space-y-4 text-center md:text-left">
-                        <h4 className="font-semibold text-lg text-white">
+                        <h4 className="font-semibold text-lg md:text-xl text-white">
                             Specialties
                         </h4>
-                        <ul className="space-y-2 text-sm text-white/80">
+                        <ul className="space-y-2 text-sm md:text-base text-white/80">
                             {displayedServices.length > 0 ? (
                                 displayedServices
                                     .filter(
@@ -132,10 +132,10 @@ export async function Footer() {
 
                     {/* Contact */}
                     <div className="space-y-4 text-center md:text-left">
-                        <h4 className="font-semibold text-lg text-white">
+                        <h4 className="font-semibold text-lg md:text-xl text-white">
                             Contact Us
                         </h4>
-                        <ul className="space-y-3 mb-14 text-sm text-white/80 flex flex-col items-center md:items-start">
+                        <ul className="space-y-3 mb-14 text-sm md:text-base text-white/80 flex flex-col items-center md:items-start">
                             <li className="flex items-start gap-3">
                                 <MapPin className="h-5 w-5 text-orange shrink-0" />
                                 <span>{address}</span>
@@ -151,7 +151,7 @@ export async function Footer() {
                         </ul>
 
                         {/* Social Icons — Orange, directly under Contact Us */}
-                        <h4 className="font-semibold text-lg text-white mt-8 mb-4">
+                        <h4 className="font-semibold text-lg md:text-xl text-white mt-8 mb-4">
                             Social Links
                         </h4>
                         <div className="flex flex-col gap-3 items-center md:items-start pt-2">
@@ -209,7 +209,7 @@ export async function Footer() {
                     </div>
                 </div>
 
-                <div className="border-t border-white/10 pt-8 flex flex-col items-center gap-2 text-xs text-white/60 md:flex-row md:justify-between md:gap-4">
+                <div className="border-t border-white/10 pt-8 flex flex-col items-center gap-2 text-xs md:text-sm text-white/60 md:flex-row md:justify-between md:gap-4">
                     <div className="flex flex-col items-center gap-1 md:flex-row md:gap-4">
                         <Link
                             href="/privacy"

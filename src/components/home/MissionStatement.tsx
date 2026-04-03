@@ -22,10 +22,10 @@ export function MissionStatement() {
             className="relative"
           >
             <Quote className="absolute -top-4 -left-4 w-16 h-16 text-brand-green/10 dark:text-brand-green/20" />
-            <blockquote className="text-2xl md:text-3xl font-serif text-olive dark:text-off-white leading-relaxed pl-8 border-l-4 border-brand-green">
+            <blockquote className="text-2xl md:text-3xl lg:text-4xl font-serif text-olive dark:text-off-white leading-relaxed pl-8 border-l-4 border-brand-green">
               "Our mission is to empower individuals with the knowledge and support they need to make lasting, positive changes in their health through evidence-based nutrition."
             </blockquote>
-            <cite className="block mt-6 pl-8 text-neutral-500 dark:text-neutral-400 not-italic">
+            <cite className="block mt-6 pl-8 text-sm md:text-base text-neutral-500 dark:text-neutral-400 not-italic">
               — Edna R., Founder
             </cite>
           </motion.div>
@@ -38,8 +38,8 @@ export function MissionStatement() {
             transition={{ delay: 0.2 }}
             className="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-8 shadow-lg border border-neutral-100 dark:border-white/10"
           >
-            <h3 className="text-xl font-semibold text-olive dark:text-off-white mb-4">Why Choose Us?</h3>
-            <ul className="space-y-4 text-neutral-600 dark:text-neutral-300">
+            <h3 className="text-xl md:text-2xl font-semibold text-olive dark:text-off-white mb-4">Why Choose Us?</h3>
+            <ul className="space-y-4 text-base md:text-lg text-neutral-600 dark:text-neutral-300">
               <li className="flex items-start gap-3">
                 <span className="w-2 h-2 rounded-full bg-brand-green mt-2 shrink-0"></span>
                 <span>Evidence-based, personalized nutrition plans</span>

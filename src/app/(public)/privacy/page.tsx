@@ -21,8 +21,8 @@ export default async function PrivacyPolicyPage() {
       
       <div className="relative container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="mb-12 text-center">
-          <h1 className="text-4xl md:text-5xl font-serif text-charcoal dark:text-off-white mb-4">Privacy Policy</h1>
-          <p className="text-olive/80 dark:text-olive/60 font-medium">Last Updated: March 2026</p>
+          <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif text-charcoal dark:text-off-white mb-4">Privacy Policy</h1>
+          <p className="text-sm md:text-base text-olive/80 dark:text-olive/60 font-medium">Last Updated: March 2026</p>
         </div>
 
         <div className="prose prose-lg max-w-none text-charcoal/80 dark:text-off-white/80 space-y-8 bg-white/80 dark:bg-white/5 p-8 md:p-12 rounded-2xl shadow-sm border border-neutral-100 dark:border-white/10">
@@ -35,14 +35,14 @@ export default async function PrivacyPolicyPage() {
             <>
               {/* Fallback to default content if not set in admin */}
               <section>
-            <h2 className="text-2xl font-serif text-olive dark:text-brand-green mb-4">1. Introduction</h2>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif text-olive dark:text-brand-green mb-4">1. Introduction</h2>
             <p>
               Welcome to <strong>{businessName}</strong>. This Privacy Policy sets out how we collect, use, process, and protect your personal data when you use our website, services, or interact with us. We are committed to safeguarding your privacy in strict compliance with the <strong>Kenya Data Protection Act, 2019 (DPA)</strong> and its attendant regulations.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-serif text-olive dark:text-brand-green mb-4">2. Data Controller</h2>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif text-olive dark:text-brand-green mb-4">2. Data Controller</h2>
             <p>
               For the purposes of the DPA, <strong>{businessName}</strong> is the Data Controller. This means we determine the purpose and means of processing your personal data.<br /><br />
               <strong>Official Address:</strong> {address}<br />
@@ -51,7 +51,7 @@ export default async function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-serif text-olive dark:text-brand-green mb-4">3. Data We Collect</h2>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif text-olive dark:text-brand-green mb-4">3. Data We Collect</h2>
             <p>We may collect and process the following categories of personal data:</p>
             <ul className="list-disc pl-6 space-y-2 mt-4">
               <li><strong>Identity Data:</strong> First name, last name, title, date of birth, and gender.</li>
@@ -63,7 +63,7 @@ export default async function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-serif text-olive dark:text-brand-green mb-4">4. How We Collect Your Data</h2>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif text-olive dark:text-brand-green mb-4">4. How We Collect Your Data</h2>
             <p>
               We collect data through:
             </p>
@@ -75,7 +75,7 @@ export default async function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-serif text-olive dark:text-brand-green mb-4">5. Lawful Basis for Processing</h2>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif text-olive dark:text-brand-green mb-4">5. Lawful Basis for Processing</h2>
             <p>Under Section 30 of the DPA, we will only process your personal data where we have a lawful basis. These include:</p>
             <ul className="list-disc pl-6 space-y-2 mt-4">
               <li><strong>Consent:</strong> Where you have provided unambiguous, informed consent (especially for health data).</li>
@@ -86,7 +86,7 @@ export default async function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-serif text-olive dark:text-brand-green mb-4">6. Purpose of Processing</h2>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif text-olive dark:text-brand-green mb-4">6. Purpose of Processing</h2>
             <p>We use your data to:</p>
             <ul className="list-disc pl-6 space-y-2 mt-4">
               <li>Register you as a new client and manage your appointments.</li>
@@ -98,7 +98,7 @@ export default async function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-serif text-olive dark:text-brand-green mb-4">7. Data Sharing and Transfers</h2>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif text-olive dark:text-brand-green mb-4">7. Data Sharing and Transfers</h2>
             <p>
               We may share your personal data with strictly vetted third-party service providers (e.g., hosting providers, payment processors, email API services like Resend, and AI service providers like Google Gemini) who act as Data Processors.
             </p>
@@ -108,7 +108,7 @@ export default async function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-serif text-olive dark:text-brand-green mb-4">8. Data Security</h2>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif text-olive dark:text-brand-green mb-4">8. Data Security</h2>
             <p>
               We have implemented robust security measures to prevent your personal data from being accidentally lost, used, accessed in an unauthorized way, altered, or disclosed. This includes:
             </p>
@@ -120,14 +120,14 @@ export default async function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-serif text-olive dark:text-brand-green mb-4">9. Data Retention</h2>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif text-olive dark:text-brand-green mb-4">9. Data Retention</h2>
             <p>
               We will only retain your personal data for as long as necessary to fulfill the purposes we collected it for, including for the purposes of satisfying any legal, accounting, or reporting requirements. By default, client consultation records are kept securely for a minimum duration as mandated by Kenyan health and corporate statutes before secure deletion.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-serif text-olive dark:text-brand-green mb-4">10. Your Data Subject Rights</h2>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif text-olive dark:text-brand-green mb-4">10. Your Data Subject Rights</h2>
             <p>Under Part IV of the Kenya Data Protection Act, you possess the following rights:</p>
             <ul className="list-disc pl-6 space-y-2 mt-4">
               <li><strong>Right to be Informed:</strong> To know how your data is being used.</li>
@@ -143,21 +143,21 @@ export default async function PrivacyPolicyPage() {
           </section>
 
           <section>
-            <h2 className="text-2xl font-serif text-olive dark:text-brand-green mb-4">11. Automated Decision Making and Profiling</h2>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif text-olive dark:text-brand-green mb-4">11. Automated Decision Making and Profiling</h2>
             <p>
               We do not use your personal data for automated decision-making that produces legal effects concerning you or similarly significantly affects you without human intervention. Our AI integrations (e.g., content drafting) do not profile individual users.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-serif text-olive dark:text-brand-green mb-4">12. Office of the Data Protection Commissioner (ODPC)</h2>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif text-olive dark:text-brand-green mb-4">12. Office of the Data Protection Commissioner (ODPC)</h2>
             <p>
               If you believe our processing of your personal data infringes data protection laws, you have a legal right to lodge a complaint with the <strong>Office of the Data Protection Commissioner (ODPC)</strong> in Kenya. However, we would appreciate the chance to deal with your concerns before you approach the ODPC.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-serif text-olive dark:text-brand-green mb-4">13. Changes to this Privacy Policy</h2>
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif text-olive dark:text-brand-green mb-4">13. Changes to this Privacy Policy</h2>
             <p>
               We keep our Privacy Policy under regular review. Any changes will be posted on this page with an updated revision date. If significant changes occur regarding how we treat your personal data, we will notify you prominently via email or notice on our platform.
             </p>

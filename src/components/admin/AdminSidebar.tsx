@@ -172,7 +172,7 @@ export function AdminSidebar() {
                 <motion.span 
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
-                  className="whitespace-nowrap font-medium text-sm flex-1 flex justify-between items-center"
+                  className="whitespace-nowrap font-medium text-xs md:text-sm flex-1 flex justify-between items-center"
                 >
                   {link.name}
                   {(link.name === "Bookings" && badges.bookings > 0) && (
@@ -230,7 +230,7 @@ export function AdminSidebar() {
                 <button 
                   onClick={() => setTheme("light")}
                   className={cn(
-                    "flex-1 flex items-center justify-center gap-2 py-1.5 rounded-lg text-xs font-medium transition-all duration-300",
+                    "flex-1 flex items-center justify-center gap-2 py-1.5 rounded-lg text-[10px] md:text-xs font-medium transition-all duration-300",
                     theme === 'light' 
                       ? "bg-white text-olive shadow-sm scale-100" 
                       : "text-white/60 hover:text-white hover:bg-white/5"
@@ -242,7 +242,7 @@ export function AdminSidebar() {
                 <button 
                   onClick={() => setTheme("system")}
                   className={cn(
-                    "flex-1 flex items-center justify-center gap-2 py-1.5 rounded-lg text-xs font-medium transition-all duration-300",
+                    "flex-1 flex items-center justify-center gap-2 py-1.5 rounded-lg text-[10px] md:text-xs font-medium transition-all duration-300",
                     theme === 'system' 
                        ? "bg-white text-olive shadow-sm scale-100" 
                        : "text-white/60 hover:text-white hover:bg-white/5"
@@ -253,7 +253,7 @@ export function AdminSidebar() {
                 <button 
                   onClick={() => setTheme("dark")}
                   className={cn(
-                    "flex-1 flex items-center justify-center gap-2 py-1.5 rounded-lg text-xs font-medium transition-all duration-300",
+                    "flex-1 flex items-center justify-center gap-2 py-1.5 rounded-lg text-[10px] md:text-xs font-medium transition-all duration-300",
                     theme === 'dark' 
                        ? "bg-white text-olive shadow-sm scale-100" 
                        : "text-white/60 hover:text-white hover:bg-white/5"
@@ -286,7 +286,7 @@ export function AdminSidebar() {
           }}
         >
           <LogOut className="w-5 h-5 shrink-0 group-hover:text-red-300 transition-colors" />
-          {(isMobile || !collapsed) && <span className="ml-3 font-medium">Logout</span>}
+          {(isMobile || !collapsed) && <span className="ml-3 font-medium text-xs md:text-sm">Logout</span>}
         </Button>
       </div>
     </>

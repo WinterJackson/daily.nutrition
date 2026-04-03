@@ -71,7 +71,7 @@ export default async function BlogIndexPage({ searchParams }: BlogIndexPageProps
                     <Link 
                         key={cat} 
                         href={`/blog?category=${cat}${query ? `&q=${query}` : ''}`}
-                        className={`px-4 py-1.5 rounded-full text-xs font-medium transition-all ${
+                        className={`px-4 py-1.5 rounded-full text-[10px] md:text-xs font-medium transition-all ${
                             category === cat 
                             ? "bg-brand-green text-white shadow-md shadow-brand-green/20" 
                             : "bg-white/60 dark:bg-white/5 text-neutral-600 dark:text-neutral-400 hover:bg-white dark:hover:bg-white/10"
@@ -108,30 +108,30 @@ export default async function BlogIndexPage({ searchParams }: BlogIndexPageProps
                         ) : (
                             <div className="w-full aspect-video bg-neutral-100 dark:bg-white/5 flex items-center justify-center relative">
                                 <div className="absolute top-4 left-4">
-                                    <span className="px-3 py-1 bg-white/90 dark:bg-charcoal/90 backdrop-blur text-xs font-semibold text-olive dark:text-brand-green rounded-full shadow-sm">
+                                    <span className="px-3 py-1 bg-white/90 dark:bg-charcoal/90 backdrop-blur text-[10px] md:text-xs font-semibold text-olive dark:text-brand-green rounded-full shadow-sm">
                                         {post.category?.name || "General"}
                                     </span>
                                 </div>
-                                <span className="text-neutral-400">No Image</span>
+                                <span className="text-xs md:text-sm text-neutral-400">No Image</span>
                             </div>
                         )}
 
                         <CardHeader>
-                        <div className="flex items-center gap-2 text-xs text-neutral-500 mb-2">
+                        <div className="flex items-center gap-2 text-[10px] md:text-xs text-neutral-500 mb-2">
                             <Calendar className="w-3 h-3" />
                             {post.createdAt.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
                         </div>
-                        <CardTitle className="text-xl font-serif text-olive dark:text-off-white group-hover:text-brand-green transition-colors leading-tight line-clamp-2">
+                        <CardTitle className="text-xl md:text-2xl font-serif text-olive dark:text-off-white group-hover:text-brand-green transition-colors leading-tight line-clamp-2">
                             {post.title}
                         </CardTitle>
                         </CardHeader>
                         <CardContent className="flex-grow pt-0">
-                        <div className="text-neutral-600 dark:text-neutral-400 text-sm line-clamp-3">
+                        <div className="text-neutral-600 dark:text-neutral-400 text-sm md:text-base line-clamp-3">
                             {/* Basic strip markdown */}
                             <p>{post.content.replace(/[#*`_\[\]]/g, '').substring(0, 120)}...</p>
                         </div>
                         </CardContent>
-                        <CardFooter className="text-brand-green font-medium text-sm flex items-center gap-2 group-hover:gap-3 transition-all mt-auto border-t border-neutral-100 dark:border-white/5 pt-4 mx-6 px-0">
+                        <CardFooter className="text-brand-green font-medium text-sm md:text-base flex items-center gap-2 group-hover:gap-3 transition-all mt-auto border-t border-neutral-100 dark:border-white/5 pt-4 mx-6 px-0">
                         Read Article <ArrowRight className="w-4 h-4" />
                         </CardFooter>
                     </Link>
@@ -144,7 +144,7 @@ export default async function BlogIndexPage({ searchParams }: BlogIndexPageProps
         ) : (
           <div className="text-center py-24 bg-white/50 dark:bg-white/5 rounded-3xl border border-dashed border-neutral-300 dark:border-white/10">
              <div className="max-w-md mx-auto">
-                <p className="text-neutral-500 dark:text-neutral-400 text-lg mb-2">No articles found matching your criteria.</p>
+                <p className="text-neutral-500 dark:text-neutral-400 text-base md:text-lg mb-2">No articles found matching your criteria.</p>
                 <Link href="/blog">
                     <span className="text-brand-green hover:underline cursor-pointer">Clear filters</span>
                 </Link>

@@ -35,7 +35,7 @@ export function Hero() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
-              className="inline-flex items-center gap-2 self-start px-4 py-2 rounded-full bg-white/80 dark:bg-white/5 backdrop-blur-sm border border-brand-green/20 text-olive dark:text-brand-green text-sm font-medium shadow-sm"
+              className="inline-flex items-center gap-2 self-start px-4 py-2 rounded-full bg-white/80 dark:bg-white/5 backdrop-blur-sm border border-brand-green/20 text-olive dark:text-brand-green text-xs md:text-sm font-medium shadow-sm"
             >
                <span className="relative flex h-2 w-2">
                   <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-brand-green opacity-75"></span>
@@ -77,7 +77,7 @@ export function Hero() {
                         1000+
                     </div>
                 </div>
-                <div className="text-sm text-neutral-600 dark:text-neutral-400">
+                <div className="text-xs md:text-sm text-neutral-600 dark:text-neutral-400">
                     Trusted by patients <br className="hidden sm:block"/> worldwide
                 </div>
             </div>
@@ -114,8 +114,8 @@ export function Hero() {
                             🥑
                         </div>
                         <div>
-                            <p className="font-semibold text-olive dark:text-off-white text-sm mb-0.5">Custom Plans</p>
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400">Tailored to your needs</p>
+                            <p className="font-semibold text-olive dark:text-off-white text-sm md:text-base mb-0.5">Custom Plans</p>
+                            <p className="text-[10px] md:text-xs text-neutral-500 dark:text-neutral-400">Tailored to your needs</p>
                         </div>
                     </div>
                 </TiltCard>
@@ -133,8 +133,8 @@ export function Hero() {
                             📈
                         </div>
                         <div>
-                            <p className="font-semibold text-olive dark:text-off-white text-sm mb-0.5">Track Progress</p>
-                            <p className="text-xs text-neutral-500 dark:text-neutral-400">Monitor improvements</p>
+                            <p className="font-semibold text-olive dark:text-off-white text-sm md:text-base mb-0.5">Track Progress</p>
+                            <p className="text-[10px] md:text-xs text-neutral-500 dark:text-neutral-400">Monitor improvements</p>
                         </div>
                     </div>
                 </TiltCard>

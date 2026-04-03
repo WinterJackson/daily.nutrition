@@ -108,15 +108,15 @@ export function ScheduleClient({ calendarId, businessName, blockedDates, googleC
             <div className="bg-white dark:bg-charcoal rounded-2xl p-6 shadow-xl shadow-olive/5 border border-neutral-100 dark:border-white/10">
                 <div className="flex items-start justify-between mb-6 border-b border-neutral-100 dark:border-white/5 pb-6">
                     <div>
-                        <p className="text-xs uppercase tracking-wider font-semibold text-neutral-500 mb-1">Service</p>
-                        <h1 className="text-xl font-serif font-bold text-olive dark:text-off-white">{service.title}</h1>
+                        <p className="text-[10px] md:text-xs uppercase tracking-wider font-semibold text-neutral-500 mb-1">Service</p>
+                        <h1 className="text-xl md:text-2xl font-serif font-bold text-olive dark:text-off-white">{service.title}</h1>
                     </div>
                     <div className={cn("w-10 h-10 rounded-lg flex items-center justify-center shrink-0", service.bgColor, service.color)}>
                         <Icon className="w-5 h-5" />
                     </div>
                 </div>
 
-                <div className="space-y-4 text-sm text-neutral-600 dark:text-neutral-300">
+                <div className="space-y-4 text-sm md:text-base text-neutral-600 dark:text-neutral-300">
                     <div className="flex items-center gap-3">
                         {sessionType === "virtual" ? <Globe className="w-4 h-4 text-brand-green" /> : <MapPin className="w-4 h-4 text-brand-green" />}
                         <span className="font-medium">{sessionType === "virtual" ? "Virtual Session (Google Meet)" : "In-Person (PMC, Parklands)"}</span>
@@ -128,8 +128,8 @@ export function ScheduleClient({ calendarId, businessName, blockedDates, googleC
                 </div>
 
                 <div className="mt-8 pt-6 border-t border-neutral-100 dark:border-white/5 flex items-end justify-between">
-                    <span className="text-sm font-medium text-neutral-500">Total</span>
-                    <span className="text-2xl font-bold text-brand-green">
+                    <span className="text-sm md:text-base font-medium text-neutral-500">Total</span>
+                    <span className="text-2xl md:text-3xl font-bold text-brand-green">
                         {isDiscovery ? "Free" : `Ksh ${currentPrice.toLocaleString()}`}
                     </span>
                 </div>
@@ -139,11 +139,11 @@ export function ScheduleClient({ calendarId, businessName, blockedDates, googleC
             <div className="bg-brand-green/5 dark:bg-white/5 rounded-2xl p-6 border border-brand-green/10 dark:border-white/5">
                 <div className="flex items-center gap-2 mb-4 text-olive dark:text-off-white">
                     <Info className="w-5 h-5 text-brand-green" />
-                    <h3 className="font-semibold">How to Prepare</h3>
+                    <h3 className="text-base md:text-lg font-semibold">How to Prepare</h3>
                 </div>
                 <ul className="space-y-3">
                     {prepList.map((item, i) => (
-                        <li key={i} className="flex items-start gap-3 text-sm text-neutral-600 dark:text-neutral-400">
+                        <li key={i} className="flex items-start gap-3 text-sm md:text-base text-neutral-600 dark:text-neutral-400">
                             <Check className="w-4 h-4 text-brand-green mt-0.5 shrink-0" />
                             <span>{item}</span>
                         </li>
@@ -153,11 +153,11 @@ export function ScheduleClient({ calendarId, businessName, blockedDates, googleC
 
             {/* Waitlist / Fallback */}
             <div className="bg-orange/5 dark:bg-orange/10 rounded-2xl p-6 border border-orange/10 text-center">
-                <h3 className="font-semibold text-olive dark:text-off-white mb-2">Can't find a time?</h3>
-                <p className="text-xs text-neutral-600 dark:text-neutral-400 mb-4">
+                <h3 className="text-base md:text-lg font-semibold text-olive dark:text-off-white mb-2">Can't find a time?</h3>
+                <p className="text-[10px] md:text-xs text-neutral-600 dark:text-neutral-400 mb-4">
                     Our schedule fills up fast. Join the waitlist or request a custom slot.
                 </p>
-                <Button variant="outline" className="w-full text-xs h-9 border-orange/20 text-orange hover:text-orange hover:bg-orange/10" asChild>
+                <Button variant="outline" className="w-full text-[10px] md:text-xs h-9 border-orange/20 text-orange hover:text-orange hover:bg-orange/10" asChild>
                     <Link href="/contact?subject=Waitlist Request">Join Waitlist / Custom Request</Link>
                 </Button>
             </div>
@@ -167,8 +167,8 @@ export function ScheduleClient({ calendarId, businessName, blockedDates, googleC
           {/* RIGHT: Calendar */}
           <div className="lg:col-span-8">
             <div className="mb-6">
-                <h2 className="text-2xl font-serif font-bold text-olive dark:text-off-white mb-2">Select a Date & Time</h2>
-                <p className="text-neutral-500 dark:text-neutral-400">
+                <h2 className="text-2xl md:text-3xl lg:text-4xl font-serif font-bold text-olive dark:text-off-white mb-2">Select a Date & Time</h2>
+                <p className="text-sm md:text-base text-neutral-500 dark:text-neutral-400">
                     Times are in your local timezone. Confirmation sent immediately.
                 </p>
             </div>
@@ -194,10 +194,10 @@ export function ScheduleClient({ calendarId, businessName, blockedDates, googleC
                     <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-orange/20 to-brand-green/10 flex items-center justify-center">
                         <Calendar className="w-10 h-10 text-orange" />
                     </div>
-                    <h3 className="text-2xl font-serif font-bold text-olive dark:text-off-white mb-3">
+                    <h3 className="text-2xl md:text-3xl lg:text-4xl font-serif font-bold text-olive dark:text-off-white mb-3">
                         Booking Coming Soon
                     </h3>
-                    <p className="text-neutral-600 dark:text-neutral-400 max-w-md mx-auto mb-8 leading-relaxed">
+                    <p className="text-base md:text-lg text-neutral-600 dark:text-neutral-400 max-w-md mx-auto mb-8 leading-relaxed">
                         Our online booking system is being set up. In the meantime, please contact us directly to schedule your consultation.
                     </p>
                     <Button variant="accent" size="lg" className="shadow-lg shadow-orange/20" asChild>
@@ -205,7 +205,7 @@ export function ScheduleClient({ calendarId, businessName, blockedDates, googleC
                             Contact Us
                         </Link>
                     </Button>
-                    <p className="mt-6 text-xs text-neutral-400">
+                    <p className="mt-6 text-[10px] md:text-xs text-neutral-400">
                         We typically respond within 24 hours
                     </p>
                 </div>

@@ -46,7 +46,7 @@ export function CookieConsent() {
           </div>
           <div className="flex-1">
             <div className="flex items-center justify-between mb-2">
-              <h3 className="font-semibold text-olive dark:text-off-white text-sm">Cookie Notice</h3>
+              <h3 className="font-semibold text-olive dark:text-off-white text-sm md:text-base">Cookie Notice</h3>
               <button
                 onClick={handleDecline}
                 className="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-300 transition-colors"
@@ -55,7 +55,7 @@ export function CookieConsent() {
                 <X className="w-4 h-4" />
               </button>
             </div>
-            <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-4 leading-relaxed">
+            <p className="text-xs md:text-sm text-neutral-500 dark:text-neutral-400 mb-4 leading-relaxed">
               We use cookies to enhance your experience, analyze site traffic, and for marketing purposes. By continuing to use our site, you consent to our use of cookies.
             </p>
             <div className="flex gap-2">
@@ -63,7 +63,7 @@ export function CookieConsent() {
                 onClick={handleAccept}
                 size="sm"
                 variant="accent"
-                className="text-xs h-8 px-4"
+                className="text-xs md:text-sm h-8 md:h-9 px-4"
               >
                 Accept All
               </Button>
@@ -71,7 +71,7 @@ export function CookieConsent() {
                 onClick={handleDecline}
                 size="sm"
                 variant="outline"
-                className="text-xs h-8 px-4"
+                className="text-xs md:text-sm h-8 md:h-9 px-4"
               >
                 Decline
               </Button>

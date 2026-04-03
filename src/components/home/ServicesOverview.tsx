@@ -46,7 +46,7 @@ export function ServicesOverview({ services }: { services: Service[] }) {
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="inline-block px-4 py-1.5 rounded-full bg-brand-green/10 text-brand-green font-semibold text-xs uppercase tracking-wide mb-4"
+                        className="inline-block px-4 py-1.5 rounded-full bg-brand-green/10 text-brand-green font-semibold text-[10px] md:text-xs uppercase tracking-wide mb-4"
                     >
                         Our Specialties
                     </motion.div>
@@ -54,7 +54,7 @@ export function ServicesOverview({ services }: { services: Service[] }) {
                         initial={{ opacity: 0, y: 20 }}
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
-                        className="text-3xl md:text-4xl font-bold font-serif text-olive dark:text-off-white mb-6"
+                        className="text-3xl md:text-4xl lg:text-5xl font-bold font-serif text-olive dark:text-off-white mb-6"
                     >
                         Specialized Care for Your Unique Needs
                     </motion.h2>
@@ -63,7 +63,7 @@ export function ServicesOverview({ services }: { services: Service[] }) {
                         whileInView={{ opacity: 1, y: 0 }}
                         viewport={{ once: true }}
                         transition={{ delay: 0.1 }}
-                        className="text-lg text-neutral-600 dark:text-neutral-300"
+                        className="text-base md:text-lg text-neutral-600 dark:text-neutral-300"
                     >
                         We focus on complex health conditions where nutrition
                         plays a vital therapeutic role. No generic advice, just
@@ -92,14 +92,14 @@ export function ServicesOverview({ services }: { services: Service[] }) {
                                     </div>
                                 </div>
                                 <div className="md:col-span-5 lg:col-span-6 p-8 md:p-12 text-center md:text-left z-10">
-                                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-green/10 text-brand-green text-xs font-bold uppercase tracking-wider mb-4">
+                                    <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-green/10 text-brand-green text-[10px] md:text-xs font-bold uppercase tracking-wider mb-4">
                                         <Sparkles className="w-3 h-3" />
                                         Most Popular
                                     </div>
-                                    <h3 className="text-2xl md:text-3xl font-serif font-bold text-olive dark:text-off-white mb-4">
+                                    <h3 className="text-2xl md:text-3xl lg:text-4xl font-serif font-bold text-olive dark:text-off-white mb-4">
                                         {discoveryService.title}
                                     </h3>
-                                    <p className="text-neutral-600 dark:text-neutral-300 mb-8 max-w-xl mx-auto md:mx-0 leading-relaxed">
+                                    <p className="text-base md:text-lg text-neutral-600 dark:text-neutral-300 mb-8 max-w-xl mx-auto md:mx-0 leading-relaxed">
                                         {discoveryService.fullDescription}
                                     </p>
                                     <div className="flex flex-col sm:flex-row items-center gap-4 justify-center md:justify-start">
@@ -121,7 +121,7 @@ export function ServicesOverview({ services }: { services: Service[] }) {
                                         >
                                             <Link
                                                 href={`/services/${discoveryService.slug}`}
-                                                className="flex items-center gap-2"
+                                                className="flex items-center gap-2 text-sm md:text-base"
                                             >
                                                 Learn more{" "}
                                                 <ArrowRight className="w-4 h-4" />
@@ -195,7 +195,7 @@ export function ServicesOverview({ services }: { services: Service[] }) {
                                             />
                                         </div>
                                         <CardTitle
-                                            className={`text-xl font-serif mb-1 group-hover:text-brand-green transition-colors leading-tight pr-12 ${!service.image ? "mt-8" : ""}`}
+                                            className={`text-xl md:text-2xl font-serif mb-1 group-hover:text-brand-green transition-colors leading-tight pr-12 ${!service.image ? "mt-8" : ""}`}
                                         >
                                             {service.title}
                                         </CardTitle>
@@ -203,7 +203,7 @@ export function ServicesOverview({ services }: { services: Service[] }) {
                                 </CardHeader>
 
                                 <CardContent className="grow pt-0">
-                                    <CardDescription className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed mb-4">
+                                    <CardDescription className="text-sm md:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed mb-4">
                                         {service.shortDescription}
                                     </CardDescription>
 
@@ -215,7 +215,7 @@ export function ServicesOverview({ services }: { services: Service[] }) {
                                             .map((feature, i) => (
                                                 <li
                                                     key={i}
-                                                    className="flex items-start gap-2 text-xs text-neutral-500 dark:text-neutral-400"
+                                                    className="flex items-start gap-2 text-[10px] md:text-xs text-neutral-500 dark:text-neutral-400"
                                                 >
                                                     <span
                                                         className={`w-1 h-1 rounded-full mt-1.5 shrink-0 transition-colors ${i === 0 ? "bg-orange" : "bg-neutral-300 dark:bg-neutral-600 group-hover:bg-brand-green"}`}
@@ -235,7 +235,7 @@ export function ServicesOverview({ services }: { services: Service[] }) {
                                         <Link
                                             href={`/services/${service.slug}`}
                                         >
-                                            <span className="text-xs font-semibold uppercase tracking-wider">
+                                            <span className="text-[10px] md:text-xs font-semibold uppercase tracking-wider">
                                                 Learn More
                                             </span>
                                             <div className="h-7 w-7 rounded-full bg-neutral-100 dark:bg-white/10 flex items-center justify-center group-hover/btn:bg-orange group-hover/btn:text-white transition-colors">

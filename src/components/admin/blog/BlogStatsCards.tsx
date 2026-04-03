@@ -28,11 +28,11 @@ export function BlogStatsCards({ stats, isLoading = false }: BlogStatsCardsProps
                         <div className="p-2 bg-olive/10 dark:bg-olive/20 rounded-xl text-olive dark:text-brand-green">
                             <LayoutList className="w-5 h-5" />
                         </div>
-                        <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Total Posts</span>
+                        <span className="text-[10px] md:text-xs font-semibold uppercase tracking-wider text-neutral-400">Total Posts</span>
                     </div>
                     <div>
-                        <h3 className="text-3xl font-bold text-neutral-800 dark:text-neutral-100 mb-1">{stats.total}</h3>
-                        <p className="text-xs text-neutral-500 font-medium">Across {stats.categories.length} categories</p>
+                        <h3 className="text-2xl md:text-3xl font-bold text-neutral-800 dark:text-neutral-100 mb-1">{stats.total}</h3>
+                        <p className="text-[10px] md:text-xs text-neutral-500 font-medium">Across {stats.categories.length} categories</p>
                     </div>
                 </CardContent>
             </Card>
@@ -44,10 +44,10 @@ export function BlogStatsCards({ stats, isLoading = false }: BlogStatsCardsProps
                         <div className="p-2 bg-green-50 dark:bg-green-500/10 rounded-xl text-brand-green">
                             <CheckCircle2 className="w-5 h-5" />
                         </div>
-                        <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Published</span>
+                        <span className="text-[10px] md:text-xs font-semibold uppercase tracking-wider text-neutral-400">Published</span>
                     </div>
                     <div>
-                        <h3 className="text-3xl font-bold text-neutral-800 dark:text-neutral-100 mb-1">{stats.published}</h3>
+                        <h3 className="text-2xl md:text-3xl font-bold text-neutral-800 dark:text-neutral-100 mb-1">{stats.published}</h3>
                         <div className="w-full bg-neutral-100 dark:bg-white/10 rounded-full h-1.5 mt-2 overflow-hidden">
                             <div 
                                 className="bg-brand-green h-full rounded-full transition-all duration-500" 
@@ -65,10 +65,10 @@ export function BlogStatsCards({ stats, isLoading = false }: BlogStatsCardsProps
                         <div className="p-2 bg-amber-50 dark:bg-amber-500/10 rounded-xl text-amber-600 dark:text-amber-400">
                              <FileText className="w-5 h-5" />
                         </div>
-                        <span className="text-xs font-semibold uppercase tracking-wider text-neutral-400">Drafts</span>
+                        <span className="text-[10px] md:text-xs font-semibold uppercase tracking-wider text-neutral-400">Drafts</span>
                     </div>
                     <div>
-                        <h3 className="text-3xl font-bold text-neutral-800 dark:text-neutral-100 mb-1">{stats.drafts}</h3>
+                        <h3 className="text-2xl md:text-3xl font-bold text-neutral-800 dark:text-neutral-100 mb-1">{stats.drafts}</h3>
                          <div className="w-full bg-neutral-100 dark:bg-white/10 rounded-full h-1.5 mt-2 overflow-hidden">
                             <div 
                                 className="bg-amber-400 h-full rounded-full transition-all duration-500" 

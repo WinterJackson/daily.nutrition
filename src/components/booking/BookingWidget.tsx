@@ -154,8 +154,8 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
             <div className="w-20 h-20 bg-green-100 dark:bg-green-900/20 rounded-full flex items-center justify-center mx-auto mb-6">
                 <CheckCircle className="w-10 h-10 text-olive" />
             </div>
-            <h2 className="text-3xl font-bold text-olive dark:text-off-white">Booking Confirmed!</h2>
-            <p className="text-neutral-600 dark:text-neutral-400 max-w-md mx-auto">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-olive dark:text-off-white">Booking Confirmed!</h2>
+            <p className="text-base md:text-lg text-neutral-600 dark:text-neutral-400 max-w-md mx-auto">
                 You are scheduled with <strong>{settings.businessName || "Edwak Nutrition"}</strong> for <strong>{selectedDate && format(selectedDate, 'MMMM d, yyyy')}</strong> at <strong>{new Date(selectedTime!).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: clientTimezone })}</strong>.
             </p>
             {referenceCode && (
@@ -194,7 +194,7 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
                 <div className="w-8 h-8 rounded-full bg-olive/10 flex items-center justify-center">
                     <Info className="w-5 h-5 text-olive" />
                 </div>
-                <h3 className="text-lg font-bold text-olive dark:text-off-white">
+                <h3 className="text-lg md:text-xl font-bold text-olive dark:text-off-white">
                     How to Book Your Appointment
                 </h3>
             </div>
@@ -213,24 +213,24 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-6">
                             <div className="space-y-3">
                                 <div className="w-8 h-8 rounded-full bg-brand-green/10 text-brand-green flex items-center justify-center font-bold text-sm">1</div>
-                                <h4 className="font-semibold text-neutral-800 dark:text-neutral-200">View Availability</h4>
-                                <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                                <h4 className="text-base md:text-lg font-semibold text-neutral-800 dark:text-neutral-200">View Availability</h4>
+                                <p className="text-[10px] md:text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
                                     Check the calendar below. Days marked with an <span className="inline-block w-2 h-2 rounded-full bg-orange mx-1"></span> orange dot indicate our business hours are open. Click on a date to see specific time slots.
                                 </p>
                             </div>
                             
                             <div className="space-y-3">
                                 <div className="w-8 h-8 rounded-full bg-brand-green/10 text-brand-green flex items-center justify-center font-bold text-sm">2</div>
-                                <h4 className="font-semibold text-neutral-800 dark:text-neutral-200">Select a Time</h4>
-                                <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                                <h4 className="text-base md:text-lg font-semibold text-neutral-800 dark:text-neutral-200">Select a Time</h4>
+                                <p className="text-[10px] md:text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
                                     Choose a time slot that works best for you. Note that all times are displayed in your local timezone relative to our East Africa Time availability.
                                 </p>
                             </div>
                             
                             <div className="space-y-3">
                                 <div className="w-8 h-8 rounded-full bg-brand-green/10 text-brand-green flex items-center justify-center font-bold text-sm">3</div>
-                                <h4 className="font-semibold text-neutral-800 dark:text-neutral-200">Confirm Details</h4>
-                                <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed">
+                                <h4 className="text-base md:text-lg font-semibold text-neutral-800 dark:text-neutral-200">Confirm Details</h4>
+                                <p className="text-[10px] md:text-xs text-neutral-600 dark:text-neutral-400 leading-relaxed">
                                     Enter your contact information and any notes. You'll receive an immediate email confirmation with a calendar invitation and meeting link.
                                 </p>
                             </div>
@@ -265,7 +265,7 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
             <span className="font-bold text-neutral-500 text-xs uppercase tracking-wider mb-2 block">
                 {settings.businessName}
             </span>
-            <h1 className="text-xl font-bold text-neutral-800 dark:text-neutral-100 mb-1">
+            <h1 className="text-xl md:text-2xl font-bold text-neutral-800 dark:text-neutral-100 mb-1">
                 {serviceTitle}
             </h1>
             <div className="flex items-center justify-start gap-2 text-sm text-neutral-500">
@@ -297,7 +297,7 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
             <button onClick={handlePrevMonth} className="p-2 hover:bg-neutral-100 dark:hover:bg-white/10 rounded-full transition-colors">
                 <ChevronLeft className="w-6 h-6 text-neutral-600 dark:text-neutral-400" />
             </button>
-            <h2 className="font-bold text-xl text-neutral-800 dark:text-neutral-200">
+            <h2 className="font-bold text-xl md:text-2xl text-neutral-800 dark:text-neutral-200">
                 {format(currentMonth, 'MMMM yyyy')}
             </h2>
             <button onClick={handleNextMonth} className="p-2 hover:bg-neutral-100 dark:hover:bg-white/10 rounded-full transition-colors">
@@ -333,7 +333,7 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
                         disabled={!isClickable}
                         onClick={() => setSelectedDate(day)}
                         className={`
-                            relative h-14 w-14 mx-auto flex items-center justify-center rounded-2xl text-base font-medium transition-all
+                            relative h-14 w-14 mx-auto flex items-center justify-center rounded-2xl text-sm md:text-base font-medium transition-all
                             ${!isCurrentMonth ? 'invisible' : ''}
                             ${isSelected ? 'bg-olive text-white shadow-md scale-105' : ''}
                             ${!isSelected && isClickable ? 'hover:bg-olive/10 text-neutral-700 dark:text-neutral-200 hover:text-olive' : ''}
@@ -371,7 +371,7 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
                     exit={{ opacity: 0, y: 10 }}
                     className="p-6"
                 >
-                    <h3 className="text-sm font-bold text-neutral-500 uppercase tracking-wider mb-4 text-left">
+                    <h3 className="text-[10px] md:text-xs font-bold text-neutral-500 uppercase tracking-wider mb-4 text-left">
                         Available Times for {format(selectedDate, "MMM do")}
                     </h3>
 
@@ -404,7 +404,7 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
                                         : "bg-neutral-100 dark:bg-neutral-800/50 border-neutral-200 dark:border-neutral-700/50 opacity-60 cursor-not-allowed"}
                                 `}
                             >
-                                <span className={`font-bold text-lg ${slot.available ? "text-olive dark:text-white" : "text-neutral-400 dark:text-neutral-500 line-through decoration-neutral-400"}`}>
+                                <span className={`text-base md:text-lg font-bold ${slot.available ? "text-olive dark:text-white" : "text-neutral-400 dark:text-neutral-500 line-through decoration-neutral-400"}`}>
                                     {new Date(slot.time).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: clientTimezone })}
                                 </span>
                                 <div className={`text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 transition-colors ${slot.available ? "text-neutral-400 group-hover:text-olive" : "text-neutral-400/50"}`}>
@@ -439,10 +439,10 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
                     </button>
 
                     <div className="mb-6 p-4 bg-white dark:bg-white/5 rounded-xl border border-neutral-200 dark:border-white/10 shadow-sm">
-                        <div className="font-bold text-olive dark:text-off-white mb-1">
+                        <div className="text-base md:text-lg font-bold text-olive dark:text-off-white mb-1">
                             {serviceTitle}
                         </div>
-                        <div className="text-sm text-neutral-600 dark:text-neutral-300">
+                        <div className="text-[10px] md:text-xs text-neutral-600 dark:text-neutral-300">
                             {format(selectedDate!, "EEEE, MMMM do")} • {new Date(selectedTime!).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit', timeZone: clientTimezone })}
                         </div>
                     </div>
@@ -465,7 +465,7 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
 
                     <form onSubmit={handleSubmit} className="space-y-4 flex-1">
                         <div className="space-y-2">
-                            <label className="text-sm font-bold text-neutral-700 dark:text-neutral-300">Your Name</label>
+                            <label className="text-[10px] md:text-xs font-bold text-neutral-700 dark:text-neutral-300">Your Name</label>
                             <div className="relative">
                                 <Input 
                                     required
@@ -479,7 +479,7 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-bold text-neutral-700 dark:text-neutral-300">Email Address</label>
+                            <label className="text-[10px] md:text-xs font-bold text-neutral-700 dark:text-neutral-300">Email Address</label>
                             <div className="relative">
                                 <Input 
                                     required
@@ -494,7 +494,7 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
                         </div>
 
                         <div className="space-y-2">
-                            <label className="text-sm font-bold text-neutral-700 dark:text-neutral-300">Notes (Optional)</label>
+                            <label className="text-[10px] md:text-xs font-bold text-neutral-700 dark:text-neutral-300">Notes (Optional)</label>
                             <div className="relative">
                                 <Textarea 
                                     value={formData.notes}

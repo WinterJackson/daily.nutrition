@@ -48,7 +48,7 @@ export default async function AboutPage() {
           
           {/* Credentials */}
           <div className="bg-white/80 dark:bg-white/5 backdrop-blur-sm rounded-2xl p-8 shadow-sm border border-neutral-100 dark:border-white/10 mb-16">
-             <h3 className="text-xl font-semibold text-olive dark:text-off-white mb-6">Qualifications & Expertise</h3>
+             <h3 className="text-xl md:text-2xl font-semibold text-olive dark:text-off-white mb-6">Qualifications & Expertise</h3>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 {[
                   "Registered Dietitian (MSc. Nutrition & Dietetics)",
@@ -61,7 +61,7 @@ export default async function AboutPage() {
                     className="flex items-start gap-3"
                   >
                     <CheckCircle2 className="w-5 h-5 text-brand-green mt-0.5 shrink-0" />
-                    <span className="text-neutral-600 dark:text-neutral-300">{item}</span>
+                    <span className="text-base md:text-lg text-neutral-600 dark:text-neutral-300">{item}</span>
                   </div>
                 ))}
              </div>
@@ -71,8 +71,8 @@ export default async function AboutPage() {
           <section className="bg-gradient-to-br from-olive/5 to-soft-green/5 dark:from-white/5 dark:to-white/[0.02] rounded-2xl p-8 md:p-12 relative overflow-hidden">
              <Quote className="absolute top-6 left-6 text-olive/10 dark:text-white/5 w-24 h-24 -z-0" />
              <div className="relative z-10 max-w-3xl mx-auto text-center space-y-6">
-                <h3 className="text-sm font-bold tracking-[0.15em] uppercase text-brand-green">My Philosophy</h3>
-                <p className="text-2xl md:text-3xl text-olive dark:text-off-white leading-relaxed font-serif">
+                <h3 className="text-xs md:text-sm font-bold tracking-[0.15em] uppercase text-brand-green">My Philosophy</h3>
+                <p className="text-2xl md:text-3xl lg:text-4xl text-olive dark:text-off-white leading-relaxed font-serif">
                   "Managing a health condition should not feel like a second job. Whether you are navigating a new diagnosis or managing a long-term clinical need, your relationship with food should be a source of strength, not stress."
                 </p>
              </div>

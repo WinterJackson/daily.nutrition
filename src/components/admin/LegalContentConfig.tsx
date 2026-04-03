@@ -33,11 +33,11 @@ export function LegalContentConfig({
         >
             <div className="space-y-6">
                 <div className="space-y-2">
-                    <label className="text-xs font-semibold uppercase tracking-wider text-neutral-500 flex items-center gap-2">
+                    <label className="text-[10px] md:text-xs font-semibold uppercase tracking-wider text-neutral-500 flex items-center gap-2">
                         <FileText className="w-3 h-3" /> Privacy Policy
                     </label>
                     <textarea
-                        className="flex min-h-[150px] w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-olive focus-visible:ring-offset-2 dark:border-white/10 dark:bg-white/5 dark:ring-offset-charcoal font-mono"
+                        className="flex min-h-[150px] w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-xs md:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-olive focus-visible:ring-offset-2 dark:border-white/10 dark:bg-white/5 dark:ring-offset-charcoal font-mono"
                         value={settings.privacyPolicyContent}
                         onChange={(e) => onChange("privacyPolicyContent", e.target.value)}
                         placeholder="Markdown supported..."
@@ -45,11 +45,11 @@ export function LegalContentConfig({
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-xs font-semibold uppercase tracking-wider text-neutral-500 flex items-center gap-2">
+                    <label className="text-[10px] md:text-xs font-semibold uppercase tracking-wider text-neutral-500 flex items-center gap-2">
                         <FileText className="w-3 h-3" /> Terms of Service
                     </label>
                     <textarea
-                        className="flex min-h-[150px] w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-olive focus-visible:ring-offset-2 dark:border-white/10 dark:bg-white/5 dark:ring-offset-charcoal font-mono"
+                        className="flex min-h-[150px] w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-xs md:text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-olive focus-visible:ring-offset-2 dark:border-white/10 dark:bg-white/5 dark:ring-offset-charcoal font-mono"
                         value={settings.termsContent}
                         onChange={(e) => onChange("termsContent", e.target.value)}
                         placeholder="Markdown supported..."

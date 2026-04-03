@@ -24,15 +24,15 @@ export default async function AdminTestimonialsPage({
     <div className="space-y-8 max-w-[1600px] mx-auto">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold font-serif text-olive dark:text-off-white">Testimonials</h1>
-          <p className="text-caption mt-1">Manage customer reviews and success stories.</p>
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold font-serif text-olive dark:text-off-white">Testimonials</h1>
+          <p className="text-sm md:text-base text-caption mt-1">Manage customer reviews and success stories.</p>
         </div>
         <GoogleReviewsSyncButton isConfigured={syncStatus.configured} />
       </div>
 
       <Card className="surface-card overflow-hidden">
         <CardHeader className="border-b border-subtle pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg">
+          <CardTitle className="flex items-center gap-2 text-base md:text-lg">
             <Star className="h-5 w-5 text-gold" />
             All Reviews ({totalCount})
           </CardTitle>

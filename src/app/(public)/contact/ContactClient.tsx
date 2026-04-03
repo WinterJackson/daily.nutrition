@@ -26,13 +26,13 @@ export default function ContactClient({ settings }: ContactClientProps) {
             animate={{ opacity: 1, y: 0 }}
             className="text-center mb-16"
           >
-             <div className="inline-block px-4 py-1.5 rounded-full bg-white/80 dark:bg-white/5 backdrop-blur-sm text-orange font-semibold text-xs uppercase tracking-wide mb-4 border border-orange/20 shadow-sm">
+             <div className="inline-block px-4 py-1.5 rounded-full bg-white/80 dark:bg-white/5 backdrop-blur-sm text-orange font-semibold text-[10px] md:text-xs uppercase tracking-wide mb-4 border border-orange/20 shadow-sm">
                   Ready to Help
              </div>
-             <h1 className="text-4xl md:text-5xl font-bold font-serif text-olive dark:text-off-white mb-4">
+             <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-serif text-olive dark:text-off-white mb-4">
                 Get in Touch
              </h1>
-             <p className="text-lg text-neutral-600 dark:text-neutral-300 max-w-xl mx-auto">
+             <p className="text-lg md:text-xl text-neutral-600 dark:text-neutral-300 max-w-xl mx-auto">
                 Have questions or ready to book your consultation? We are here to help you start your journey.
              </p>
           </motion.div>
@@ -49,7 +49,7 @@ export default function ContactClient({ settings }: ContactClientProps) {
                 <div className="absolute top-0 right-0 w-64 h-64 bg-brand-green/20 rounded-full blur-[80px] pointer-events-none -translate-y-1/2 translate-x-1/2"></div>
                 
                 <div className="relative z-10">
-                  <h3 className="text-2xl font-serif font-bold text-white mb-8">Contact Information</h3>
+                  <h3 className="text-2xl md:text-3xl font-serif font-bold text-white mb-8">Contact Information</h3>
                   
                   <div className="space-y-6">
                      <div className="flex items-start gap-4">
@@ -59,7 +59,7 @@ export default function ContactClient({ settings }: ContactClientProps) {
                         <div className="space-y-4">
                            <div>
                               <p className="font-semibold text-white mb-1">Our Location</p>
-                              <p className="text-white/70 text-sm leading-relaxed">
+                              <p className="text-white/70 text-sm md:text-base leading-relaxed">
                                  {settings.address}
                               </p>
                            </div>
@@ -70,36 +70,36 @@ export default function ContactClient({ settings }: ContactClientProps) {
                         <div className="p-3 rounded-xl bg-white/10 shrink-0">
                              <Phone className="w-5 h-5" />
                         </div>
-                        <p className="text-white/80 font-medium">{settings.phoneNumber}</p>
+                        <p className="text-white/80 text-sm md:text-base font-medium">{settings.phoneNumber}</p>
                      </div>
                      
                      <div className="flex items-center gap-4">
                         <div className="p-3 rounded-xl bg-white/10 shrink-0">
                              <Mail className="w-5 h-5" />
                         </div>
-                        <p className="text-white/80 font-medium">{settings.contactEmail}</p>
+                        <p className="text-white/80 text-sm md:text-base font-medium">{settings.contactEmail}</p>
                      </div>
 
                      <div className="flex items-center gap-4">
                         <div className="p-3 rounded-xl bg-white/10 shrink-0">
                              <Clock className="w-5 h-5" />
                         </div>
-                        <p className="text-white/80 font-medium">Operating Hours: 9AM - 6PM</p>
+                        <p className="text-white/80 text-sm md:text-base font-medium">Operating Hours: 9AM - 6PM</p>
                      </div>
                   </div>
                 </div>
                 
                 <div className="relative z-10 pt-8 border-t border-white/10 mt-8 flex items-center gap-3">
                     <Globe className="w-4 h-4 opacity-50" />
-                    <span className="text-xs opacity-50">Remote consultations available via Google Meet.</span>
+                    <span className="text-[10px] md:text-xs opacity-50">Remote consultations available via Google Meet.</span>
                 </div>
              </div>
              
              {/* Form Side */}
              <div className="lg:col-span-3 p-8 lg:p-10 flex flex-col justify-center bg-white dark:bg-charcoal">
                 <div className="max-w-md mx-auto w-full lg:mx-0">
-                    <h3 className="text-xl font-serif font-bold text-olive dark:text-off-white mb-2">Send us a Message</h3>
-                    <p className="text-neutral-500 text-sm mb-6">We usually respond within 24 hours.</p>
+                    <h3 className="text-xl md:text-2xl font-serif font-bold text-olive dark:text-off-white mb-2">Send us a Message</h3>
+                    <p className="text-neutral-500 text-sm md:text-base mb-6">We usually respond within 24 hours.</p>
                     <ContactForm />
                 </div>
              </div>
@@ -134,8 +134,8 @@ export default function ContactClient({ settings }: ContactClientProps) {
             className="mt-16 max-w-2xl mx-auto text-center"
           >
              <div className="bg-white/80 dark:bg-charcoal/80 backdrop-blur-md rounded-2xl p-8 lg:p-10 border border-neutral-200 dark:border-white/10 shadow-xl shadow-olive/5">
-                 <h3 className="text-2xl font-serif font-bold text-olive dark:text-off-white mb-2">Join Our Newsletter</h3>
-                 <p className="text-neutral-500 text-sm mb-8">Get weekly nutrition advice, healthy recipes, and exclusive offers straight to your inbox.</p>
+                 <h3 className="text-2xl md:text-3xl lg:text-4xl font-serif font-bold text-olive dark:text-off-white mb-2">Join Our Newsletter</h3>
+                 <p className="text-neutral-500 text-sm md:text-base mb-8">Get weekly nutrition advice, healthy recipes, and exclusive offers straight to your inbox.</p>
                  <div className="max-w-md mx-auto">
                      <NewsletterForm />
                  </div>

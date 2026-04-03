@@ -178,7 +178,7 @@ export function TestimonialsManager({ testimonials: initialTestimonials, totalCo
                         key={tab}
                         onClick={() => handleTabChange(tab)}
                         className={cn(
-                            "px-4 py-1.5 rounded-md text-sm font-medium transition-all whitespace-nowrap",
+                            "px-4 py-1.5 rounded-md text-xs md:text-sm font-medium transition-all whitespace-nowrap",
                             activeTab === tab 
                                 ? "bg-[var(--surface-primary)] text-[var(--text-primary)] shadow-sm" 
                                 : "text-[var(--text-muted)] hover:text-[var(--text-secondary)]"
@@ -206,7 +206,7 @@ export function TestimonialsManager({ testimonials: initialTestimonials, totalCo
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div>
-                            <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Author Name</label>
+                            <label className="text-xs md:text-sm font-medium text-neutral-600 dark:text-neutral-400">Author Name</label>
                             <Input
                             value={formData.authorName}
                             onChange={(e) => setFormData({ ...formData, authorName: e.target.value })}
@@ -216,7 +216,7 @@ export function TestimonialsManager({ testimonials: initialTestimonials, totalCo
                             />
                         </div>
                         <div>
-                            <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Rating (1-5)</label>
+                            <label className="text-xs md:text-sm font-medium text-neutral-600 dark:text-neutral-400">Rating (1-5)</label>
                             <div className="flex items-center gap-2 mt-2">
                                 {[1, 2, 3, 4, 5].map((star) => (
                                     <button
@@ -237,14 +237,14 @@ export function TestimonialsManager({ testimonials: initialTestimonials, totalCo
                         </div>
                     </div>
                     <div>
-                        <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Content</label>
+                        <label className="text-xs md:text-sm font-medium text-neutral-600 dark:text-neutral-400">Content</label>
                         <textarea
                             value={formData.content}
                             onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                             placeholder="Share the customer's experience..."
                             required
                             rows={3}
-                            className="mt-1 w-full rounded-lg border border-neutral-200 dark:border-white/10 bg-white dark:bg-black/20 p-3 text-sm focus:ring-2 focus:ring-brand-green focus:outline-none"
+                            className="mt-1 w-full rounded-lg border border-neutral-200 dark:border-white/10 bg-white dark:bg-black/20 p-3 text-xs md:text-sm focus:ring-2 focus:ring-brand-green focus:outline-none"
                         />
                     </div>
                     <div className="flex gap-2 justify-end">
@@ -264,7 +264,7 @@ export function TestimonialsManager({ testimonials: initialTestimonials, totalCo
       <div className="border-b border-[var(--border-default)] p-4 flex flex-col sm:flex-row items-center justify-between gap-4 surface-secondary">
         {someSelected ? (
             <div className="flex items-center gap-3 animate-in fade-in w-full sm:w-auto">
-                <span className="text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{selectedIds.size} selected</span>
+                <span className="text-xs md:text-sm font-semibold" style={{ color: "var(--text-primary)" }}>{selectedIds.size} selected</span>
                 {activeTab !== "PUBLISHED" && (
                     <Button size="sm" variant="outline" className="border-green-300 text-green-600 hover:bg-green-50 dark:hover:bg-green-900/20" onClick={handleBulkApprove} disabled={isPending}>
                         <CheckCircle className="w-3.5 h-3.5 mr-1.5" /> Approve
@@ -307,7 +307,7 @@ export function TestimonialsManager({ testimonials: initialTestimonials, totalCo
                 onChange={toggleSelectAll}
                 className="rounded border-neutral-300 dark:border-neutral-600 text-brand-green focus:ring-brand-green mt-0.5"
               />
-              <span className="text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">Select All Reviews</span>
+              <span className="text-[10px] md:text-xs font-bold uppercase tracking-wider text-[var(--text-muted)]">Select All Reviews</span>
           </div>
 
           {testimonials.map((testimonial) => (
@@ -327,7 +327,7 @@ export function TestimonialsManager({ testimonials: initialTestimonials, totalCo
                   </div>
                   <div className="flex-1 space-y-1">
                 <div className="flex items-center gap-3">
-                  <span className="font-semibold text-olive dark:text-off-white text-lg">{testimonial.authorName}</span>
+                  <span className="font-semibold text-olive dark:text-off-white text-base md:text-lg">{testimonial.authorName}</span>
                   <div className="flex gap-0.5">
                     {Array.from({ length: 5 }).map((_, i) => (
                       <Star 
@@ -341,7 +341,7 @@ export function TestimonialsManager({ testimonials: initialTestimonials, totalCo
                   </div>
                   {activeTab === "ALL" && (
                        <span className={cn(
-                           "text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border",
+                           "text-[8px] md:text-[10px] uppercase font-bold px-2 py-0.5 rounded-full border",
                            testimonial.contentStatus === "PUBLISHED" ? "bg-green-100 text-green-700 border-green-200" : 
                            testimonial.contentStatus === "IN_REVIEW" ? "bg-orange/10 text-orange border-orange/20" : 
                            "bg-neutral-100 text-neutral-500 border-neutral-200"
@@ -350,8 +350,8 @@ export function TestimonialsManager({ testimonials: initialTestimonials, totalCo
                        </span>
                   )}
                 </div>
-                <p className="text-neutral-600 dark:text-neutral-300 italic">"{testimonial.content}"</p>
-                <p className="text-xs text-neutral-400 flex items-center gap-2">
+                <p className="text-sm md:text-base text-neutral-600 dark:text-neutral-300 italic">"{testimonial.content}"</p>
+                <p className="text-[10px] md:text-xs text-neutral-400 flex items-center gap-2">
                     <Clock className="w-3 h-3" />
                     {new Date(testimonial.createdAt).toLocaleDateString()}
                 </p>

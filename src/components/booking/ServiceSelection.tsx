@@ -58,7 +58,7 @@ export function ServiceSelection({
                         <button
                             onClick={() => onSessionTypeChange("virtual")}
                             className={cn(
-                                "flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all duration-300",
+                                "flex items-center gap-2 px-6 py-3 rounded-lg text-sm md:text-base font-medium transition-all duration-300",
                                 sessionType === "virtual"
                                     ? "bg-white dark:bg-charcoal text-brand-green shadow-sm"
                                     : "text-neutral-500 hover:text-olive dark:hover:text-off-white",
@@ -70,7 +70,7 @@ export function ServiceSelection({
                         <button
                             onClick={() => onSessionTypeChange("in-person")}
                             className={cn(
-                                "flex items-center gap-2 px-6 py-3 rounded-lg text-sm font-medium transition-all duration-300",
+                                "flex items-center gap-2 px-6 py-3 rounded-lg text-sm md:text-base font-medium transition-all duration-300",
                                 sessionType === "in-person"
                                     ? "bg-white dark:bg-charcoal text-brand-green shadow-sm"
                                     : "text-neutral-500 hover:text-olive dark:hover:text-off-white",
@@ -83,7 +83,7 @@ export function ServiceSelection({
                 </div>
             ) : (
                 <div className="flex justify-center">
-                    <div className="inline-flex items-center gap-2 bg-brand-green/10 text-brand-green px-6 py-3 rounded-xl font-medium">
+                    <div className="inline-flex items-center gap-2 bg-brand-green/10 text-brand-green px-6 py-3 rounded-xl text-sm md:text-base font-medium">
                         <Globe className="w-4 h-4" />
                         Virtual Session Only
                     </div>
@@ -92,7 +92,7 @@ export function ServiceSelection({
 
             {/* Pricing Display */}
             <div className="text-center space-y-2">
-                <p className="text-3xl font-bold font-serif text-olive dark:text-off-white">
+                <p className="text-3xl md:text-4xl lg:text-5xl font-bold font-serif text-olive dark:text-off-white">
                     {selectedServiceId === "discovery-call"
                         ? "Free"
                         : `Ksh ${sessionType === "virtual" ? pricing.default.virtual.toLocaleString() : pricing.default.inPerson.toLocaleString()}`}
@@ -123,14 +123,14 @@ export function ServiceSelection({
                             </div>
                         </div>
                         <div className="md:col-span-5 lg:col-span-6 p-8 md:p-12 text-center md:text-left z-10">
-                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-green/10 text-brand-green text-xs font-bold uppercase tracking-wider mb-4">
+                            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-brand-green/10 text-brand-green text-[10px] md:text-xs font-bold uppercase tracking-wider mb-4">
                                 <Sparkles className="w-3 h-3" />
                                 Most Popular
                             </div>
-                            <h3 className="text-2xl md:text-3xl font-serif font-bold text-olive dark:text-off-white mb-4">
+                            <h3 className="text-2xl md:text-3xl lg:text-4xl font-serif font-bold text-olive dark:text-off-white mb-4">
                                 {discoveryService.title}
                             </h3>
-                            <p className="text-neutral-600 dark:text-neutral-300 mb-8 max-w-xl mx-auto md:mx-0 leading-relaxed">
+                            <p className="text-base md:text-lg text-neutral-600 dark:text-neutral-300 mb-8 max-w-xl mx-auto md:mx-0 leading-relaxed">
                                 {discoveryService.fullDescription}
                             </p>
                             <div className="flex flex-col sm:flex-row items-center gap-4 justify-center md:justify-start">
@@ -142,7 +142,7 @@ export function ServiceSelection({
                                             : "default"
                                     }
                                     className={cn(
-                                        "font-semibold px-8 h-12 rounded-full shadow-lg shadow-brand-green/20",
+                                        "text-sm md:text-base font-semibold px-8 h-12 rounded-full shadow-lg shadow-brand-green/20",
                                         selectedServiceId ===
                                             discoveryService.id
                                             ? ""
@@ -255,11 +255,11 @@ export function ServiceSelection({
 
                         {/* Content Area */}
                         <div className="p-6 pt-2 flex flex-col grow">
-                            <h3 className="text-lg font-serif font-bold text-olive dark:text-off-white mb-2 pr-14 leading-tight">
+                            <h3 className="text-xl md:text-2xl font-serif font-bold text-olive dark:text-off-white mb-2 pr-14 leading-tight">
                                 {service.title}
                             </h3>
 
-                            <p className="text-sm text-neutral-600 dark:text-neutral-400 leading-relaxed mb-4 line-clamp-3">
+                            <p className="text-sm md:text-base text-neutral-600 dark:text-neutral-400 leading-relaxed mb-4 line-clamp-3">
                                 {service.shortDescription}
                             </p>
 
@@ -269,7 +269,7 @@ export function ServiceSelection({
                                     .map((feat: string, i: number) => (
                                         <li
                                             key={i}
-                                            className="flex items-start gap-2 text-xs text-neutral-500"
+                                            className="flex items-start gap-2 text-[10px] md:text-xs text-neutral-500"
                                         >
                                             <span
                                                 className={`w-1 h-1 rounded-full mt-1.5 shrink-0 ${service.color.replace("text-", "bg-")}`}
@@ -285,7 +285,7 @@ export function ServiceSelection({
                                         ? "accent"
                                         : "outline"
                                 }
-                                className="w-full h-10 text-xs mt-auto z-10"
+                                className="w-full h-10 text-xs md:text-sm mt-auto z-10"
                             >
                                 {selectedServiceId === service.id
                                     ? "Selected"

@@ -28,12 +28,12 @@ function calculateReadTime(content: string): number {
  */
 const markdownComponents: Components = {
   h1: ({ children }) => (
-    <h1 className="text-3xl md:text-4xl font-bold font-serif text-olive dark:text-off-white mt-10 mb-4 leading-tight">
+    <h1 className="text-3xl md:text-4xl lg:text-5xl font-bold font-serif text-olive dark:text-off-white mt-10 mb-4 leading-tight">
       {children}
     </h1>
   ),
   h2: ({ children }) => (
-    <h2 className="text-2xl md:text-3xl font-bold font-serif text-olive dark:text-off-white mt-8 mb-3 leading-snug border-b border-brand-green/20 pb-2">
+    <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold font-serif text-olive dark:text-off-white mt-8 mb-3 leading-snug border-b border-brand-green/20 pb-2">
       {children}
     </h2>
   ),
@@ -241,7 +241,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         </div>
 
         <header className="mb-12 max-w-5xl mx-auto text-center">
-           <div className="flex items-center justify-center gap-4 text-sm text-neutral-500 mb-6 font-medium flex-wrap">
+           <div className="flex items-center justify-center gap-4 text-[10px] md:text-xs text-neutral-500 mb-6 font-medium flex-wrap">
               <span className="flex items-center gap-1.5 bg-white/50 dark:bg-white/5 px-3 py-1 rounded-full border border-neutral-100 dark:border-white/5">
                  <Calendar className="w-3.5 h-3.5" />
                  {post.createdAt.toLocaleDateString(undefined, { year: 'numeric', month: 'long', day: 'numeric' })}
@@ -291,7 +291,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         {/* Related Posts */}
         {relatedPosts.length > 0 && (
             <div className="mt-16">
-                <h3 className="text-2xl font-serif font-bold text-olive dark:text-off-white mb-6 flex items-center gap-2">
+                <h3 className="text-2xl md:text-3xl lg:text-4xl font-serif font-bold text-olive dark:text-off-white mb-6 flex items-center gap-2">
                     <Tag className="w-5 h-5 text-brand-green" />
                     Read Next in {post.category?.name || "our blog"}
                 </h3>
@@ -310,11 +310,11 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
                                     </div>
                                 )}
                                 <CardHeader className="p-4 pb-2">
-                                    <CardTitle className="text-lg font-serif text-olive dark:text-off-white group-hover:text-brand-green transition-colors line-clamp-2">
+                                    <CardTitle className="text-lg md:text-xl font-serif text-olive dark:text-off-white group-hover:text-brand-green transition-colors line-clamp-2">
                                         {related.title}
                                     </CardTitle>
                                 </CardHeader>
-                                <CardFooter className="p-4 pt-0 mt-auto text-sm text-brand-green font-medium">
+                                <CardFooter className="p-4 pt-0 mt-auto text-[10px] md:text-xs text-brand-green font-medium">
                                     Read Article <ArrowRight className="w-3 h-3 ml-1" />
                                 </CardFooter>
                             </Link>
@@ -328,10 +328,10 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
         <div className="mt-16 bg-olive dark:bg-charcoal border border-olive/10 dark:border-white/10 rounded-3xl p-8 md:p-12 text-center relative overflow-hidden shadow-2xl">
            <div className="absolute inset-0 bg-brand-green/10 pattern-grid-lg opacity-20" />
            <div className="relative z-10 max-w-2xl mx-auto">
-              <h3 className="text-2xl font-serif font-bold text-white mb-4">
+              <h3 className="text-2xl md:text-3xl lg:text-4xl font-serif font-bold text-white mb-4">
                  Ready to take control of your nutrition?
               </h3>
-              <p className="text-white/80 mb-8">
+              <p className="text-base md:text-lg text-white/80 mb-8">
                  Book a free discovery call today and let&apos;s discuss how we can help you achieve your health goals.
               </p>
               <Button asChild size="lg" className="bg-white text-olive hover:bg-neutral-100 rounded-full font-semibold px-8">

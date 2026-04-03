@@ -97,18 +97,18 @@ export default function CalendarManagementPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <div className="flex items-center gap-2 text-sm text-neutral-500 mb-2">
+                    <div className="flex items-center gap-2 text-[10px] md:text-xs text-neutral-500 mb-2">
                         <Link href="/admin/bookings" className="hover:text-olive transition-colors">
                             Bookings
                         </Link>
                         <span>/</span>
                         <span className="text-olive dark:text-off-white font-medium">Calendar Management</span>
                     </div>
-                    <h1 className="text-3xl font-bold font-serif text-olive dark:text-off-white flex items-center gap-3">
+                    <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold font-serif text-olive dark:text-off-white flex items-center gap-3">
                         <Calendar className="w-8 h-8 text-brand-green" />
                         Calendar Management
                     </h1>
-                    <p className="text-neutral-500 dark:text-neutral-400 mt-1">
+                    <p className="text-xs md:text-sm text-neutral-500 dark:text-neutral-400 mt-1">
                         Configure your weekly availability and block off specific dates.
                     </p>
                 </div>
@@ -116,22 +116,22 @@ export default function CalendarManagementPage() {
                 {/* Auto-Save indicator replaces manual save button */}
                 <div className="flex items-center gap-3 px-4 py-2 bg-white dark:bg-white/5 rounded-xl border border-neutral-200 dark:border-white/10 shadow-sm">
                     {!isValid ? (
-                         <div className="flex items-center gap-2 text-red-500 text-sm font-medium">
+                         <div className="flex items-center gap-2 text-red-500 text-xs md:text-sm font-medium">
                             <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
                             Please fix time errors
                          </div>
                     ) : isSaving ? (
-                        <div className="flex items-center gap-2 text-brand-green text-sm font-medium">
+                        <div className="flex items-center gap-2 text-brand-green text-xs md:text-sm font-medium">
                             <RefreshCw className="w-4 h-4 animate-spin text-brand-green" />
                             Saving...
                         </div>
                     ) : saveSuccess ? (
-                        <div className="flex items-center gap-2 text-brand-green text-sm font-medium">
+                        <div className="flex items-center gap-2 text-brand-green text-xs md:text-sm font-medium">
                             <CheckCircle className="w-4 h-4" />
                             Saved
                         </div>
                     ) : (
-                        <div className="flex items-center gap-2 text-neutral-500 text-sm font-medium">
+                        <div className="flex items-center gap-2 text-neutral-500 text-xs md:text-sm font-medium">
                             <CheckCircle className="w-4 h-4 opacity-50" />
                             Autosaved
                         </div>
@@ -143,7 +143,7 @@ export default function CalendarManagementPage() {
             {saveSuccess && (
                 <div className="fixed bottom-6 right-6 flex items-center gap-3 px-4 py-3 bg-brand-green text-white rounded-xl shadow-xl animate-in slide-in-from-bottom-4 z-50">
                     <CheckCircle className="w-5 h-5" />
-                    <span className="font-medium">Calendar settings saved!</span>
+                    <span className="text-sm md:text-base font-medium">Calendar settings saved!</span>
                 </div>
             )}
 
@@ -157,7 +157,7 @@ export default function CalendarManagementPage() {
                         <div className="w-10 h-10 rounded-full bg-brand-green/20 flex items-center justify-center">
                             <Info className="w-5 h-5 text-brand-green" />
                         </div>
-                        <h3 className="text-xl font-bold font-serif text-brand-green dark:text-brand-green-light">
+                        <h3 className="text-lg md:text-xl font-bold font-serif text-brand-green dark:text-brand-green-light">
                             How Scheduling Works
                         </h3>
                     </div>
@@ -172,7 +172,7 @@ export default function CalendarManagementPage() {
                             exit={{ height: 0, opacity: 0 }}
                             className="overflow-hidden"
                         >
-                            <div className="p-8 pt-0 border-t border-brand-green/10 text-sm leading-relaxed">
+                            <div className="p-8 pt-0 border-t border-brand-green/10 text-[10px] md:text-xs leading-relaxed">
                                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-8">
                                     <div className="space-y-4">
                                         <div className="w-8 h-8 rounded-full bg-brand-green/20 text-brand-green flex items-center justify-center font-bold text-sm">1</div>
@@ -230,7 +230,7 @@ export default function CalendarManagementPage() {
                             <CalendarDays className="w-32 h-32 rotate-12" />
                         </div>
                         <CardHeader className="relative z-10 pb-2">
-                            <CardTitle className="flex items-center gap-2 text-white/90 text-lg">
+                            <CardTitle className="flex items-center gap-2 text-white/90 text-base md:text-lg">
                                 Today is {todayName.charAt(0).toUpperCase() + todayName.slice(1)}
                             </CardTitle>
                         </CardHeader>
@@ -241,14 +241,14 @@ export default function CalendarManagementPage() {
                                 ) : todaySchedule?.isOpen ? (
                                     <>
                                         <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse shadow-[0_0_12px_rgba(74,222,128,0.6)]" />
-                                        <div className="text-2xl font-bold">
+                                        <div className="text-xl md:text-2xl font-bold">
                                             {todaySchedule.start} - {todaySchedule.end}
                                         </div>
                                     </>
                                 ) : (
                                     <>
                                         <div className="w-3 h-3 rounded-full bg-red-400 shadow-[0_0_12px_rgba(248,113,113,0.6)]" />
-                                        <div className="text-2xl font-bold opacity-80">
+                                        <div className="text-xl md:text-2xl font-bold opacity-80">
                                             Closed Today
                                         </div>
                                     </>

@@ -49,7 +49,7 @@ export function BookingClient({ activeServiceIds, services = [] }: BookingClient
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 dark:bg-white/5 backdrop-blur-sm text-brand-green font-semibold text-xs uppercase tracking-wide mb-6 border border-brand-green/20 shadow-sm"
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 dark:bg-white/5 backdrop-blur-sm text-brand-green font-semibold text-[10px] md:text-xs uppercase tracking-wide mb-6 border border-brand-green/20 shadow-sm"
         >
           <Calendar className="w-3 h-3 fill-current" />
           Start Your Journey
@@ -86,8 +86,8 @@ export function BookingClient({ activeServiceIds, services = [] }: BookingClient
       {/* Service Selection */}
       <section className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-24 relative z-10">
         <div className="text-center mb-12">
-           <h2 className="text-3xl font-serif font-bold text-olive dark:text-off-white mb-4">Select Your Plan</h2>
-           <p className="text-neutral-500 dark:text-neutral-400">Choose the area of focus for your consultation.</p>
+           <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-olive dark:text-off-white mb-4">Select Your Plan</h2>
+           <p className="text-sm md:text-base text-neutral-500 dark:text-neutral-400">Choose the area of focus for your consultation.</p>
         </div>
         <ServiceSelection 
           onServiceSelect={handleServiceSelect} 
@@ -102,15 +102,15 @@ export function BookingClient({ activeServiceIds, services = [] }: BookingClient
       {/* Pre-session List */}
       <section className="container max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mb-24 relative z-10">
          <div className="bg-olive/5 dark:bg-white/5 rounded-3xl p-8 md:p-12 border border-olive/10 dark:border-white/10">
-             <h3 className="text-2xl font-serif font-bold text-olive dark:text-off-white mb-6 text-center">To Make The Most Of Your Visit</h3>
+             <h3 className="text-2xl md:text-3xl lg:text-4xl font-serif font-bold text-olive dark:text-off-white mb-6 text-center">To Make The Most Of Your Visit</h3>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="bg-white dark:bg-charcoal p-6 rounded-xl shadow-sm">
-                   <h4 className="font-bold text-olive dark:text-off-white mb-2">Medical Records</h4>
-                   <p className="text-sm text-neutral-600 dark:text-neutral-400">Please bring any recent blood test results (within last 3-6 months), doctor&apos;s referral notes, and a list of current medications.</p>
+                   <h4 className="text-base md:text-lg font-bold text-olive dark:text-off-white mb-2">Medical Records</h4>
+                   <p className="text-sm md:text-base text-neutral-600 dark:text-neutral-400">Please bring any recent blood test results (within last 3-6 months), doctor&apos;s referral notes, and a list of current medications.</p>
                 </div>
                 <div className="bg-white dark:bg-charcoal p-6 rounded-xl shadow-sm">
-                   <h4 className="font-bold text-olive dark:text-off-white mb-2">Food Diary</h4>
-                   <p className="text-sm text-neutral-600 dark:text-neutral-400">If possible, keep a simple log of what you eat for 3 days prior to the consultation. This helps us understand your habits.</p>
+                   <h4 className="text-base md:text-lg font-bold text-olive dark:text-off-white mb-2">Food Diary</h4>
+                   <p className="text-sm md:text-base text-neutral-600 dark:text-neutral-400">If possible, keep a simple log of what you eat for 3 days prior to the consultation. This helps us understand your habits.</p>
                 </div>
              </div>
          </div>
@@ -123,8 +123,8 @@ export function BookingClient({ activeServiceIds, services = [] }: BookingClient
 
       {/* Support CTA */}
       <section className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center relative z-10 mb-12">
-         <p className="text-neutral-500 dark:text-neutral-400 mb-4">Can&apos;t find a suitable time?</p>
-         <Link href="/contact" className="text-brand-green font-semibold hover:underline">Contact us directly</Link>
+         <p className="text-sm md:text-base text-neutral-500 dark:text-neutral-400 mb-4">Can&apos;t find a suitable time?</p>
+         <Link href="/contact" className="text-sm md:text-base text-brand-green font-semibold hover:underline">Contact us directly</Link>
       </section>
 
     </div>

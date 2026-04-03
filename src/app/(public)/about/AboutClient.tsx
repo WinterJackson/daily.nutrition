@@ -32,13 +32,13 @@ export function AboutClient({ images }: AboutClientProps) {
         transition={{ duration: 0.6 }}
         className="flex-1 space-y-6"
       >
-        <div className="inline-block px-4 py-1.5 rounded-full bg-orange/10 text-orange font-semibold tracking-wide text-xs uppercase">
+        <div className="inline-block px-4 py-1.5 rounded-full bg-orange/10 text-orange font-semibold tracking-wide text-[10px] md:text-xs uppercase">
           Meet Your Dietitian
         </div>
-        <h1 className="text-4xl md:text-5xl font-bold font-serif text-olive dark:text-off-white leading-tight">
+        <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold font-serif text-olive dark:text-off-white leading-tight">
           Edna R.
         </h1>
-        <h2 className="text-xl text-neutral-500 dark:text-neutral-400 font-medium">
+        <h2 className="text-xl md:text-2xl text-neutral-500 dark:text-neutral-400 font-medium">
           Registered Dietitian and Nutrition Specialist
         </h2>
         <div className="h-1 w-20 bg-brand-green rounded-full"></div>

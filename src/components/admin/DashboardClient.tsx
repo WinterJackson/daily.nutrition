@@ -77,11 +77,11 @@ export function DashboardClient({ stats }: DashboardClientProps) {
       <ScrollReveal3D>
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
             <div>
-            <h1 className="text-3xl font-bold font-serif text-olive dark:text-off-white">Dashboard Overview</h1>
-            <p className="text-caption mt-1">Welcome back, get a bird's eye view of your platform.</p>
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold font-serif text-olive dark:text-off-white">Dashboard Overview</h1>
+            <p className="text-sm md:text-base text-caption mt-1">Welcome back, get a bird's eye view of your platform.</p>
             </div>
             <div className="flex items-center gap-3">
-                <span className="text-sm text-caption surface-secondary px-3 py-1.5 rounded-full border border-default">
+                <span className="text-xs md:text-sm text-caption surface-secondary px-3 py-1.5 rounded-full border border-default">
                 Last updated: Just now
                 </span>
             </div>
@@ -95,7 +95,7 @@ export function DashboardClient({ stats }: DashboardClientProps) {
             <Card className="surface-card shadow-lg overflow-hidden relative h-full group hover:-translate-y-1 transition-all duration-300">
                 <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${stat.bgColor} rounded-full blur-2xl -mr-8 -mt-8 opacity-50 group-hover:opacity-100 transition-opacity`} />
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2 relative z-10">
-                <CardTitle className="text-sm font-semibold text-caption">
+                <CardTitle className="text-sm md:text-base font-semibold text-caption">
                     {stat.title}
                 </CardTitle>
                 <div className={`p-2.5 rounded-xl ${stat.bgColor} ${stat.color} shadow-sm group-hover:scale-110 transition-transform`}>
@@ -103,8 +103,8 @@ export function DashboardClient({ stats }: DashboardClientProps) {
                 </div>
                 </CardHeader>
                 <CardContent className="relative z-10">
-                <div className="text-3xl font-bold text-olive dark:text-off-white mb-1">{stat.value}</div>
-                <p className="text-xs font-medium text-caption flex items-center gap-1.5">
+                <div className="text-3xl md:text-4xl font-bold text-olive dark:text-off-white mb-1">{stat.value}</div>
+                <p className="text-[10px] md:text-xs font-medium text-caption flex items-center gap-1.5">
                     <span className="text-brand-green bg-brand-green/10 px-1.5 py-0.5 rounded text-[10px] uppercase tracking-wide">
                         Status
                     </span>
@@ -121,9 +121,9 @@ export function DashboardClient({ stats }: DashboardClientProps) {
          <div className="lg:col-span-2 space-y-6">
             <ScrollReveal3D delay={0.4}>
                 <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-bold font-serif text-olive dark:text-off-white">Recent Activity</h3>
+                    <h3 className="text-xl md:text-2xl font-bold font-serif text-olive dark:text-off-white">Recent Activity</h3>
                     <Link href="/admin/inquiries">
-                        <Button variant="ghost" size="sm" className="text-brand-green hover:text-orange hover:bg-transparent p-0">View All Inquiries</Button>
+                        <Button variant="ghost" size="sm" className="text-xs md:text-sm text-brand-green hover:text-orange hover:bg-transparent p-0">View All Inquiries</Button>
                     </Link>
                 </div>
                 
@@ -137,14 +137,14 @@ export function DashboardClient({ stats }: DashboardClientProps) {
                                     {item.type === 'inquiry' ? <Users className="w-5 h-5 text-olive" /> : <TrendingUp className="w-5 h-5 text-orange" />}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium text-olive dark:text-white truncate">
+                                    <p className="text-sm md:text-base font-medium text-olive dark:text-white truncate">
                                         {item.title}
                                     </p>
-                                    <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                                    <p className="text-[10px] md:text-xs text-neutral-500 dark:text-neutral-400">
                                         {item.description}
                                     </p>
                                 </div>
-                                <div className="text-xs text-neutral-400 whitespace-nowrap">
+                                <div className="text-[10px] md:text-xs text-neutral-400 whitespace-nowrap">
                                     {new Date(item.time).toLocaleDateString()}
                                 </div>
                             </div>
@@ -157,7 +157,7 @@ export function DashboardClient({ stats }: DashboardClientProps) {
          {/* Quick Actions Sidebar */}
          <div className="space-y-6">
             <ScrollReveal3D delay={0.5} direction="right">
-                <h3 className="text-xl font-bold font-serif text-olive dark:text-off-white">Quick Actions</h3>
+                <h3 className="text-xl md:text-2xl font-bold font-serif text-olive dark:text-off-white">Quick Actions</h3>
                 <div className="grid grid-cols-1 gap-3 mt-4">
                     <Link href="/admin/blog/new">
                         <Button variant="outline" className="w-full h-auto py-4 px-4 justify-start bg-white/50 dark:bg-white/5 border-neutral-200 dark:border-white/10 hover:border-brand-green/30 hover:bg-brand-green/5 text-left group transition-all">
@@ -165,8 +165,8 @@ export function DashboardClient({ stats }: DashboardClientProps) {
                                 <FileText className="w-5 h-5" />
                             </div>
                             <div>
-                                <span className="block font-semibold text-olive dark:text-off-white">Post New Article</span>
-                                <span className="text-xs text-neutral-500">Update the blog</span>
+                                <span className="block text-sm md:text-base font-semibold text-olive dark:text-off-white">Post New Article</span>
+                                <span className="text-[10px] md:text-xs text-neutral-500">Update the blog</span>
                             </div>
                         </Button>
                     </Link>
@@ -177,8 +177,8 @@ export function DashboardClient({ stats }: DashboardClientProps) {
                                 <FileText className="w-5 h-5" />
                             </div>
                             <div>
-                                <span className="block font-semibold text-olive dark:text-off-white">Manage Services</span>
-                                <span className="text-xs text-neutral-500">Edit offerings</span>
+                                <span className="block text-sm md:text-base font-semibold text-olive dark:text-off-white">Manage Services</span>
+                                <span className="text-[10px] md:text-xs text-neutral-500">Edit offerings</span>
                             </div>
                         </Button>
                     </Link>
@@ -189,8 +189,8 @@ export function DashboardClient({ stats }: DashboardClientProps) {
                                 <Users className="w-5 h-5" />
                             </div>
                             <div>
-                                <span className="block font-semibold text-olive dark:text-off-white">View Inquiries</span>
-                                <span className="text-xs text-neutral-500">Access messages</span>
+                                <span className="block text-sm md:text-base font-semibold text-olive dark:text-off-white">View Inquiries</span>
+                                <span className="text-[10px] md:text-xs text-neutral-500">Access messages</span>
                             </div>
                         </Button>
                     </Link>
@@ -200,7 +200,7 @@ export function DashboardClient({ stats }: DashboardClientProps) {
             {/* System Status */}
             <ScrollReveal3D delay={0.6} direction="up">
                 <div className="bg-olive/5 dark:bg-white/5 rounded-2xl p-6 border border-olive/10 dark:border-white/5 mt-6">
-                    <h4 className="font-semibold text-olive dark:text-off-white mb-4 text-sm uppercase tracking-wide">System Status</h4>
+                    <h4 className="font-semibold text-olive dark:text-off-white mb-4 text-xs md:text-sm uppercase tracking-wide">System Status</h4>
                     <div className="space-y-4">
                         <div className="flex items-center justify-between text-sm">
                             <span className="text-neutral-600 dark:text-neutral-400">Database</span>

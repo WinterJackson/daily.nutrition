@@ -342,7 +342,7 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
         </div>
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <select
-            className="h-10 flex-1 sm:flex-none rounded-md surface-input border border-[var(--input-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green"
+            className="h-10 flex-1 sm:flex-none rounded-md surface-input border border-[var(--input-border)] px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-brand-green"
             value={statusFilter}
             onChange={(e) => handleStatusFilterChange(e.target.value)}
           >
@@ -354,7 +354,7 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
             <option value="NO_SHOW">No Show</option>
           </select>
           <select
-            className="h-10 flex-1 sm:flex-none rounded-md surface-input border border-[var(--input-border)] px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green"
+            className="h-10 flex-1 sm:flex-none rounded-md surface-input border border-[var(--input-border)] px-3 py-2 text-xs md:text-sm focus:outline-none focus:ring-2 focus:ring-brand-green"
             value={timeFilter}
             onChange={(e) => {
               setTimeFilter(e.target.value as any)
@@ -371,7 +371,7 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
 
       {/* Table — always horizontal-scrollable with no text wrap */}
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[960px] text-sm text-left">
+        <table className="w-full min-w-[960px] text-xs md:text-sm text-left">
           <thead className="bg-[var(--surface-secondary)] text-[var(--text-muted)] border-b border-[var(--border-default)]">
             <tr>
               <th className="px-3 py-3.5 font-semibold whitespace-nowrap text-xs uppercase tracking-wider">
@@ -419,15 +419,15 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
                       {getStatusBadge(booking.status)}
                     </td>
                     <td className="px-5 py-3.5 whitespace-nowrap">
-                      <div className="font-semibold text-olive dark:text-off-white text-sm">{booking.clientName}</div>
-                      <div className="text-xs text-neutral-400 font-normal">{booking.clientEmail}</div>
+                      <div className="font-semibold text-olive dark:text-off-white text-xs md:text-sm">{booking.clientName}</div>
+                      <div className="text-[10px] md:text-xs text-neutral-400 font-normal">{booking.clientEmail}</div>
                     </td>
                     <td className="px-5 py-3.5 whitespace-nowrap text-neutral-600 dark:text-neutral-300">
                       {booking.serviceName}
                     </td>
                     <td className="px-5 py-3.5 whitespace-nowrap">
                       <div className="font-medium text-olive dark:text-off-white">{date}</div>
-                      <div className="text-xs text-neutral-400">{time} · {booking.duration}min</div>
+                      <div className="text-[10px] md:text-xs text-neutral-400">{time} · {booking.duration}min</div>
                     </td>
                     <td className="px-5 py-3.5 whitespace-nowrap">
                       {booking.referenceCode ? (
@@ -520,10 +520,10 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
           <div className="pr-8">
             <div className="flex items-start justify-between gap-4">
               <div className="flex-1 min-w-0">
-                <DialogTitle className="text-xl font-bold truncate">
+                <DialogTitle className="text-lg md:text-xl font-bold truncate">
                   {selectedBooking?.clientName}
                 </DialogTitle>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 mt-1">
+                <p className="text-xs md:text-sm text-neutral-500 dark:text-neutral-400 mt-1">
                   {selectedBooking?.clientEmail}
                   {selectedBooking?.clientPhone && ` • ${selectedBooking.clientPhone}`}
                 </p>
@@ -539,10 +539,10 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
           {/* Reference Code */}
           {selectedBooking?.referenceCode && (
             <div className="flex items-center gap-3 bg-brand-green/5 dark:bg-brand-green/10 p-3 rounded-xl border border-brand-green/20">
-              <span className="text-xs font-bold uppercase text-neutral-500 tracking-wider">Ref Code</span>
+              <span className="text-[10px] md:text-xs font-bold uppercase text-neutral-500 tracking-wider">Ref Code</span>
               <button
                 onClick={() => handleCopyCode(selectedBooking.referenceCode!)}
-                className="font-mono text-lg font-bold text-brand-green hover:text-brand-green/80 transition-colors inline-flex items-center gap-2"
+                className="font-mono text-base md:text-lg font-bold text-brand-green hover:text-brand-green/80 transition-colors inline-flex items-center gap-2"
               >
                 {selectedBooking.referenceCode}
                 {copiedCode === selectedBooking.referenceCode ? (
@@ -562,13 +562,13 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
                 {selectedBooking && formatDateTime(selectedBooking.scheduledAt).date} at {selectedBooking && formatDateTime(selectedBooking.scheduledAt).time}
               </span>
               {selectedBooking?.clientTimezone && (
-                <span className="text-xs text-neutral-400">({selectedBooking.clientTimezone})</span>
+                <span className="text-[10px] md:text-xs text-neutral-400">({selectedBooking.clientTimezone})</span>
               )}
             </div>
             <div className="flex items-center gap-2">
               <FileText className="w-4 h-4 text-brand-green" />
               <span>{selectedBooking?.serviceName}</span>
-              <span className="text-xs text-neutral-400">({selectedBooking?.duration} min)</span>
+              <span className="text-[10px] md:text-xs text-neutral-400">({selectedBooking?.duration} min)</span>
             </div>
             <div className="flex items-center gap-2">
               {selectedBooking?.sessionType === "virtual" ? (
@@ -582,7 +582,7 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
           {/* Admin Meet Link Editor (for CONFIRMED Virtual Sessions) */}
           {selectedBooking?.sessionType === "virtual" && selectedBooking?.status === "CONFIRMED" && (
               <div className="surface-secondary rounded-xl p-5 space-y-4 border border-blue-500/20">
-                <div className="flex items-center gap-2 text-blue-500 font-bold text-sm">
+                <div className="flex items-center gap-2 text-blue-500 font-bold text-xs md:text-sm">
                   <Video className="w-4 h-4" />
                   Meeting Link
                 </div>
@@ -673,13 +673,13 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
           {/* Admin Reschedule Form */}
           {showReschedule && selectedBooking?.status === "CONFIRMED" && (
             <div className="surface-secondary rounded-xl p-5 space-y-4 border border-brand-green/20 animate-in fade-in slide-in-from-top-2 duration-200">
-              <div className="flex items-center gap-2 text-brand-green font-bold text-sm">
+              <div className="flex items-center gap-2 text-brand-green font-bold text-xs md:text-sm">
                 <RefreshCw className="w-4 h-4" />
                 Reschedule Appointment
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase text-neutral-500 tracking-wider">New Date</label>
+                  <label className="text-[10px] md:text-xs font-bold uppercase text-neutral-500 tracking-wider">New Date</label>
                   <Input
                     type="date"
                     value={rescheduleDate}
@@ -689,7 +689,7 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
                   />
                 </div>
                 <div className="space-y-2">
-                  <label className="text-xs font-bold uppercase text-neutral-500 tracking-wider">New Time</label>
+                  <label className="text-[10px] md:text-xs font-bold uppercase text-neutral-500 tracking-wider">New Time</label>
                   <select
                     value={rescheduleTime}
                     onChange={(e) => setRescheduleTime(e.target.value)}
@@ -738,7 +738,7 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
 
           {/* Notes Section */}
           <div className="space-y-2">
-            <label className="text-sm font-medium text-olive dark:text-off-white">Admin Notes</label>
+            <label className="text-xs md:text-sm font-medium text-olive dark:text-off-white">Admin Notes</label>
             <textarea
               className="w-full h-24 rounded-lg border border-neutral-200 dark:border-white/10 bg-white dark:bg-black/20 p-3 text-sm focus:outline-none focus:ring-2 focus:ring-brand-green resize-none"
               placeholder="Add private notes about this booking..."

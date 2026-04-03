@@ -164,7 +164,7 @@ export function BlogListClient({ initialPosts, totalCount, currentPage, pageSize
       
       {/* Header */}
       <div className="flex items-center justify-between">
-            <h1 className="text-3xl font-bold font-serif text-neutral-900 dark:text-white tracking-tight">
+            <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold font-serif text-neutral-900 dark:text-white tracking-tight">
                 Blogs
             </h1>
             {selectedPosts.length > 0 && (
@@ -200,7 +200,7 @@ export function BlogListClient({ initialPosts, totalCount, currentPage, pageSize
                                         onCheckedChange={toggleSelectAll}
                                         aria-label="Select all"
                                     />
-                                    <span className="text-xs font-semibold text-neutral-500 uppercase tracking-wider">Select All</span>
+                                    <span className="text-[10px] md:text-xs font-semibold text-neutral-500 uppercase tracking-wider">Select All</span>
                                 </div>
                                 <div className="divide-y divide-neutral-100 dark:divide-white/5">
                                     {posts.map((post) => (
@@ -224,7 +224,7 @@ export function BlogListClient({ initialPosts, totalCount, currentPage, pageSize
                                                         className="object-cover transition-transform group-hover:scale-105"
                                                     />
                                                 ) : (
-                                                    <div className="h-full w-full flex items-center justify-center text-xs text-neutral-400 font-medium bg-neutral-50 dark:bg-white/5">
+                                                    <div className="h-full w-full flex items-center justify-center text-[10px] md:text-xs text-neutral-400 font-medium bg-neutral-50 dark:bg-white/5">
                                                         <FileText className="w-8 h-8 opacity-20" />
                                                     </div>
                                                 )}
@@ -234,32 +234,32 @@ export function BlogListClient({ initialPosts, totalCount, currentPage, pageSize
                                             <div className="flex-1 min-w-0 pr-4 space-y-2">
                                                 <div className="flex items-center gap-3">
                                                     <span className={cn(
-                                                        "px-2.5 py-0.5 rounded-full text-[10px] uppercase font-bold tracking-wider",
+                                                        "px-2.5 py-0.5 rounded-full text-[8px] md:text-[10px] uppercase font-bold tracking-wider",
                                                         post.published 
                                                             ? "bg-green-100 text-green-700 dark:bg-brand-green/20 dark:text-brand-green" 
                                                             : "bg-amber-100 text-amber-700 dark:bg-amber-500/20 dark:text-amber-400"
                                                     )}>
                                                         {post.published ? "Published" : "Draft"}
                                                     </span>
-                                                    <span className="text-xs text-neutral-400 flex items-center gap-1.5">
+                                                    <span className="text-[10px] md:text-xs text-neutral-400 flex items-center gap-1.5">
                                                         <Calendar className="w-3.5 h-3.5" />
                                                         {new Date(post.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                                                     </span>
-                                                    <span className="text-xs text-neutral-400 flex items-center gap-1.5 border-l border-neutral-200 dark:border-white/10 pl-3">
+                                                    <span className="text-[10px] md:text-xs text-neutral-400 flex items-center gap-1.5 border-l border-neutral-200 dark:border-white/10 pl-3">
                                                         <Clock className="w-3.5 h-3.5" />
                                                         {(post as any).content ? calculateReadTime((post as any).content) : "1 min read"}
                                                     </span>
                                                 </div>
-                                                <h3 className="text-xl font-serif font-bold text-neutral-800 dark:text-neutral-100 truncate group-hover:text-olive dark:group-hover:text-brand-green transition-colors">
+                                                <h3 className="text-lg md:text-xl font-serif font-bold text-neutral-800 dark:text-neutral-100 truncate group-hover:text-olive dark:group-hover:text-brand-green transition-colors">
                                                     <Link href={`/admin/blog/${post.id}`} className="focus:outline-none">
                                                         {post.title}
                                                     </Link>
                                                 </h3>
                                                 <div className="flex items-center gap-2">
-                                                    <span className="px-2.5 py-0.5 rounded-md text-[11px] font-medium bg-neutral-100 dark:bg-white/10 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-white/5">
+                                                    <span className="px-2.5 py-0.5 rounded-md text-[9px] md:text-[11px] font-medium bg-neutral-100 dark:bg-white/10 text-neutral-600 dark:text-neutral-400 border border-neutral-200 dark:border-white/5">
                                                         {post.category?.name || "Uncategorized"}
                                                     </span>
-                                                    <span className="text-xs text-neutral-400 font-mono hidden sm:inline-block">
+                                                    <span className="text-[10px] md:text-xs text-neutral-400 font-mono hidden sm:inline-block">
                                                         /{post.slug}
                                                     </span>
                                                 </div>
@@ -343,7 +343,7 @@ export function BlogListClient({ initialPosts, totalCount, currentPage, pageSize
                                         )}
                                         <div className="absolute top-3 right-3 flex gap-2">
                                              <span className={cn(
-                                                "px-2.5 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider backdrop-blur-md shadow-sm border border-white/20",
+                                                "px-2.5 py-1 rounded-full text-[8px] md:text-[10px] uppercase font-bold tracking-wider backdrop-blur-md shadow-sm border border-white/20",
                                                 post.published 
                                                     ? "bg-white/90 text-green-700 dark:bg-black/60 dark:text-brand-green" 
                                                     : "bg-white/90 text-amber-700 dark:bg-black/60 dark:text-amber-400"
@@ -355,7 +355,7 @@ export function BlogListClient({ initialPosts, totalCount, currentPage, pageSize
 
                                     {/* Content Area */}
                                     <div className="flex-1 p-6 flex flex-col gap-3">
-                                        <div className="flex items-center justify-between text-xs text-neutral-400">
+                                        <div className="flex items-center justify-between text-[10px] md:text-xs text-neutral-400">
                                              <span className="font-medium text-olive dark:text-brand-green px-2 py-0.5 rounded bg-olive/5 dark:bg-brand-green/10">
                                                 {post.category?.name || "Uncategorized"}
                                              </span>
@@ -364,18 +364,18 @@ export function BlogListClient({ initialPosts, totalCount, currentPage, pageSize
                                              </span>
                                         </div>
 
-                                        <h3 className="text-xl font-serif font-bold text-neutral-800 dark:text-neutral-100 line-clamp-2 leading-tight group-hover:text-olive dark:group-hover:text-brand-green transition-colors">
+                                        <h3 className="text-lg md:text-xl font-serif font-bold text-neutral-800 dark:text-neutral-100 line-clamp-2 leading-tight group-hover:text-olive dark:group-hover:text-brand-green transition-colors">
                                             <Link href={`/admin/blog/${post.id}`} className="focus:outline-none">
                                                 {post.title}
                                             </Link>
                                         </h3>
                                         
-                                        <p className="text-sm text-neutral-500 line-clamp-2 mb-2">
+                                        <p className="text-xs md:text-sm text-neutral-500 line-clamp-2 mb-2">
                                             {(post as any).metaDescription || "No description provided."}
                                         </p>
 
                                         <div className="mt-auto pt-4 border-t border-neutral-100 dark:border-white/5 flex items-center justify-between">
-                                             <span className="text-xs text-neutral-400">
+                                             <span className="text-[10px] md:text-xs text-neutral-400">
                                                 {(post as any).content ? calculateReadTime((post as any).content) : "1 min read"}
                                              </span>
                                              
@@ -415,8 +415,8 @@ export function BlogListClient({ initialPosts, totalCount, currentPage, pageSize
                     <div className="h-20 w-20 bg-neutral-100 dark:bg-white/5 rounded-full flex items-center justify-center mb-6 animate-float-slow">
                         <Search className="w-10 h-10 text-neutral-300" />
                     </div>
-                    <h3 className="text-xl font-bold font-serif text-neutral-900 dark:text-neutral-100 mb-2">No posts found</h3>
-                    <p className="text-neutral-500 max-w-sm mx-auto mb-8">
+                    <h3 className="text-lg md:text-xl font-bold font-serif text-neutral-900 dark:text-neutral-100 mb-2">No posts found</h3>
+                    <p className="text-sm md:text-base text-neutral-500 max-w-sm mx-auto mb-8">
                         We couldn't find any blog posts matching your filters. Try adjusting your criteria or create a fresh post.
                     </p>
                     <Button 
@@ -439,7 +439,7 @@ export function BlogListClient({ initialPosts, totalCount, currentPage, pageSize
       {/* Pagination */}
       {posts.length > 0 && (
         <div className="flex items-center justify-between pt-4">
-            <span className="text-xs text-neutral-400">
+            <span className="text-[10px] md:text-xs text-neutral-400">
                 Showing {(currentPage - 1) * pageSize + 1}-{Math.min(currentPage * pageSize, totalCount)} of {totalCount}
             </span>
             <div className="flex items-center gap-2">
@@ -452,7 +452,7 @@ export function BlogListClient({ initialPosts, totalCount, currentPage, pageSize
                 >
                     <ChevronLeft className="w-4 h-4" />
                 </Button>
-                <div className="px-4 text-sm font-medium text-neutral-600 dark:text-neutral-400">
+                <div className="px-4 text-xs md:text-sm font-medium text-neutral-600 dark:text-neutral-400">
                     Page {currentPage} of {totalPages || 1}
                 </div>
                 <Button

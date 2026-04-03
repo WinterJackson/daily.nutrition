@@ -25,8 +25,8 @@ export default async function BookingsPage({
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold font-serif text-olive dark:text-off-white">Bookings</h1>
-          <p className="text-neutral-500 dark:text-neutral-400 mt-1">Manage your client appointments and consultations.</p>
+          <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold font-serif text-olive dark:text-off-white">Bookings</h1>
+          <p className="text-sm md:text-base text-neutral-500 dark:text-neutral-400 mt-1">Manage your client appointments and consultations.</p>
         </div>
       </div>
 
@@ -34,26 +34,26 @@ export default async function BookingsPage({
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
         <Card className="border-none shadow-lg shadow-neutral-200/50 dark:shadow-black/20 bg-white/90 dark:bg-white/5 backdrop-blur-md">
           <CardContent className="p-4">
-            <p className="text-2xl font-bold text-olive dark:text-off-white">{stats.total}</p>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">Total Bookings</p>
+            <p className="text-2xl md:text-3xl font-bold text-olive dark:text-off-white">{stats.total}</p>
+            <p className="text-xs md:text-sm text-neutral-500 dark:text-neutral-400">Total Bookings</p>
           </CardContent>
         </Card>
         <Card className="border-none shadow-lg shadow-neutral-200/50 dark:shadow-black/20 bg-white/90 dark:bg-white/5 backdrop-blur-md">
           <CardContent className="p-4">
-            <p className="text-2xl font-bold text-brand-green">{stats.upcoming}</p>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">Upcoming</p>
+            <p className="text-2xl md:text-3xl font-bold text-brand-green">{stats.upcoming}</p>
+            <p className="text-xs md:text-sm text-neutral-500 dark:text-neutral-400">Upcoming</p>
           </CardContent>
         </Card>
         <Card className="border-none shadow-lg shadow-neutral-200/50 dark:shadow-black/20 bg-white/90 dark:bg-white/5 backdrop-blur-md">
           <CardContent className="p-4">
-            <p className="text-2xl font-bold text-orange">{stats.today}</p>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">Today</p>
+            <p className="text-2xl md:text-3xl font-bold text-orange">{stats.today}</p>
+            <p className="text-xs md:text-sm text-neutral-500 dark:text-neutral-400">Today</p>
           </CardContent>
         </Card>
         <Card className="border-none shadow-lg shadow-neutral-200/50 dark:shadow-black/20 bg-white/90 dark:bg-white/5 backdrop-blur-md">
           <CardContent className="p-4">
-            <p className="text-2xl font-bold text-soft-green">{stats.completed}</p>
-            <p className="text-sm text-neutral-500 dark:text-neutral-400">Completed</p>
+            <p className="text-2xl md:text-3xl font-bold text-soft-green">{stats.completed}</p>
+            <p className="text-xs md:text-sm text-neutral-500 dark:text-neutral-400">Completed</p>
           </CardContent>
         </Card>
       </div>
@@ -61,7 +61,7 @@ export default async function BookingsPage({
       {/* Bookings List */}
       <Card className="glass overflow-hidden">
         <CardHeader className="border-b border-[var(--border-default)] pb-4">
-          <CardTitle className="flex items-center gap-2 text-lg">
+          <CardTitle className="flex items-center gap-2 text-base md:text-lg">
             <Calendar className="h-5 w-5 text-orange" />
             Appointments ({totalCount})
           </CardTitle>

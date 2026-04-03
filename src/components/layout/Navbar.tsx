@@ -47,7 +47,7 @@ export function Navbar() {
                   <Link
                     href={link.href}
                     className={cn(
-                      "text-sm font-medium transition-colors hover:text-orange relative",
+                      "text-sm lg:text-base font-medium transition-colors hover:text-orange relative",
                       pathname === link.href 
                         ? "text-orange" 
                         : "text-white dark:text-gray-200"
@@ -107,7 +107,7 @@ export function Navbar() {
                     key={link.href}
                     href={link.href}
                     onClick={() => setIsMobileMenuOpen(false)}
-                    className="text-base font-medium text-white dark:text-gray-200 hover:text-brand-green py-2 border-b border-white/5"
+                    className="text-lg font-medium text-white dark:text-gray-200 hover:text-brand-green py-2 border-b border-white/5"
                   >
                     {link.name}
                   </Link>

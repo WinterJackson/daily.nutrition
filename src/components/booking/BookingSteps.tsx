@@ -47,13 +47,13 @@ export function BookingSteps() {
             </div>
             
             <h3 className={cn(
-              "text-lg font-serif font-semibold mb-2 transition-colors",
+              "text-lg md:text-xl font-serif font-semibold mb-2 transition-colors",
               index === 0 ? "text-olive dark:text-off-white" : "text-neutral-500 dark:text-neutral-400"
             )}>
               {step.title}
             </h3>
             
-            <p className="text-sm text-neutral-500 dark:text-neutral-400 max-w-[200px]">
+            <p className="text-[10px] md:text-xs text-neutral-500 dark:text-neutral-400 max-w-[200px]">
               {step.description}
             </p>
           </div>

@@ -24,10 +24,10 @@ export function TestimonialsDisplay({ testimonials }: TestimonialsDisplayProps) 
       <section className="py-24 bg-gradient-to-b from-off-white to-soft-green/10 dark:from-charcoal dark:to-charcoal relative overflow-hidden">
         <AnimatedBackground variant="subtle" />
         <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-          <h2 className="text-3xl font-bold font-serif text-olive dark:text-off-white mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold font-serif text-olive dark:text-off-white mb-4">
             What Our Patients Say
           </h2>
-          <p className="text-neutral-500 dark:text-neutral-400">
+          <p className="text-base md:text-lg text-neutral-500 dark:text-neutral-400">
             Success stories coming soon!
           </p>
         </div>
@@ -47,14 +47,14 @@ export function TestimonialsDisplay({ testimonials }: TestimonialsDisplayProps) 
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 dark:bg-white/5 backdrop-blur-sm text-brand-green font-semibold text-xs uppercase tracking-wide mb-4 border border-brand-green/20 shadow-sm">
+          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/80 dark:bg-white/5 backdrop-blur-sm text-brand-green font-semibold text-[10px] md:text-xs uppercase tracking-wide mb-4 border border-brand-green/20 shadow-sm">
             <Star className="w-3 h-3 fill-current" />
             Success Stories
           </div>
-          <h2 className="text-3xl md:text-4xl font-bold font-serif text-olive dark:text-off-white mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold font-serif text-olive dark:text-off-white mb-4">
             What Our Patients Say
           </h2>
-          <p className="text-lg text-neutral-600 dark:text-neutral-300 max-w-2xl mx-auto">
+          <p className="text-base md:text-lg text-neutral-600 dark:text-neutral-300 max-w-2xl mx-auto">
             Real transformations from real people who took control of their health with personalized nutrition.
           </p>
         </motion.div>
@@ -83,7 +83,7 @@ export function TestimonialsDisplay({ testimonials }: TestimonialsDisplayProps) 
                       <Quote className="w-8 h-8 text-brand-green/20 mb-4 group-hover:text-brand-green/40 transition-colors" />
 
                       {/* Content */}
-                      <p className="text-neutral-600 dark:text-neutral-300 leading-relaxed mb-6 text-sm flex-1">
+                      <p className="text-neutral-600 dark:text-neutral-300 leading-relaxed mb-6 text-sm md:text-base flex-1">
                         &quot;{testimonial.content}&quot;
                       </p>
 
@@ -102,10 +102,10 @@ export function TestimonialsDisplay({ testimonials }: TestimonialsDisplayProps) 
                           </span>
                         </div>
                         <div className="min-w-0">
-                          <p className="font-semibold text-olive dark:text-off-white text-sm truncate">
+                          <p className="font-semibold text-olive dark:text-off-white text-sm md:text-base truncate">
                             {testimonial.authorName}
                           </p>
-                          <p className="text-xs text-neutral-500 dark:text-neutral-400">
+                          <p className="text-[10px] md:text-xs text-neutral-500 dark:text-neutral-400">
                             Verified Client
                           </p>
                         </div>
@@ -144,8 +144,8 @@ export function TestimonialsDisplay({ testimonials }: TestimonialsDisplayProps) 
               ))}
             </div>
             <div className="text-left">
-              <p className="text-sm font-semibold text-olive dark:text-off-white">1000+ Patients</p>
-              <p className="text-xs text-neutral-500">Transformed Lives</p>
+              <p className="text-sm md:text-base font-semibold text-olive dark:text-off-white">1000+ Patients</p>
+              <p className="text-[10px] md:text-xs text-neutral-500">Transformed Lives</p>
             </div>
           </div>
         </motion.div>

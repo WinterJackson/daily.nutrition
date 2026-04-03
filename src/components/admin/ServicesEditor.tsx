@@ -177,13 +177,13 @@ export function ServicesEditor({ services }: ServicesEditorProps) {
               )}
               <div>
                 <div className="flex items-center gap-2 mb-1">
-                    <span className="font-semibold text-olive dark:text-off-white">{service.title}</span>
+                    <span className="text-sm md:text-base font-semibold text-olive dark:text-off-white">{service.title}</span>
                     {!service.isVisible && (
-                    <span className="text-xs px-2 py-0.5 bg-neutral-100 dark:bg-white/5 text-neutral-500 rounded-full">Hidden</span>
+                    <span className="text-[10px] md:text-xs px-2 py-0.5 bg-neutral-100 dark:bg-white/5 text-neutral-500 rounded-full">Hidden</span>
                     )}
                 </div>
-                <p className="text-sm text-neutral-500 dark:text-neutral-400 truncate">{service.shortDescription}</p>
-                <div className="flex gap-4 mt-1 text-xs text-neutral-400">
+                <p className="text-[10px] md:text-xs text-neutral-500 dark:text-neutral-400 truncate">{service.shortDescription}</p>
+                <div className="flex gap-4 mt-1 text-[10px] md:text-xs text-neutral-400">
                     <span><DollarSign className="w-3 h-3 inline" /> Virtual: Ksh {service.priceVirtual?.toLocaleString() || 'N/A'}</span>
                     <span><DollarSign className="w-3 h-3 inline" /> In-Person: Ksh {service.priceInPerson?.toLocaleString() || 'N/A'}</span>
                 </div>
@@ -240,7 +240,7 @@ export function ServicesEditor({ services }: ServicesEditorProps) {
             
             {/* Image Upload */}
             <div>
-               <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2 block">Service Image</label>
+               <label className="text-xs md:text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2 block">Service Image</label>
                
                {formData.image ? (
                  <div className="relative w-full h-40 rounded-lg overflow-hidden border border-neutral-200 dark:border-white/10 group">
@@ -256,14 +256,14 @@ export function ServicesEditor({ services }: ServicesEditorProps) {
                    className="w-full h-32 border-2 border-dashed border-neutral-200 dark:border-white/10 rounded-lg flex flex-col items-center justify-center cursor-pointer hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors"
                  >
                     <ImageIcon className="w-6 h-6 text-neutral-400 mb-2" />
-                    <span className="text-xs text-neutral-500">Click to choose media</span>
+                    <span className="text-[10px] md:text-xs text-neutral-500">Click to choose media</span>
                  </div>
                )}
             </div>
 
             {/* Title */}
             <div>
-                <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Title</label>
+                <label className="text-xs md:text-sm font-medium text-neutral-600 dark:text-neutral-400">Title</label>
                 <Input
                   value={formData.title || ""}
                   onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -274,32 +274,32 @@ export function ServicesEditor({ services }: ServicesEditorProps) {
 
             {/* Short Description */}
             <div>
-              <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Short Description</label>
+              <label className="text-xs md:text-sm font-medium text-neutral-600 dark:text-neutral-400">Short Description</label>
               <textarea
                 value={formData.shortDescription || ""}
                 onChange={(e) => setFormData({ ...formData, shortDescription: e.target.value })}
                 rows={2}
                 placeholder="Brief summary for list view"
-                className="mt-1 w-full rounded-lg border border-neutral-200 dark:border-white/10 bg-white dark:bg-black/20 p-3 text-sm"
+                className="mt-1 w-full rounded-lg border border-neutral-200 dark:border-white/10 bg-white dark:bg-black/20 p-3 text-xs md:text-sm"
               />
             </div>
 
             {/* Full Description */}
             <div>
-              <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Full Description</label>
+              <label className="text-xs md:text-sm font-medium text-neutral-600 dark:text-neutral-400">Full Description</label>
               <textarea
                 value={formData.fullDescription || ""}
                 onChange={(e) => setFormData({ ...formData, fullDescription: e.target.value })}
                 rows={4}
                 placeholder="Detailed description for service page"
-                className="mt-1 w-full rounded-lg border border-neutral-200 dark:border-white/10 bg-white dark:bg-black/20 p-3 text-sm"
+                className="mt-1 w-full rounded-lg border border-neutral-200 dark:border-white/10 bg-white dark:bg-black/20 p-3 text-xs md:text-sm"
               />
             </div>
 
             {/* Prices */}
             <div className="grid grid-cols-2 gap-4">
               <div>
-                <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Virtual Price (KES)</label>
+                <label className="text-xs md:text-sm font-medium text-neutral-600 dark:text-neutral-400">Virtual Price (KES)</label>
                 <Input
                   type="number"
                   value={formData.priceVirtual || 0}
@@ -308,7 +308,7 @@ export function ServicesEditor({ services }: ServicesEditorProps) {
                 />
               </div>
               <div>
-                <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">In-Person Price (KES)</label>
+                <label className="text-xs md:text-sm font-medium text-neutral-600 dark:text-neutral-400">In-Person Price (KES)</label>
                 <Input
                   type="number"
                   value={formData.priceInPerson || 0}
@@ -320,7 +320,7 @@ export function ServicesEditor({ services }: ServicesEditorProps) {
 
             {/* Target Audience */}
             <div>
-              <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400">Target Audience</label>
+              <label className="text-xs md:text-sm font-medium text-neutral-600 dark:text-neutral-400">Target Audience</label>
               <Input
                 value={formData.targetAudience || ""}
                 onChange={(e) => setFormData({ ...formData, targetAudience: e.target.value })}
@@ -331,7 +331,7 @@ export function ServicesEditor({ services }: ServicesEditorProps) {
 
             {/* Features */}
             <div>
-              <label className="text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2 block">Features</label>
+              <label className="text-xs md:text-sm font-medium text-neutral-600 dark:text-neutral-400 mb-2 block">Features</label>
               {(formData.features || []).map((feature, idx) => (
                 <div key={idx} className="flex gap-2 mb-2">
                   <Input

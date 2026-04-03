@@ -34,7 +34,7 @@ export function SocialMediaConfig({
         >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-2">
-                    <label className="text-xs font-semibold uppercase tracking-wider text-neutral-500 flex items-center gap-2">
+                    <label className="text-[10px] md:text-xs font-semibold uppercase tracking-wider text-neutral-500 flex items-center gap-2">
                         <Instagram className="w-3 h-3" /> Instagram
                     </label>
                     <Input
@@ -46,7 +46,7 @@ export function SocialMediaConfig({
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-xs font-semibold uppercase tracking-wider text-neutral-500 flex items-center gap-2">
+                    <label className="text-[10px] md:text-xs font-semibold uppercase tracking-wider text-neutral-500 flex items-center gap-2">
                         <Facebook className="w-3 h-3" /> Facebook
                     </label>
                     <Input
@@ -58,7 +58,7 @@ export function SocialMediaConfig({
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-xs font-semibold uppercase tracking-wider text-neutral-500 flex items-center gap-2">
+                    <label className="text-[10px] md:text-xs font-semibold uppercase tracking-wider text-neutral-500 flex items-center gap-2">
                         <Twitter className="w-3 h-3" /> Twitter / X
                     </label>
                     <Input
@@ -70,7 +70,7 @@ export function SocialMediaConfig({
                 </div>
 
                 <div className="space-y-2">
-                    <label className="text-xs font-semibold uppercase tracking-wider text-neutral-500 flex items-center gap-2">
+                    <label className="text-[10px] md:text-xs font-semibold uppercase tracking-wider text-neutral-500 flex items-center gap-2">
                         <Linkedin className="w-3 h-3" /> LinkedIn
                     </label>
                     <Input

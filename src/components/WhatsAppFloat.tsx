@@ -50,7 +50,7 @@ export function WhatsAppFloat() {
                     </svg>
 
                     {/* Tooltip */}
-                    <span className="absolute right-full mr-3 px-3 py-1.5 bg-charcoal text-white text-xs rounded-lg shadow-xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
+                    <span className="absolute right-full mr-3 px-3 py-1.5 bg-charcoal text-white text-xs md:text-sm rounded-lg shadow-xl pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap">
                         Chat with us
                     </span>
 

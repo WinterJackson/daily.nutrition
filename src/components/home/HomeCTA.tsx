@@ -61,13 +61,13 @@ export function HomeCTA() {
           className="flex flex-col sm:flex-row items-center justify-center gap-4"
         >
           <Link href="/booking">
-            <Button size="lg" variant="accent" className="h-14 px-8 text-lg w-full sm:w-auto shadow-2xl shadow-black/20 hover:scale-105 transition-transform">
+            <Button size="lg" variant="accent" className="h-14 px-8 text-base md:text-lg w-full sm:w-auto shadow-2xl shadow-black/20 hover:scale-105 transition-transform">
               <Calendar className="mr-2 h-5 w-5" />
               Book Your Consultation
             </Button>
           </Link>
           <Link href="/services">
-            <Button size="lg" variant="outline" className="h-14 px-8 text-lg w-full sm:w-auto border-white/20 text-white hover:bg-white/10 hover:text-white bg-transparent">
+            <Button size="lg" variant="outline" className="h-14 px-8 text-base md:text-lg w-full sm:w-auto border-white/20 text-white hover:bg-white/10 hover:text-white bg-transparent">
               View Packages & Pricing
             </Button>
           </Link>
