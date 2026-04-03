@@ -1,5 +1,6 @@
 import { getSettings } from "@/app/actions/settings";
 import { CookieConsent } from "@/components/CookieConsent";
+import { GoogleAnalytics } from "@/components/seo/GoogleAnalytics";
 import { StructuredData } from "@/components/seo/structured-data";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -118,6 +119,9 @@ export default function RootLayout({
         className={cn(outfit.variable, inter.variable, "antialiased font-sans bg-off-white dark:bg-charcoal text-neutral-900 dark:text-neutral-50")}
         suppressHydrationWarning
       >
+        {process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID && (
+           <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID} />
+        )}
         <ThemeProvider
             attribute="class"
             defaultTheme="light"

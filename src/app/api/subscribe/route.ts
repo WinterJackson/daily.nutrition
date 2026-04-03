@@ -4,6 +4,7 @@ import { z } from "zod"
 
 const subscribeSchema = z.object({
     email: z.string().email("Please enter a valid email address"),
+    turnstileToken: z.string().optional(),
 })
 
 export async function POST(request: NextRequest) {
@@ -21,6 +22,27 @@ export async function POST(request: NextRequest) {
                 { error: 'Too many requests. Please wait before trying again.' },
                 { status: 429 }
             )
+        }
+
+        const secretKey = process.env.TURNSTILE_SECRET_KEY
+        if (secretKey) {
+            if (!body.turnstileToken) {
+                return NextResponse.json({ error: 'Security validation missing. Please verify you are human.' }, { status: 400 })
+            }
+
+            const formData = new URLSearchParams()
+            formData.append('secret', secretKey)
+            formData.append('response', body.turnstileToken)
+            formData.append('remoteip', ip)
+
+            const result = await fetch('https://challenges.cloudflare.com/turnstile/v0/siteverify', {
+                body: formData,
+                method: 'POST',
+            })
+            const outcome = await result.json()
+            if (!outcome.success) {
+                return NextResponse.json({ error: 'Security check failed. Please refresh and try again.' }, { status: 403 })
+            }
         }
 
         // Upsert logic: if email exists, flip isActive back to true. Otherwise, create new.

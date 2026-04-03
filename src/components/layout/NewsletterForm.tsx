@@ -2,13 +2,17 @@
 
 import { Button } from "@/components/ui/Button"
 import { Input } from "@/components/ui/Input"
+import { Turnstile } from "@marsidev/react-turnstile"
 import { Loader2 } from "lucide-react"
 import { useState } from "react"
 
 export function NewsletterForm() {
   const [email, setEmail] = useState("")
+  const [turnstileToken, setTurnstileToken] = useState<string>("")
   const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle")
   const [message, setMessage] = useState("")
+  
+  const siteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -21,7 +25,7 @@ export function NewsletterForm() {
       const res = await fetch("/api/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email, turnstileToken }),
       })
 
       const data = await res.json()
@@ -60,7 +64,7 @@ export function NewsletterForm() {
           />
           <Button
             type="submit"
-            disabled={status === "loading" || status === "success" || !email}
+            disabled={status === "loading" || status === "success" || !email || (siteKey ? !turnstileToken : false)}
             className="rounded-full bg-orange hover:bg-orange/90 text-white px-6 h-11 shrink-0"
           >
             {status === "loading" ? (
@@ -72,6 +76,20 @@ export function NewsletterForm() {
             )}
           </Button>
         </div>
+        
+        {siteKey && (
+          <div className="mt-4 flex justify-center w-full">
+            <Turnstile
+              siteKey={siteKey}
+              onSuccess={(token) => setTurnstileToken(token)}
+              onError={() => {
+                setStatus("error")
+                setMessage("Security check failed. Please refresh.")
+              }}
+              options={{ size: "invisible" }}
+            />
+          </div>
+        )}
       </form>
       
       {message && (
