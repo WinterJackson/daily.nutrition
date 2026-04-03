@@ -1,4 +1,5 @@
 import { AdminSidebar } from "@/components/admin/AdminSidebar"
+import { NotificationBell } from "@/components/admin/NotificationBell"
 import { AnimatedBackground } from "@/components/ui/AnimatedBackground"
 import { verifySession } from "@/lib/auth"
 import { redirect } from "next/navigation"
@@ -25,6 +26,9 @@ export default async function AdminLayout({
              {children}
           </div>
        </main>
+
+       {/* Floating Notification Bell — always visible across all admin pages */}
+       <NotificationBell />
     </div>
   )
 }
