@@ -370,7 +370,7 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
       </div>
 
       {/* Table — always horizontal-scrollable with no text wrap */}
-      <div className="overflow-x-auto scrollbar-thin-1px">
+      <div className="overflow-x-auto">
         <table className="w-full min-w-[960px] text-sm text-left">
           <thead className="bg-[var(--surface-secondary)] text-[var(--text-muted)] border-b border-[var(--border-default)]">
             <tr>

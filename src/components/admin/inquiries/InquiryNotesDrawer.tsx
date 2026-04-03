@@ -56,7 +56,7 @@ export function InquiryNotesDrawer({
           </div>
 
           {/* Notes Feed */}
-          <div className="flex-1 overflow-y-auto p-4 custom-scrollbar space-y-4">
+          <div className="flex-1 overflow-y-auto p-4 space-y-4">
             {notes.length === 0 ? (
               <div className="flex flex-col items-center justify-center h-32 text-center text-neutral-400">
                 <p className="text-sm">No internal notes yet.</p>

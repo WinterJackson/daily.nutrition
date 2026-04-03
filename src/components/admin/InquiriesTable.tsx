@@ -419,7 +419,7 @@ export function InquiriesTable({
         </div>
 
         {/* Lead List Scroll */}
-        <div className="flex-1 overflow-y-auto custom-scrollbar">
+        <div className="flex-1 overflow-y-auto">
           {filteredInquiries.length === 0 ? (
             <div className="p-8 text-center text-neutral-400 text-sm">
               No leads found matching your criteria.
@@ -603,7 +603,7 @@ export function InquiriesTable({
                 </div>
 
                 {/* Massive Scrollable Detail Feed */}
-                <div className="flex-1 overflow-y-auto custom-scrollbar p-6 md:p-10">
+                <div className="flex-1 overflow-y-auto p-6 md:p-10">
                     
                     {/* Rich Header */}
                     <div className="flex gap-5 mb-8">

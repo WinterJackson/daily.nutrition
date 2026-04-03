@@ -218,7 +218,7 @@ export default function NewsletterPage() {
                         </div>
 
                         {/* Data Grid table */}
-                        <div className="overflow-x-auto custom-scrollbar">
+                        <div className="overflow-x-auto">
                             <table className="w-full text-sm text-left">
                                 <thead className="text-xs text-caption uppercase surface-secondary">
                                     <tr>
@@ -394,7 +394,7 @@ export default function NewsletterPage() {
                                             onChange={(e) => setDraftContent(e.target.value)}
                                             placeholder="Write your email content here..."
                                             required
-                                            className="min-h-[200px] surface-input custom-scrollbar"
+                                            className="min-h-[200px] surface-input"
                                         />
                                     </div>
                                     <Button 

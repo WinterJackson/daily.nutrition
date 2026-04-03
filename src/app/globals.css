@@ -284,44 +284,31 @@ html.dark h1, html.dark h2, html.dark h3, html.dark h4, html.dark h5, html.dark 
   --admin-surface-input: rgba(255, 255, 255, 0.05);
 }
 
-/* Custom Scrollbar Injection (Desktop CRM Emulation) */
-.custom-scrollbar::-webkit-scrollbar {
-  width: 6px !important;
-  height: 6px !important;
+/* ═══════════════════════════════════════════════════════ */
+/* Global 2px Orange Scrollbar — Applied Universally     */
+/* ═══════════════════════════════════════════════════════ */
+
+/* Webkit Browsers (Chrome, Safari, Edge) */
+*::-webkit-scrollbar {
+  width: 2px !important;
+  height: 2px !important;
 }
 
-.custom-scrollbar::-webkit-scrollbar-track {
+*::-webkit-scrollbar-track {
   background: transparent !important;
 }
 
-.custom-scrollbar::-webkit-scrollbar-thumb {
-  background: var(--border-default) !important;
-  border-radius: 10px !important;
-}
-
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: var(--text-muted) !important;
-}
-
-/* Firefox Support */
-.custom-scrollbar {
-  scrollbar-width: thin;
-  scrollbar-color: var(--border-default) transparent;
-}
-
-/* Explicit Utility for 1px Scrollbar (Legacy overrides) */
-.scrollbar-thin-1px::-webkit-scrollbar {
-  width: 1px !important;
-  height: 1px !important;
-}
-.scrollbar-thin-1px::-webkit-scrollbar-track {
-  background: transparent !important;
-}
-.scrollbar-thin-1px::-webkit-scrollbar-thumb {
+*::-webkit-scrollbar-thumb {
   background: var(--color-orange) !important;
   border-radius: 999px !important;
 }
-.scrollbar-thin-1px {
+
+*::-webkit-scrollbar-thumb:hover {
+  background: var(--color-orange-text) !important;
+}
+
+/* Firefox Support */
+* {
   scrollbar-width: thin;
   scrollbar-color: var(--color-orange) transparent;
 }

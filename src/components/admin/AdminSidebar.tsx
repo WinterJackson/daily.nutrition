@@ -147,7 +147,7 @@ export function AdminSidebar() {
       </div>
 
       {/* Nav Links */}
-      <nav className="flex-1 p-3 space-y-1.5 overflow-y-auto overflow-x-hidden custom-scrollbar">
+      <nav className="flex-1 p-3 space-y-1.5 overflow-y-auto overflow-x-hidden">
         {adminLinks.map((link) => {
           const isActive = pathname === link.href || (link.href !== "/admin" && pathname.startsWith(link.href))
           

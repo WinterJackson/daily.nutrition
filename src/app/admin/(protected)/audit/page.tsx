@@ -254,7 +254,7 @@ export default function AuditLogPage() {
                             <p className="text-sm">Events will appear here as actions are performed.</p>
                         </div>
                     ) : (
-                        <div className="overflow-x-auto custom-scrollbar">
+                        <div className="overflow-x-auto">
                             <table className="w-full text-sm">
                                 <thead className="bg-[var(--surface-secondary)] text-[var(--text-muted)] text-xs uppercase tracking-wider">
                                     <tr>
@@ -370,7 +370,7 @@ export default function AuditLogPage() {
                             {selectedLog.metadata && Object.keys(selectedLog.metadata).length > 0 && (
                                 <div className="space-y-2">
                                     <h4 className="text-xs font-bold uppercase tracking-wider text-caption">Metadata</h4>
-                                    <pre className="text-xs font-mono p-4 rounded-xl overflow-auto max-h-[300px] custom-scrollbar"
+                                    <pre className="text-xs font-mono p-4 rounded-xl overflow-auto max-h-[300px]"
                                         style={{ background: "var(--surface-secondary)", color: "var(--text-secondary)", borderColor: "var(--border-default)", borderWidth: "1px" }}
                                     >
                                         {JSON.stringify(selectedLog.metadata, null, 2)}

@@ -118,7 +118,7 @@ export function BlogFilterBar({ categories }: BlogFilterBarProps) {
 
             {/* Right: Actions */}
             <div className="flex flex-wrap items-center gap-2 self-start xl:self-auto w-full xl:w-auto mt-4 xl:mt-0">
-                <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0 custom-scrollbar">
+                <div className="flex items-center gap-2 w-full sm:w-auto overflow-x-auto pb-1 sm:pb-0">
                     <Link href="/admin/blog/categories" className="flex-1 sm:flex-none">
                         <Button variant="outline" size="sm" className="w-full sm:w-auto shadow-sm rounded-md transition-all whitespace-nowrap">
                             Categories
