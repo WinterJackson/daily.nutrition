@@ -57,8 +57,7 @@ const getCachedCounts = unstable_cache(
             totalServices,
             totalPosts,
             blogViewsAgg,
-            revenueAgg,
-            completedBookingsCount,
+            completedBookings,
             newsletterSubs
         ] = await Promise.all([
             prisma.inquiry.count({ where: { deletedAt: null } }),
@@ -69,18 +68,32 @@ const getCachedCounts = unstable_cache(
             prisma.service.count({ where: { deletedAt: null } }),
             prisma.blogPost.count({ where: { deletedAt: null } }),
             prisma.blogPost.aggregate({ _sum: { views: true }, where: { deletedAt: null } }),
-            prisma.booking.aggregate({
-                _sum: { amountPaid: true },
-                where: { deletedAt: null, bookingStatus: { in: ["CONFIRMED", "COMPLETED"] } }
-            }),
-            prisma.booking.count({
-                where: { deletedAt: null, bookingStatus: { in: ["CONFIRMED", "COMPLETED"] } }
+            // Fetch completed/confirmed bookings with their linked service for intelligent revenue estimation
+            prisma.booking.findMany({
+                where: { deletedAt: null, bookingStatus: { in: ["CONFIRMED", "COMPLETED"] } },
+                select: {
+                    amountPaid: true,
+                    type: true,
+                    service: { select: { priceVirtual: true, priceInPerson: true } }
+                }
             }),
             prisma.newsletterSubscriber.count({ where: { isActive: true, deletedAt: null } })
         ])
 
-        // Calculate estimated revenue strictly from the immutable amountPaid snapshot.
-        const estimatedRevenue = revenueAgg._sum?.amountPaid || 0
+        // Intelligent Revenue Estimation:
+        // For each booking: use amountPaid if set, otherwise estimate from the linked Service's pricing
+        let estimatedRevenue = 0
+        for (const booking of completedBookings) {
+            if (booking.amountPaid != null && booking.amountPaid > 0) {
+                estimatedRevenue += booking.amountPaid
+            } else if (booking.service) {
+                // Fall back to service pricing based on booking type
+                const price = booking.type === "IN_PERSON"
+                    ? (booking.service.priceInPerson ?? booking.service.priceVirtual ?? 0)
+                    : (booking.service.priceVirtual ?? booking.service.priceInPerson ?? 0)
+                estimatedRevenue += price
+            }
+        }
 
         return {
             totalInquiries,
@@ -92,7 +105,7 @@ const getCachedCounts = unstable_cache(
             totalPosts,
             totalViews: blogViewsAgg._sum.views || 0,
             estimatedRevenue,
-            completedBookingsCount,
+            completedBookingsCount: completedBookings.length,
             newsletterSubs
         }
     },
