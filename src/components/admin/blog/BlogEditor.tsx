@@ -265,7 +265,8 @@ export function BlogEditor({ initialData, userRole = "ADMIN" }: BlogEditorProps)
 
   const handleSave = async (publishAction?: "publish" | "review") => {
     startTransition(async () => {
-        const isPublish = publishAction === "publish" && userRole === "SUPER_ADMIN"
+        const canPublish = userRole === "SUPER_ADMIN" || userRole === "ADMIN"
+        const isPublish = publishAction === "publish" && canPublish
         const isSubmitForReview = publishAction === "review"
 
         let derivedStatus: "DRAFT" | "IN_REVIEW" | "PUBLISHED" | "ARCHIVED" = formData.status === "Published" ? "PUBLISHED" : "DRAFT"

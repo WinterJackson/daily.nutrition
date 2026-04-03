@@ -25,6 +25,7 @@ interface EditorSidebarProps {
 const categories = ["Education", "Announcement", "Nutrition Tips", "Research", "Recipe"]
 
 export function EditorSidebar({ status, category, date, image, metaTitle, metaDescription, onChange, onSave, isSaving, userRole = "ADMIN" }: EditorSidebarProps) {
+  const canPublish = userRole === "SUPER_ADMIN" || userRole === "ADMIN"
   const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false)
 
   const handleMediaSelect = (url: string) => {
@@ -53,14 +54,20 @@ export function EditorSidebar({ status, category, date, image, metaTitle, metaDe
         <CardContent className="pt-4 space-y-4">
           <div className="space-y-2">
             <label className="text-xs font-semibold text-neutral-600 dark:text-neutral-300">Status</label>
-            <select
-              value={status}
-              onChange={(e) => onChange("status", e.target.value)}
-              className="flex h-10 w-full rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-green dark:border-white/10 dark:bg-white/5"
-            >
-              <option value="Draft">Draft</option>
-              <option value="Published">Published</option>
-            </select>
+            {canPublish ? (
+              <select
+                value={status}
+                onChange={(e) => onChange("status", e.target.value)}
+                className="flex h-10 w-full rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-green dark:border-white/10 dark:bg-white/5"
+              >
+                <option value="Draft">Draft</option>
+                <option value="Published">Published</option>
+              </select>
+            ) : (
+              <div className="flex h-10 w-full items-center rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-sm dark:border-white/10 dark:bg-white/5 text-neutral-500">
+                {status === "Published" ? "Published" : "Draft"}
+              </div>
+            )}
           </div>
 
           <div className="space-y-2">
@@ -76,8 +83,9 @@ export function EditorSidebar({ status, category, date, image, metaTitle, metaDe
              </div>
           </div>
 
-          {/* RBAC: Role-aware save buttons */}
+          {/* RBAC: Role-aware action buttons */}
           <div className="space-y-2 mt-2">
+            {/* Save Draft — available to ALL roles */}
             <Button 
               variant="accent" 
               className="w-full" 
@@ -87,19 +95,23 @@ export function EditorSidebar({ status, category, date, image, metaTitle, metaDe
                {isSaving ? "Saving..." : "Save Draft"}
             </Button>
 
-            {userRole === "SUPER_ADMIN" ? (
+            {/* SUPER_ADMIN & ADMIN: Can publish directly */}
+            {canPublish && (
               <Button 
                 variant="accent" 
-                className="w-full bg-green-600 hover:bg-green-700" 
+                className="w-full bg-green-600 hover:bg-green-700 text-white" 
                 onClick={() => onSave("publish")}
                 disabled={isSaving}
               >
                  {isSaving ? "Publishing..." : "Publish Now"}
               </Button>
-            ) : (
+            )}
+
+            {/* SUPPORT: Can only submit for review */}
+            {!canPublish && (
               <Button 
                 variant="accent" 
-                className="w-full" 
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white" 
                 onClick={() => onSave("review")}
                 disabled={isSaving}
               >

@@ -1,5 +1,6 @@
 import { getPost } from "@/app/actions/blog"
 import { BlogEditor } from "@/components/admin/blog/BlogEditor"
+import { getCurrentUser } from "@/lib/auth"
 import { notFound } from "next/navigation"
 
 interface EditPostPageProps {
@@ -8,7 +9,7 @@ interface EditPostPageProps {
 
 export default async function EditPostPage({ params }: EditPostPageProps) {
   const { id } = await params
-  const post = await getPost(id)
+  const [post, user] = await Promise.all([getPost(id), getCurrentUser()])
 
   if (!post) {
     notFound()
@@ -20,5 +21,5 @@ export default async function EditPostPage({ params }: EditPostPageProps) {
     content: post.content || ""
   }
 
-  return <BlogEditor initialData={serializedPost} />
+  return <BlogEditor initialData={serializedPost} userRole={user?.role || "SUPPORT"} />
 }
