@@ -1,6 +1,8 @@
 import { getSettings } from "@/app/actions/settings"
 import { AnimatedBackground } from "@/components/ui/AnimatedBackground"
 import { Metadata } from "next"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 
 export const metadata: Metadata = {
   title: "Privacy Policy | Edwak Nutrition",
@@ -25,7 +27,14 @@ export default async function PrivacyPolicyPage() {
 
         <div className="prose prose-lg max-w-none text-charcoal/80 dark:text-off-white/80 space-y-8 bg-white/80 dark:bg-white/5 p-8 md:p-12 rounded-2xl shadow-sm border border-neutral-100 dark:border-white/10">
           
-          <section>
+          {settings?.privacyPolicyContent ? (
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {settings.privacyPolicyContent}
+            </ReactMarkdown>
+          ) : (
+            <>
+              {/* Fallback to default content if not set in admin */}
+              <section>
             <h2 className="text-2xl font-serif text-olive dark:text-brand-green mb-4">1. Introduction</h2>
             <p>
               Welcome to <strong>{businessName}</strong>. This Privacy Policy sets out how we collect, use, process, and protect your personal data when you use our website, services, or interact with us. We are committed to safeguarding your privacy in strict compliance with the <strong>Kenya Data Protection Act, 2019 (DPA)</strong> and its attendant regulations.
@@ -152,7 +161,9 @@ export default async function PrivacyPolicyPage() {
             <p>
               We keep our Privacy Policy under regular review. Any changes will be posted on this page with an updated revision date. If significant changes occur regarding how we treat your personal data, we will notify you prominently via email or notice on our platform.
             </p>
-          </section>
+              </section>
+            </>
+          )}
 
         </div>
       </div>

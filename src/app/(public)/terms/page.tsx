@@ -1,6 +1,8 @@
 import { getSettings } from "@/app/actions/settings"
 import { AnimatedBackground } from "@/components/ui/AnimatedBackground"
 import { Metadata } from "next"
+import ReactMarkdown from "react-markdown"
+import remarkGfm from "remark-gfm"
 
 export const metadata: Metadata = {
   title: "Terms of Service | Edwak Nutrition",
@@ -24,7 +26,14 @@ export default async function TermsOfServicePage() {
 
         <div className="prose prose-lg max-w-none text-charcoal/80 dark:text-off-white/80 space-y-8 bg-white/80 dark:bg-white/5 p-8 md:p-12 rounded-2xl shadow-sm border border-neutral-100 dark:border-white/10">
           
-          <section>
+          {settings?.termsContent ? (
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {settings.termsContent}
+            </ReactMarkdown>
+          ) : (
+            <>
+              {/* Fallback to default content if not set in admin */}
+              <section>
             <h2 className="text-2xl font-serif text-olive dark:text-brand-green mb-4">1. Acceptance of Terms</h2>
             <p>
               By accessing, browsing, or utilizing the services provided by <strong>{businessName}</strong> ("Company", "we", "us", "our"), you agree to be bound by these Terms of Service. If you do not agree with any part of these terms, you must not use our website or services.
@@ -145,7 +154,9 @@ export default async function TermsOfServicePage() {
             <p className="mt-4">
               <strong>Contact:</strong> For any questions regarding these Terms, contact {email}.
             </p>
-          </section>
+              </section>
+            </>
+          )}
 
         </div>
       </div>

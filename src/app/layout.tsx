@@ -1,4 +1,6 @@
+import { getSettings } from "@/app/actions/settings";
 import { CookieConsent } from "@/components/CookieConsent";
+import { StructuredData } from "@/components/seo/structured-data";
 import { ServiceWorkerRegistration } from "@/components/ServiceWorkerRegistration";
 import { ThemeProvider } from "@/components/theme-provider";
 import { cn } from "@/lib/utils";
@@ -16,38 +18,54 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_SITE_URL || "https://edwaknutrition.co.ke"),
-  title: {
-    default: "Edwak Nutrition | Professional Nutrition Consultancy",
-    template: "%s | Edwak Nutrition",
-  },
-  description: "Expert nutrition care for cancer, diabetes, and gut health. Virtual and in-person consultations with a registered dietitian in Nairobi, Kenya.",
-  keywords: ["nutrition", "dietitian", "Nairobi", "Kenya", "cancer nutrition", "diabetes", "gut health", "weight management", "virtual consultation"],
-  authors: [{ name: "Edwak Nutrition" }],
-  creator: "Edwak Nutrition",
-  manifest: "/manifest.json",
-  appleWebApp: {
-    capable: true,
-    statusBarStyle: "default",
-    title: "Edwak Nutrition",
-  },
-  formatDetection: {
-    telephone: true,
-  },
-  openGraph: {
-    type: "website",
-    locale: "en_KE",
-    siteName: "Edwak Nutrition",
-    title: "Edwak Nutrition | Professional Nutrition Consultancy",
-    description: "Expert nutrition care for cancer, diabetes, and gut health. Virtual and in-person consultations.",
-  },
-  twitter: {
-    card: "summary_large_image",
-    title: "Edwak Nutrition | Professional Nutrition Consultancy",
-    description: "Expert nutrition care for cancer, diabetes, and gut health. Virtual and in-person consultations.",
-  },
-  robots: {
+export async function generateMetadata(): Promise<Metadata> {
+  const settings = await getSettings();
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://edwaknutrition.co.ke";
+  const defaultTitle = settings?.pageTitle || "Edwak Nutrition | Professional Nutrition Consultancy";
+  const defaultDesc = settings?.metaDescription || "Expert nutrition care for cancer, diabetes, and gut health.";
+  const ogImage = settings?.ogImageUrl || `${baseUrl}/images/og-image.jpg`;
+
+  return {
+    metadataBase: new URL(baseUrl),
+    title: {
+      default: defaultTitle,
+      template: `%s | ${settings?.businessName || "Edwak Nutrition"}`,
+    },
+    description: defaultDesc,
+    keywords: settings?.keywords?.split(',').map(k => k.trim()) || ["nutrition", "dietitian", "Nairobi", "Kenya"],
+    authors: [{ name: settings?.businessName || "Edwak Nutrition" }],
+    creator: settings?.businessName || "Edwak Nutrition",
+    manifest: "/manifest.json",
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: settings?.businessName || "Edwak Nutrition",
+    },
+    formatDetection: {
+      telephone: true,
+    },
+    openGraph: {
+      type: "website",
+      locale: "en_KE",
+      siteName: settings?.businessName || "Edwak Nutrition",
+      title: defaultTitle,
+      description: defaultDesc,
+      images: [
+        {
+          url: ogImage,
+          width: 1200,
+          height: 630,
+          alt: defaultTitle,
+        }
+      ],
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: defaultTitle,
+      description: defaultDesc,
+      images: [ogImage],
+    },
+    robots: {
     index: true,
     follow: true,
     googleBot: {
@@ -68,7 +86,8 @@ export const metadata: Metadata = {
       { url: "/icons/icon-152x152.png", sizes: "152x152", type: "image/png" },
     ],
   },
-};
+  };
+}
 
 export const viewport: Viewport = {
   themeColor: [
@@ -93,6 +112,7 @@ export default function RootLayout({
         <link rel="apple-touch-icon" href="/icons/icon-152x152.png" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <StructuredData />
       </head>
       <body
         className={cn(outfit.variable, inter.variable, "antialiased font-sans bg-off-white dark:bg-charcoal text-neutral-900 dark:text-neutral-50")}

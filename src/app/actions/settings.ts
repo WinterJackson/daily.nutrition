@@ -82,6 +82,7 @@ export interface SettingsData {
     profileImageUrl?: string | null
     aboutImageOne: string
     aboutImageTwo: string
+    ogImageUrl?: string | null
     themePreference: string
     googlePlaceId: string
 
@@ -169,6 +170,7 @@ export async function getSettings() {
                             paymentTillNumber: "",
                             paymentPaybill: "",
                             themePreference: "light",
+                            ogImageUrl: "",
                             updatedAt: new Date()
                         },
                         include: {
@@ -195,6 +197,7 @@ export async function getSettings() {
                     facebookUrl: settings.facebookUrl,
                     twitterUrl: settings.twitterUrl,
                     linkedinUrl: settings.linkedinUrl,
+                    ogImageUrl: settings.ogImageUrl,
                     privacyPolicyContent: settings.privacyPolicyContent,
                     termsContent: settings.termsContent,
 

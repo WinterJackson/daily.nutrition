@@ -518,6 +518,7 @@ model SiteSettings {
   paymentTillNumber    String                @default("")
   paymentPaybill       String                @default("")
   paymentAccountNumber String                @default("")
+  ogImageUrl           String?               @default("")
   version              Int                   @default(0)
   updatedAt            DateTime              @updatedAt
   profileImageUrl      String?               @default("")

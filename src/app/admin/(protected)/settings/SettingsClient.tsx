@@ -2,6 +2,7 @@
 
 import { EnvStatusMap, SettingsData, updateSettings, upsertIntegrationSecrets } from "@/app/actions/settings"
 import { deleteImage, uploadImage } from "@/app/actions/upload"
+import { CollapsibleCard } from "@/components/admin/CollapsibleCard"
 import { DataExport } from "@/components/admin/DataExport"
 import { EmailBrandingEditor } from "@/components/admin/EmailBrandingEditor"
 import { LegalContentConfig } from "@/components/admin/LegalContentConfig"
@@ -187,6 +188,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
 
   const [isMediaPickerOneOpen, setIsMediaPickerOneOpen] = useState(false)
   const [isMediaPickerTwoOpen, setIsMediaPickerTwoOpen] = useState(false)
+  const [isOgImagePickerOpen, setIsOgImagePickerOpen] = useState(false)
 
   // Collapsible section states
   const [openSections, setOpenSections] = useState<Record<string, boolean>>({})
@@ -676,35 +678,26 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
             />
 
             {/* Email Branding */}
-            <div className="bg-white dark:bg-charcoal rounded-xl border border-neutral-200 dark:border-white/10 overflow-hidden">
-                <div 
-                    className="p-6 cursor-pointer flex justify-between items-center hover:bg-neutral-50 dark:hover:bg-white/5 transition-colors"
-                    onClick={() => toggleSection('branding')}
-                >
-                    <div>
-                        <h3 className="font-semibold text-olive dark:text-off-white flex items-center gap-2">
-                            <ImageIcon className="w-5 h-5" />
-                            Email Branding
-                        </h3>
-                        <p className="text-sm text-neutral-500 mt-1">Configure logos and colors for outbound emails</p>
-                    </div>
-                </div>
-                {openSections.branding && (
-                    <div className="p-6 border-t border-neutral-100 dark:border-white/5 bg-neutral-50/50 dark:bg-black/20">
-                        <EmailBrandingEditor 
-                            branding={{
-                                logoUrl: settings.emailBranding?.logoUrl || null,
-                                primaryColor: settings.emailBranding?.primaryColor || "#516B4D",
-                                accentColor: settings.emailBranding?.accentColor || "#C8553D",
-                                footerText: settings.emailBranding?.footerText || "",
-                                websiteUrl: settings.emailBranding?.websiteUrl || "",
-                                supportEmail: settings.emailBranding?.supportEmail || ""
-                            }} 
-                            onChange={handleEmailBrandingChange} 
-                        />
-                    </div>
-                )}
-            </div>
+            <CollapsibleCard
+              title="Email Branding"
+              description="Configure logos and colors for outbound emails"
+              icon={ImageIcon}
+              isOpen={openSections.branding ?? false}
+              onToggle={() => toggleSection('branding')}
+              status={settings.emailBranding?.logoUrl ? "active" : "inactive"}
+            >
+              <EmailBrandingEditor 
+                branding={{
+                  logoUrl: settings.emailBranding?.logoUrl || null,
+                  primaryColor: settings.emailBranding?.primaryColor || "#516B4D",
+                  accentColor: settings.emailBranding?.accentColor || "#C8553D",
+                  footerText: settings.emailBranding?.footerText || "",
+                  websiteUrl: settings.emailBranding?.websiteUrl || "",
+                  supportEmail: settings.emailBranding?.supportEmail || ""
+                }} 
+                onChange={handleEmailBrandingChange} 
+              />
+            </CollapsibleCard>
           </div>
         )}
 
@@ -714,40 +707,118 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
             <Card className="surface-card">
               <CardHeader>
                 <CardTitle>SEO Configuration</CardTitle>
-                <CardDescription>Optimize how your site appears in search engine results.</CardDescription>
+                <CardDescription>Optimize how your site appears in search engine results and social media.</CardDescription>
               </CardHeader>
-              <CardContent className="space-y-6">
-                <div className="space-y-4">
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-caption">Default Page Title</label>
-                    <Input
-                      value={settings.pageTitle}
-                      onChange={(e) => handleChange("pageTitle", e.target.value)}
-                      className="surface-input"
-                    />
+              <CardContent className="space-y-8">
+                
+                {/* Google Search Preview */}
+                <div className="bg-white dark:bg-charcoal p-6 rounded-xl border border-neutral-200 dark:border-neutral-800 shadow-sm">
+                   <h3 className="text-sm font-semibold text-neutral-600 dark:text-neutral-400 mb-4 flex items-center gap-2">
+                       <Globe className="w-4 h-4" /> Google Search Preview
+                   </h3>
+                   <div className="max-w-[600px] break-words">
+                       <div className="flex items-center gap-3 mb-1">
+                           <div className="w-7 h-7 bg-neutral-100 dark:bg-neutral-800 rounded-full flex items-center justify-center overflow-hidden">
+                               {settings.profileImageUrl ? (
+                                   <Image src={settings.profileImageUrl} alt="Logo" width={28} height={28} className="object-cover" />
+                               ) : (
+                                   <Globe className="w-4 h-4 text-neutral-400" />
+                               )}
+                           </div>
+                           <div className="leading-tight">
+                               <div className="text-[14px] text-neutral-800 dark:text-neutral-200 truncate max-w-[300px]">{settings.businessName || "Your Website"}</div>
+                               <div className="text-[12px] text-neutral-500 truncate max-w-[300px]">https://{settings.businessName?.toLowerCase().replace(/\s+/g, '') || "yourwebsite"}.co.ke</div>
+                           </div>
+                       </div>
+                       <div className="text-[20px] text-[#1a0dab] dark:text-[#8ab4f8] hover:underline cursor-pointer mb-1 leading-snug">
+                           {settings.pageTitle || "Default Page Title"}
+                       </div>
+                       <div className="text-[14px] text-[#4d5156] dark:text-[#bdc1c6] leading-snug">
+                           {settings.metaDescription || "Provide a clear and concise meta description to encourage users to click through to your site."}
+                       </div>
+                   </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                  {/* Left Column: Text Fields */}
+                  <div className="space-y-6">
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                         <label className="text-xs font-bold uppercase tracking-wider text-caption">Default Page Title</label>
+                         <span className={`text-xs ${settings.pageTitle.length > 60 ? 'text-red-500 font-bold' : 'text-neutral-500'}`}>
+                             {settings.pageTitle.length} / 60
+                         </span>
+                      </div>
+                      <Input
+                        value={settings.pageTitle}
+                        onChange={(e) => handleChange("pageTitle", e.target.value)}
+                        className="surface-input"
+                        placeholder="Primary Keyword - Secondary Keyword | Brand Name"
+                      />
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">Keep it between 50-60 characters for best results.</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                         <label className="text-xs font-bold uppercase tracking-wider text-caption">Meta Description</label>
+                         <span className={`text-xs ${settings.metaDescription.length > 160 ? 'text-red-500 font-bold' : 'text-neutral-500'}`}>
+                             {settings.metaDescription.length} / 160
+                         </span>
+                      </div>
+                      <textarea
+                        className="flex min-h-[100px] w-full rounded-xl border border-neutral-200 bg-neutral-50 px-4 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-olive focus-visible:ring-offset-2 dark:border-white/10 dark:bg-white/5 dark:ring-offset-charcoal"
+                        value={settings.metaDescription}
+                        onChange={(e) => handleChange("metaDescription", e.target.value)}
+                        placeholder="Write a compelling summary of your page. Highlight your unique selling proposition."
+                      />
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400">Keep it between 150-160 characters for best results.</p>
+                    </div>
+
+                    <div className="space-y-2">
+                      <label className="text-xs font-bold uppercase tracking-wider text-caption">Keywords</label>
+                      <Input
+                        value={settings.keywords}
+                        onChange={(e) => handleChange("keywords", e.target.value)}
+                        className="surface-input"
+                        placeholder="nutrition, diet plan, kenya dietitian"
+                      />
+                      <p className="text-xs text-neutral-500 dark:text-neutral-400 italic">Separate keywords with commas.</p>
+                    </div>
                   </div>
 
+                  {/* Right Column: OG Image */}
                   <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-caption">Meta Description</label>
-                    <textarea
-                      className="flex min-h-[100px] w-full rounded-xl surface-input border-default px-4 py-3 text-sm focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-green focus-visible:ring-offset-2 dark:ring-offset-charcoal"
-                      value={settings.metaDescription}
-                      onChange={(e) => handleChange("metaDescription", e.target.value)}
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <label className="text-xs font-bold uppercase tracking-wider text-caption">Keywords</label>
-                    <Input
-                      value={settings.keywords}
-                      onChange={(e) => handleChange("keywords", e.target.value)}
-                      className="surface-input"
-                    />
-                    <p className="text-xs text-caption italic">Separate keywords with commas.</p>
+                     <label className="text-xs font-bold uppercase tracking-wider text-caption">Social Sharing Image (OG Image)</label>
+                     <p className="text-xs text-neutral-500 dark:text-neutral-400 mb-3">This image appears when your site is shared on WhatsApp, Twitter, LinkedIn, etc. Recommended size: 1200x630px.</p>
+                     
+                     <div className="border-2 border-dashed border-neutral-200 dark:border-white/10 rounded-xl overflow-hidden bg-neutral-50 dark:bg-white/5 aspect-[1200/630] flex flex-col items-center justify-center relative group">
+                        {settings.ogImageUrl ? (
+                          <>
+                             <Image src={settings.ogImageUrl} alt="OG Image Preview" fill className="object-cover" />
+                             <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                                <Button type="button" variant="accent" onClick={() => setIsOgImagePickerOpen(true)}>Change</Button>
+                                <Button type="button" variant="destructive" onClick={() => handleChange("ogImageUrl", "")}>Remove</Button>
+                             </div>
+                          </>
+                        ) : (
+                           <div className="text-center p-6 cursor-pointer" onClick={() => setIsOgImagePickerOpen(true)}>
+                              <ImageIcon className="w-8 h-8 text-neutral-400 mx-auto mb-2" />
+                              <p className="text-sm text-neutral-600 dark:text-neutral-400 font-medium">Click to select OG Image</p>
+                              <p className="text-xs text-neutral-500 mt-1">PNG, JPG or WebP</p>
+                           </div>
+                        )}
+                     </div>
                   </div>
                 </div>
               </CardContent>
             </Card>
+
+            <MediaPickerModal 
+              open={isOgImagePickerOpen}
+              onOpenChange={setIsOgImagePickerOpen}
+              onSelect={(url) => handleChange("ogImageUrl", url)}
+              allowedTypes="image"
+            />
           </div>
         )}
 
