@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/Button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/Card"
 import { ConfirmationDialog } from "@/components/ui/ConfirmationDialog"
 import { Input } from "@/components/ui/Input"
-import { Calendar, ImageIcon, X } from "lucide-react"
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/Tooltip"
+import { Calendar, ImageIcon, Info, X } from "lucide-react"
 import Image from "next/image"
 import { useState } from "react"
 
@@ -191,25 +192,47 @@ export function EditorSidebar({ status, category, date, image, metaTitle, metaDe
         <CardHeader className="pb-3 border-b border-neutral-100 dark:border-white/5">
            <CardTitle className="text-sm font-bold uppercase tracking-wider text-neutral-500">SEO Settings</CardTitle>
         </CardHeader>
-        <CardContent className="pt-4 space-y-3">
-           <div className="space-y-1">
-              <label className="text-xs font-semibold text-neutral-600 dark:text-neutral-300">Meta Title</label>
-              <Input 
-                placeholder="SEO Title" 
-                className="text-xs" 
-                value={metaTitle}
-                onChange={(e) => onChange("metaTitle", e.target.value)}
-              />
-           </div>
-           <div className="space-y-1">
-              <label className="text-xs font-semibold text-neutral-600 dark:text-neutral-300">Meta Description</label>
-              <textarea 
-                className="w-full rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs h-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-green dark:border-white/10 dark:bg-white/5" 
-                placeholder="Short summary..."
-                value={metaDescription}
-                onChange={(e) => onChange("metaDescription", e.target.value)}
-              />
-           </div>
+        <CardContent className="pt-4 space-y-4">
+           <TooltipProvider delayDuration={200}>
+             <div className="space-y-1">
+                <label className="text-xs font-semibold text-neutral-600 dark:text-neutral-300 flex items-center gap-1.5">
+                   Meta Title
+                   <Tooltip>
+                     <TooltipTrigger asChild>
+                       <Info className="w-3.5 h-3.5 text-neutral-400 hover:text-brand-green cursor-help transition-colors" />
+                     </TooltipTrigger>
+                     <TooltipContent side="top" className="max-w-[280px] p-3 text-xs leading-relaxed">
+                       <p><strong>SEO Title (Max 60 characters):</strong> This will appear exactly as the large blue clickable link on Google Search. Include your main keywords. If left blank, your blog post's main title will be used instead.</p>
+                     </TooltipContent>
+                   </Tooltip>
+                </label>
+                <Input 
+                  placeholder="Appears on Google Search results" 
+                  className="text-xs" 
+                  value={metaTitle}
+                  onChange={(e) => onChange("metaTitle", e.target.value)}
+                />
+             </div>
+             <div className="space-y-1">
+                <label className="text-xs font-semibold text-neutral-600 dark:text-neutral-300 flex items-center gap-1.5">
+                   Meta Description
+                   <Tooltip>
+                     <TooltipTrigger asChild>
+                       <Info className="w-3.5 h-3.5 text-neutral-400 hover:text-brand-green cursor-help transition-colors" />
+                     </TooltipTrigger>
+                     <TooltipContent side="top" className="max-w-[280px] p-3 text-xs leading-relaxed">
+                       <p><strong>SEO Description (Max 160 characters):</strong> The short summary snippet Google displays below the blue title. Write a compelling hook to encourage clicks. If left blank, Google automatically pulls the first paragraph.</p>
+                     </TooltipContent>
+                   </Tooltip>
+                </label>
+                <textarea 
+                  className="w-full rounded-md border border-neutral-200 bg-neutral-50 px-3 py-2 text-xs h-20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-green dark:border-white/10 dark:bg-white/5" 
+                  placeholder="A compelling summary of the article..."
+                  value={metaDescription}
+                  onChange={(e) => onChange("metaDescription", e.target.value)}
+                />
+             </div>
+           </TooltipProvider>
         </CardContent>
       </Card>
       <ConfirmationDialog 
