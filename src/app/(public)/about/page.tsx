@@ -28,7 +28,9 @@ export default async function AboutPage() {
   
   // Fallback if no carousel images are set
   if (images.length === 0) {
-      images.push(settings?.profileImageUrl || "/edna-portrait.png")
+      if (settings?.profileImageUrl) {
+          images.push(settings.profileImageUrl)
+      }
   }
 
   return (

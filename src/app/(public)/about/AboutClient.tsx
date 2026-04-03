@@ -1,33 +1,28 @@
 "use client"
 
 import { Button } from "@/components/ui/Button"
-import useEmblaCarousel from "embla-carousel-react"
-import { motion } from "framer-motion"
+import { AnimatePresence, motion } from "framer-motion"
 import { Calendar } from "lucide-react"
 import Image from "next/image"
 import Link from "next/link"
-import { useCallback, useEffect } from "react"
+import { useEffect, useState } from "react"
 
 interface AboutClientProps {
   images: string[]
 }
 
 export function AboutClient({ images }: AboutClientProps) {
-  const [emblaRef, emblaApi] = useEmblaCarousel({ loop: true })
-
-  const scrollNext = useCallback(() => {
-      if (emblaApi) emblaApi.scrollNext()
-  }, [emblaApi])
+  const [currentIndex, setCurrentIndex] = useState(0)
 
   useEffect(() => {
-      if (!emblaApi || images.length <= 1) return
+      if (images.length <= 1) return
       
       const intervalId = setInterval(() => {
-          scrollNext()
-      }, 5000)
+          setCurrentIndex((prev) => (prev + 1) % images.length)
+      }, 6000) // Slow slideshow transition every 6 seconds
       
       return () => clearInterval(intervalId)
-  }, [emblaApi, scrollNext, images.length])
+  }, [images.length])
 
   return (
     <>
@@ -75,20 +70,28 @@ export function AboutClient({ images }: AboutClientProps) {
       >
         <div 
           className="aspect-[2/3] rounded-3xl overflow-hidden shadow-2xl shadow-olive/10 relative z-10 border border-neutral-200 dark:border-white/10 glow-green"
-          ref={images.length > 1 ? emblaRef : null}
         >
-           <div className="flex h-full">
-              {images.map((src, index) => (
-                 <div key={index} className="relative flex-[0_0_100%] min-w-0 h-full">
+           <AnimatePresence mode="popLayout">
+              {images.length > 0 && (
+                 <motion.div
+                   key={currentIndex}
+                   initial={{ opacity: 0, scale: 1.05 }}
+                   animate={{ opacity: 1, scale: 1 }}
+                   exit={{ opacity: 0 }}
+                   transition={{ duration: 1.8, ease: "easeInOut" }}
+                   className="absolute inset-0 w-full h-full"
+                 >
                     <Image 
-                      src={src} 
-                      alt={`Edna R. Portrait ${index + 1}`} 
-                      fill 
+                      src={images[currentIndex]} 
+                      alt={`Edna R. Portrait ${currentIndex + 1}`} 
+                      fill
+                      sizes="(max-width: 768px) 100vw, 50vw"
                       className="object-cover object-top"
+                      priority={currentIndex === 0}
                     />
-                 </div>
-              ))}
-           </div>
+                 </motion.div>
+              )}
+           </AnimatePresence>
         </div>
         {/* Decorative animated elements */}
         <motion.div 
