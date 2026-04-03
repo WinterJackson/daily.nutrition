@@ -145,7 +145,12 @@ export const BrandedEmailLayout = ({
                                             )}
                                             {paymentAccountNumber && (
                                                 <Text className="m-0 text-[#666] text-[12px] leading-[20px] pb-1">
-                                                    <strong>Account Number:</strong> {paymentAccountNumber}
+                                                    <strong>Account Name:</strong> {paymentAccountNumber}
+                                                </Text>
+                                            )}
+                                            {paymentPaybill && paymentAccountNumber && (
+                                                <Text className="m-0 text-[#888] text-[11px] leading-[18px] italic pb-1">
+                                                    Use your full official name as the account number
                                                 </Text>
                                             )}
                                         </>

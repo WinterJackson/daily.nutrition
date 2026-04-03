@@ -482,14 +482,14 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                            <p className="text-xs text-neutral-500">Leaving this blank hides it from confirmation emails.</p>
                         </div>
                         <div className="space-y-2">
-                           <label className="text-xs font-bold uppercase tracking-wider text-caption">Account Number</label>
+                           <label className="text-xs font-bold uppercase tracking-wider text-caption">Paybill Account Name</label>
                            <Input
                              value={settings.paymentAccountNumber || ""}
                              onChange={(e) => handleChange("paymentAccountNumber", e.target.value)}
-                             placeholder="e.g. Edwak Nutrition"
+                             placeholder="e.g. Your Full Official Name"
                              className="surface-input"
                            />
-                           <p className="text-xs text-neutral-500">Leaving this blank hides it from confirmation emails.</p>
+                           <p className="text-xs text-neutral-500">Clients will be instructed to use their <strong>full official name</strong> as the account number when paying via Paybill.</p>
                         </div>
                     </div>
                   </div>
