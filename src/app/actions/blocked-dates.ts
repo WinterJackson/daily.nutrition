@@ -16,6 +16,18 @@ export interface BlockedDateData {
 export async function getBlockedDates() {
     unstable_noStore()
     try {
+        // Auto-cleanup past blocked dates (older than yesterday)
+        const yesterdayStr = new Date(Date.now() - 86400000).toISOString().split('T')[0]
+        const utcYesterday = new Date(`${yesterdayStr}T00:00:00.000Z`)
+
+        await prisma.blockedDate.deleteMany({
+            where: {
+                date: {
+                    lt: utcYesterday
+                }
+            }
+        })
+
         const blockedDates = await prisma.blockedDate.findMany({
             orderBy: { date: 'asc' }
         })
@@ -100,6 +112,58 @@ export async function addBlockedDate(dateStr: string, reason?: string) {
         }
         console.error("Failed to add blocked date:", error)
         return { success: false, error: "Failed to add blocked date" }
+    }
+}
+
+/**
+ * Add a range of blocked dates
+ */
+export async function addBlockedDateRange(startDateStr: string, endDateStr: string, reason?: string) {
+    const session = await verifySession()
+    if (!session) return { success: false, error: "Unauthorized" }
+
+    try {
+        const start = new Date(`${startDateStr}T00:00:00.000Z`)
+        const end = new Date(`${endDateStr}T00:00:00.000Z`)
+
+        if (start > end) {
+            return { success: false, error: "Start date must be before end date" }
+        }
+
+        const datesToBlock = []
+        let current = new Date(start)
+
+        // Max 30 days at once to prevent abuse/accidents
+        let diffDays = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24))
+        if (diffDays > 30) {
+            return { success: false, error: "Cannot block more than 30 days at once" }
+        }
+
+        while (current <= end) {
+            datesToBlock.push({
+                date: new Date(current),
+                reason: reason || undefined
+            })
+            current.setDate(current.getDate() + 1)
+        }
+
+        // prisma.createMany with skipDuplicates ensures existing blocks don't cause errors
+        const result = await prisma.blockedDate.createMany({
+            data: datesToBlock,
+            skipDuplicates: true
+        })
+
+        revalidatePath("/admin/bookings/calendar")
+        revalidatePath("/booking/schedule")
+
+        if (result.count === 0 && datesToBlock.length > 0) {
+            return { success: false, error: "All selected dates are already blocked" }
+        }
+
+        return { success: true, count: result.count }
+    } catch (error) {
+        console.error("Failed to add blocked date range:", error)
+        return { success: false, error: "Failed to add blocked dates" }
     }
 }
 

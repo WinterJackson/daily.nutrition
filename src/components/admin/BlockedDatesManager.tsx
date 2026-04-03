@@ -1,11 +1,11 @@
 "use client"
 
-import { addBlockedDate, getBlockedDates, removeBlockedDate } from "@/app/actions/blocked-dates"
+import { addBlockedDateRange, getBlockedDates, removeBlockedDate } from "@/app/actions/blocked-dates"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
 import { format } from "date-fns"
-import { Calendar, CheckCircle, Loader2, Plus, Trash2, X } from "lucide-react"
+import { AlertCircle, Calendar, CheckCircle, Loader2, Plus, Trash2, X } from "lucide-react"
 import { useEffect, useState, useTransition } from "react"
 
 interface BlockedDate {
@@ -20,6 +20,7 @@ export function BlockedDatesManager() {
     const [isPending, startTransition] = useTransition()
     const [showForm, setShowForm] = useState(false)
     const [newDate, setNewDate] = useState("")
+    const [endDate, setEndDate] = useState("")
     const [newReason, setNewReason] = useState("")
     const [error, setError] = useState("")
     const [showSuccess, setShowSuccess] = useState(false)
@@ -45,18 +46,25 @@ export function BlockedDatesManager() {
             return
         }
 
+        const effectiveEndDate = endDate || newDate
+
+        if (effectiveEndDate < newDate) {
+            setError("End date must be after start date")
+            return
+        }
+
         setError("")
         startTransition(async () => {
-            const dateStr = newDate
-            const result = await addBlockedDate(dateStr, newReason || undefined)
+            const result = await addBlockedDateRange(newDate, effectiveEndDate, newReason || undefined)
             
             if (result.success) {
                 await loadBlockedDates()
                 setNewDate("")
+                setEndDate("")
                 setNewReason("")
                 setShowForm(false)
             } else {
-                setError(result.error || "Failed to add blocked date")
+                setError(result.error || "Failed to add blocked dates")
             }
         })
     }
@@ -105,14 +113,30 @@ export function BlockedDatesManager() {
                             </button>
                         </div>
                         
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                             <div className="space-y-2">
-                                <label className="text-xs font-semibold uppercase tracking-wider text-neutral-500">Date</label>
+                                <label className="text-xs font-semibold uppercase tracking-wider text-neutral-500">From Date</label>
                                 <Input
                                     type="date"
                                     value={newDate}
-                                    onChange={(e) => setNewDate(e.target.value)}
+                                    onChange={(e) => {
+                                        setNewDate(e.target.value);
+                                        // Auto-sync end date if it's empty or earlier than the new start date
+                                        if (!endDate || e.target.value > endDate) {
+                                            setEndDate(e.target.value);
+                                        }
+                                    }}
                                     min={format(new Date(), 'yyyy-MM-dd')}
+                                    className="bg-white dark:bg-charcoal border-neutral-200 dark:border-white/10"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <label className="text-xs font-semibold uppercase tracking-wider text-neutral-500">To Date (Optional)</label>
+                                <Input
+                                    type="date"
+                                    value={endDate}
+                                    onChange={(e) => setEndDate(e.target.value)}
+                                    min={newDate || format(new Date(), 'yyyy-MM-dd')}
                                     className="bg-white dark:bg-charcoal border-neutral-200 dark:border-white/10"
                                 />
                             </div>
@@ -122,16 +146,17 @@ export function BlockedDatesManager() {
                                     type="text"
                                     value={newReason}
                                     onChange={(e) => setNewReason(e.target.value)}
-                                    placeholder="e.g., Holiday, Vacation"
+                                    placeholder="e.g., Vacation"
                                     className="bg-white dark:bg-charcoal border-neutral-200 dark:border-white/10"
                                 />
                             </div>
                         </div>
 
                         {error && (
-                            <p className="text-sm text-red-500 flex items-center gap-2">
-                                <X className="w-4 h-4" /> {error}
-                            </p>
+                            <div className="p-3 bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 rounded-lg text-sm text-red-600 dark:text-red-400 flex items-center gap-2">
+                                <AlertCircle className="w-4 h-4 shrink-0" /> 
+                                {error}
+                            </div>
                         )}
 
                         <div className="flex justify-end gap-2">

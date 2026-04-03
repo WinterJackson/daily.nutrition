@@ -2,13 +2,26 @@
 
 import { getSettings, SettingsData, updateSettings } from "@/app/actions/settings"
 import { BlockedDatesManager } from "@/components/admin/BlockedDatesManager"
+import { UpcomingBookingsList } from "@/components/admin/UpcomingBookingsList"
 import { WeeklyAvailabilityEditor, WeeklySchedule } from "@/components/admin/WeeklyAvailabilityEditor"
-import { Button } from "@/components/ui/Button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
 import { AnimatePresence, motion } from "framer-motion"
-import { Calendar, CheckCircle, ChevronRight, Clock, Info, Loader2, Save } from "lucide-react"
+import { Calendar, CalendarDays, CheckCircle, ChevronRight, Clock, Info, RefreshCw } from "lucide-react"
 import Link from "next/link"
-import { useEffect, useState, useTransition } from "react"
+import { useCallback, useEffect, useState, useTransition } from "react"
+
+const DAYS = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"]
+
+// Debounce helper
+function useDebounce<T extends (...args: any[]) => void>(func: T, wait: number) {
+    const [timeoutId, setTimeoutId] = useState<NodeJS.Timeout | null>(null)
+
+    return useCallback((...args: Parameters<T>) => {
+        if (timeoutId) clearTimeout(timeoutId)
+        const id = setTimeout(() => func(...args), wait)
+        setTimeoutId(id)
+    }, [func, timeoutId, wait])
+}
 
 export default function CalendarManagementPage() {
     const [fullSettings, setFullSettings] = useState<SettingsData | null>(null)
@@ -16,6 +29,12 @@ export default function CalendarManagementPage() {
     const [isSaving, startTransition] = useTransition()
     const [saveSuccess, setSaveSuccess] = useState(false)
     const [isInstructionsOpen, setIsInstructionsOpen] = useState(false)
+    const [isValid, setIsValid] = useState(true)
+
+    // Today's schedule summary logic
+    const todayIndex = new Date().getDay()
+    const todayName = DAYS[todayIndex]
+    const todaySchedule = schedule?.[todayName]
 
     useEffect(() => {
         // Load the true global settings down from the server
@@ -35,20 +54,13 @@ export default function CalendarManagementPage() {
         loadSettings()
     }, [])
 
-    const handleScheduleChange = (newSchedule: WeeklySchedule) => {
-        setSchedule(newSchedule)
-    }
-
-    const handleSave = () => {
-        if (!fullSettings || !schedule) return
-
+    const performSave = useCallback(async (newScheduleToSave: WeeklySchedule, currentSettings: SettingsData) => {
         startTransition(async () => {
-            // Merge the updated schedule into the global settings object and save
             const updatedSettings: SettingsData = {
-                ...fullSettings,
+                ...currentSettings,
                 googleCalendarConfig: {
-                    ...(fullSettings.googleCalendarConfig || { eventDuration: 30, bufferTime: 15, minNotice: 120, availability: {} }),
-                    availability: schedule
+                    ...(currentSettings.googleCalendarConfig || { eventDuration: 30, bufferTime: 15, minNotice: 120, availability: {} }),
+                    availability: newScheduleToSave
                 }
             }
 
@@ -65,6 +77,19 @@ export default function CalendarManagementPage() {
             setSaveSuccess(true)
             setTimeout(() => setSaveSuccess(false), 3000)
         })
+    }, [])
+
+    const debouncedSave = useDebounce((newScheduleToSave: WeeklySchedule, currentSettings: SettingsData) => {
+        performSave(newScheduleToSave, currentSettings)
+    }, 2000)
+
+    const handleScheduleChange = (newSchedule: WeeklySchedule, valid: boolean) => {
+        setSchedule(newSchedule)
+        setIsValid(valid)
+        
+        if (valid && fullSettings) {
+             debouncedSave(newSchedule, fullSettings)
+        }
     }
 
     return (
@@ -87,20 +112,31 @@ export default function CalendarManagementPage() {
                         Configure your weekly availability and block off specific dates.
                     </p>
                 </div>
-                <Button
-                    variant="accent"
-                    className="shadow-lg shadow-orange/20"
-                    onClick={handleSave}
-                    disabled={isSaving}
-                >
-                    {isSaving ? (
-                        <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Saving...</>
+                
+                {/* Auto-Save indicator replaces manual save button */}
+                <div className="flex items-center gap-3 px-4 py-2 bg-white dark:bg-white/5 rounded-xl border border-neutral-200 dark:border-white/10 shadow-sm">
+                    {!isValid ? (
+                         <div className="flex items-center gap-2 text-red-500 text-sm font-medium">
+                            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                            Please fix time errors
+                         </div>
+                    ) : isSaving ? (
+                        <div className="flex items-center gap-2 text-brand-green text-sm font-medium">
+                            <RefreshCw className="w-4 h-4 animate-spin text-brand-green" />
+                            Saving...
+                        </div>
                     ) : saveSuccess ? (
-                        <><CheckCircle className="mr-2 h-4 w-4" /> Saved!</>
+                        <div className="flex items-center gap-2 text-brand-green text-sm font-medium">
+                            <CheckCircle className="w-4 h-4" />
+                            Saved
+                        </div>
                     ) : (
-                        <><Save className="mr-2 h-4 w-4" /> Save Changes</>
+                        <div className="flex items-center gap-2 text-neutral-500 text-sm font-medium">
+                            <CheckCircle className="w-4 h-4 opacity-50" />
+                            Autosaved
+                        </div>
                     )}
-                </Button>
+                </div>
             </div>
 
             {/* Success Toast */}
@@ -186,38 +222,81 @@ export default function CalendarManagementPage() {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 {/* Weekly Availability */}
-                <Card className="border-none shadow-xl shadow-neutral-200/50 dark:shadow-black/20 bg-white/90 dark:bg-white/5 backdrop-blur-md">
-                    <CardHeader>
-                        <CardTitle className="flex items-center gap-2">
-                            <Clock className="w-5 h-5 text-olive" />
-                            Weekly Availability
-                        </CardTitle>
-                        <CardDescription>
-                            Set your standard weekly working hours. Clients can only book during these windows.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <WeeklyAvailabilityEditor
-                            initialSchedule={schedule || undefined}
-                            onChange={handleScheduleChange}
-                        />
-                    </CardContent>
-                </Card>
+                <div className="space-y-6">
+                    {/* Today's Schedule Card */}
+                    <Card className="border-none shadow-xl shadow-brand-green/10 bg-gradient-to-br from-brand-green to-olive text-white overflow-hidden relative">
+                        {/* Abstract background decorative elements */}
+                         <div className="absolute top-0 right-0 p-8 opacity-10">
+                            <CalendarDays className="w-32 h-32 rotate-12" />
+                        </div>
+                        <CardHeader className="relative z-10 pb-2">
+                            <CardTitle className="flex items-center gap-2 text-white/90 text-lg">
+                                Today is {todayName.charAt(0).toUpperCase() + todayName.slice(1)}
+                            </CardTitle>
+                        </CardHeader>
+                        <CardContent className="relative z-10">
+                            <div className="flex items-center gap-4">
+                                {schedule === null ? (
+                                    <div className="h-8 w-48 bg-white/20 animate-pulse rounded-md" />
+                                ) : todaySchedule?.isOpen ? (
+                                    <>
+                                        <div className="w-3 h-3 rounded-full bg-green-400 animate-pulse shadow-[0_0_12px_rgba(74,222,128,0.6)]" />
+                                        <div className="text-2xl font-bold">
+                                            {todaySchedule.start} - {todaySchedule.end}
+                                        </div>
+                                    </>
+                                ) : (
+                                    <>
+                                        <div className="w-3 h-3 rounded-full bg-red-400 shadow-[0_0_12px_rgba(248,113,113,0.6)]" />
+                                        <div className="text-2xl font-bold opacity-80">
+                                            Closed Today
+                                        </div>
+                                    </>
+                                )}
+                            </div>
+                        </CardContent>
+                    </Card>
 
-                {/* Blocked Dates */}
+                    <Card className="border-none shadow-xl shadow-neutral-200/50 dark:shadow-black/20 bg-white/90 dark:bg-white/5 backdrop-blur-md">
+                        <CardHeader>
+                            <CardTitle className="flex items-center justify-between">
+                                <div className="flex items-center gap-2">
+                                    <Clock className="w-5 h-5 text-olive" />
+                                    Weekly Availability
+                                </div>
+                            </CardTitle>
+                            <CardDescription>
+                                Changes are autosaved. Set your standard weekly working hours.
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <WeeklyAvailabilityEditor
+                                initialSchedule={schedule || undefined}
+                                onChange={handleScheduleChange}
+                                isLoading={!schedule}
+                            />
+                        </CardContent>
+                    </Card>
+                </div>
+
+                {/* Blocked Dates & Upcoming */}
                 <div className="space-y-6">
                     <Card className="border-none shadow-xl shadow-neutral-200/50 dark:shadow-black/20 bg-white/90 dark:bg-white/5 backdrop-blur-md">
                         <CardHeader>
                             <CardTitle className="flex items-center gap-2">
-                                <Calendar className="w-5 h-5 text-orange" />
+                                <Calendar className="w-5 h-5 text-olive" />
                                 Blocked Dates
                             </CardTitle>
                             <CardDescription>
-                                Block specific dates when you are unavailable (holidays, vacations, etc).
+                                Add specific dates when you are unavailable (e.g., holidays, vacations).
                             </CardDescription>
                         </CardHeader>
+                        <CardContent>
+                            <BlockedDatesManager />
+                        </CardContent>
                     </Card>
-                    <BlockedDatesManager />
+
+                    <UpcomingBookingsList />
                 </div>
             </div>
         </div>
