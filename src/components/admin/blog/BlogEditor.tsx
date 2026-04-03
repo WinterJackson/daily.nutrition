@@ -436,18 +436,18 @@ export function BlogEditor({ initialData, userRole = "ADMIN" }: BlogEditorProps)
                           onMouseUp={captureSelection}
                           onBlur={captureSelection}
                           placeholder="Tell your story..."
-                          className="w-full min-h-[600px] p-0 bg-transparent border-none resize-none focus:ring-0 text-lg md:text-xl leading-relaxed text-neutral-800 dark:text-neutral-200 placeholder:text-neutral-300 font-serif font-normal selection:bg-brand-green/20"
+                          className="w-full min-h-[500px] xl:min-h-0 xl:h-[calc(100vh-200px)] xl:overflow-y-auto p-4 md:p-8 bg-transparent border-none resize-none focus:ring-0 text-lg md:text-xl leading-relaxed text-neutral-800 dark:text-neutral-200 placeholder:text-neutral-300 font-serif font-normal selection:bg-brand-green/20"
                           style={{ fontFamily: 'Georgia, Cambria, "Times New Roman", Times, serif' }}
                        />
                        {/* Subtle character count */}
-                       <div className="absolute bottom-4 right-0 text-xs text-neutral-300 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity">
+                       <div className="absolute bottom-4 right-6 text-xs text-neutral-400 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity bg-white/80 dark:bg-black/50 px-2 py-1 rounded">
                           {formData.content.length} chars
                        </div>
                     </div>
                  ) : (
                     <div className="prose prose-lg prose-neutral dark:prose-invert max-w-none">
                        {/* Enhanced Preview Container */}
-                       <div className="markdown-preview p-4 md:p-8 bg-white dark:bg-white/5 rounded-3xl border border-neutral-100 dark:border-white/5 shadow-sm min-h-[600px]">
+                       <div className="markdown-preview p-4 md:p-8 bg-white dark:bg-white/5 rounded-3xl border border-neutral-100 dark:border-white/5 shadow-sm min-h-[500px] xl:min-h-0 xl:h-[calc(100vh-200px)] xl:overflow-y-auto">
                            {formData.content ? (
                                <ReactMarkdown rehypePlugins={[rehypeRaw]} remarkPlugins={[remarkGfm]}>{formData.content}</ReactMarkdown>
                            ) : (
