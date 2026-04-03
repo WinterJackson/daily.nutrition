@@ -52,6 +52,7 @@ export function BlogEditor({ initialData, userRole = "ADMIN" }: BlogEditorProps)
 
   const [activeTab, setActiveTab] = useState<"write" | "preview">("write")
   const [isPending, startTransition] = useTransition()
+  const [savingAction, setSavingAction] = useState<"draft" | "publish" | "review" | null>(null)
   const [lastSaved, setLastSaved] = useState<Date | null>(null)
   const [history, setHistory] = useState<string[]>([])
   const [showAiModal, setShowAiModal] = useState(false)
@@ -264,6 +265,10 @@ export function BlogEditor({ initialData, userRole = "ADMIN" }: BlogEditorProps)
   }
 
   const handleSave = async (publishAction?: "publish" | "review") => {
+    // Track which button triggered the save so only THAT button shows loading
+    const actionType = publishAction === "publish" ? "publish" : publishAction === "review" ? "review" : "draft"
+    setSavingAction(actionType)
+
     startTransition(async () => {
         const canPublish = userRole === "SUPER_ADMIN" || userRole === "ADMIN"
         const isPublish = publishAction === "publish" && canPublish
@@ -289,6 +294,7 @@ export function BlogEditor({ initialData, userRole = "ADMIN" }: BlogEditorProps)
             const res = await updatePost(initialData.id, payload)
             if (!res.success && res.error?.includes("modified by another user")) {
                 setVersionConflict(true)
+                setSavingAction(null)
                 return
             }
         } else {
@@ -298,6 +304,7 @@ export function BlogEditor({ initialData, userRole = "ADMIN" }: BlogEditorProps)
             }
         }
         setLastSaved(new Date())
+        setSavingAction(null)
     })
   }
 
@@ -467,6 +474,7 @@ export function BlogEditor({ initialData, userRole = "ADMIN" }: BlogEditorProps)
                    onChange={handleChange}
                    onSave={handleSave}
                    isSaving={isPending}
+                   savingAction={savingAction}
                    userRole={userRole}
                 />
              </div>

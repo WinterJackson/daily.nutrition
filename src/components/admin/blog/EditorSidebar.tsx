@@ -19,12 +19,13 @@ interface EditorSidebarProps {
   onChange: (key: string, value: string) => void
   onSave: (publishAction?: "publish" | "review") => void
   isSaving: boolean
+  savingAction?: "draft" | "publish" | "review" | null
   userRole?: string
 }
 
 const categories = ["Education", "Announcement", "Nutrition Tips", "Research", "Recipe"]
 
-export function EditorSidebar({ status, category, date, image, metaTitle, metaDescription, onChange, onSave, isSaving, userRole = "ADMIN" }: EditorSidebarProps) {
+export function EditorSidebar({ status, category, date, image, metaTitle, metaDescription, onChange, onSave, isSaving, savingAction, userRole = "ADMIN" }: EditorSidebarProps) {
   const canPublish = userRole === "SUPER_ADMIN" || userRole === "ADMIN"
   const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false)
 
@@ -92,7 +93,7 @@ export function EditorSidebar({ status, category, date, image, metaTitle, metaDe
               onClick={() => onSave()}
               disabled={isSaving}
             >
-               {isSaving ? "Saving..." : "Save Draft"}
+               {savingAction === "draft" ? "Saving..." : "Save Draft"}
             </Button>
 
             {/* SUPER_ADMIN & ADMIN: Can publish directly */}
@@ -103,7 +104,7 @@ export function EditorSidebar({ status, category, date, image, metaTitle, metaDe
                 onClick={() => onSave("publish")}
                 disabled={isSaving}
               >
-                 {isSaving ? "Publishing..." : "Publish Now"}
+                 {savingAction === "publish" ? "Publishing..." : "Publish Now"}
               </Button>
             )}
 
@@ -115,7 +116,7 @@ export function EditorSidebar({ status, category, date, image, metaTitle, metaDe
                 onClick={() => onSave("review")}
                 disabled={isSaving}
               >
-                 {isSaving ? "Submitting..." : "Submit for Review"}
+                 {savingAction === "review" ? "Submitting..." : "Submit for Review"}
               </Button>
             )}
           </div>
