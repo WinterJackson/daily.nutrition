@@ -54,9 +54,9 @@ export function SecretCard({
               ? "border-olive shadow-sm bg-olive/5 dark:bg-olive/10" 
               : "border-neutral-200 dark:border-white/10 bg-white dark:bg-white/5 hover:border-olive/30"
         }`}>
-            <div className="flex items-start justify-between mb-4">
-                <div>
-                    <div className="flex items-center gap-2 mb-1">
+            <div className="flex flex-col sm:flex-row items-start justify-between gap-4 mb-4">
+                <div className="w-full sm:w-auto">
+                    <div className="flex flex-wrap items-center gap-2 mb-1">
                         <h4 className="font-semibold text-neutral-800 dark:text-neutral-200">
                             {title}
                         </h4>
@@ -77,7 +77,7 @@ export function SecretCard({
                     </p>
                 </div>
                 
-                <div className="flex items-center gap-2">
+                <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto shrink-0">
                     {setupSteps && setupSteps.length > 0 && (
                         <button
                             onClick={() => setShowGuide(!showGuide)}
@@ -137,7 +137,7 @@ export function SecretCard({
             </div>
 
             {isConfigured && !value && !isEditing && (
-                <div className="mt-3 flex items-center justify-between">
+                <div className="mt-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="flex items-center gap-1.5 text-xs text-neutral-500">
                         <CheckCircle2 className="w-3.5 h-3.5 text-green-500" />
                         Key is securely stored.
@@ -152,7 +152,7 @@ export function SecretCard({
                 </div>
             )}
             {isEditing && !value && (
-                <div className="mt-2 flex items-center justify-between">
+                <div className="mt-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <p className="text-xs text-amber-600 dark:text-amber-400 font-medium">
                         Paste your new credential below, then click &quot;Save Changes&quot; at the top.
                     </p>

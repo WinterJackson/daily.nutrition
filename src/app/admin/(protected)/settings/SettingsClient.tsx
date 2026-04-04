@@ -910,8 +910,8 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
             <Card className="surface-card overflow-hidden">
               {/* Header with gradient */}
               <div className="bg-orange p-6 text-white">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
                     <Star className="w-6 h-6" />
                   </div>
                   <div>
@@ -923,8 +923,8 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
 
               <CardContent className="p-6 space-y-8">
                 {/* Status */}
-                <div className="flex items-center gap-4 p-4 rounded-xl surface-secondary">
-                  <div className={`w-3 h-3 rounded-full ${secretStatuses["GOOGLE_MAPS_API_KEY"] && settings.googlePlaceId ? 'bg-brand-green animate-pulse' : 'surface-elevated'}`} />
+                <div className="flex items-start sm:items-center gap-4 p-4 rounded-xl surface-secondary">
+                  <div className={`w-3 h-3 rounded-full shrink-0 mt-1 sm:mt-0 ${secretStatuses["GOOGLE_MAPS_API_KEY"] && settings.googlePlaceId ? 'bg-brand-green animate-pulse' : 'surface-elevated'}`} />
                   <div>
                     <p className="font-medium text-olive dark:text-off-white">
                       {secretStatuses["GOOGLE_MAPS_API_KEY"] && settings.googlePlaceId ? 'Connected' : 'Not Connected'}
@@ -1000,8 +1000,8 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
             <Card className="surface-card overflow-hidden">
               {/* Header with gradient */}
               <div className="bg-olive p-6 text-white">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3">
+                  <div className="w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center shrink-0">
                     <Calendar className="w-6 h-6" />
                   </div>
                   <div>
@@ -1013,8 +1013,8 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
 
               <CardContent className="p-6 space-y-8">
                 {/* Status */}
-                <div className="flex items-center gap-4 p-4 rounded-xl surface-secondary">
-                  <div className={`w-3 h-3 rounded-full ${settings.googleCalendarConfig?.hasCredentials ? 'bg-brand-green animate-pulse' : 'surface-elevated'}`} />
+                <div className="flex items-start sm:items-center gap-4 p-4 rounded-xl surface-secondary">
+                  <div className={`w-3 h-3 rounded-full shrink-0 mt-1 sm:mt-0 ${settings.googleCalendarConfig?.hasCredentials ? 'bg-brand-green animate-pulse' : 'surface-elevated'}`} />
                   <div>
                     <p className="font-medium text-olive dark:text-off-white">
                       {settings.googleCalendarConfig?.hasCredentials ? 'Connected' : 'Not Connected'}
