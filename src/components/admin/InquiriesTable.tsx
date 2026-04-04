@@ -654,11 +654,15 @@ export function InquiriesTable({
                                 disabled={isPending}
                             >
                                 <option value="">+ Assign Staff</option>
-                                {users.map((u) => (
-                                <option key={u.id} value={u.id}>
-                                    {u.name || u.email}
-                                </option>
-                                ))}
+                                {users.map((u) => {
+                                    const displayName = u.name || u.email
+                                    const roleLabel = u.role === "ADMIN" ? "Admin" : u.role.charAt(0) + u.role.slice(1).toLowerCase()
+                                    return (
+                                        <option key={u.id} value={u.id}>
+                                            {displayName} ({roleLabel})
+                                        </option>
+                                    )
+                                })}
                             </select>
                         </div>
                     </div>

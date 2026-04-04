@@ -13,6 +13,7 @@ export default async function AdminInquiriesPage({
   
   const { inquiries, totalCount } = await getInquiries(page, pageSize)
   const users = await prisma.user.findMany({
+      where: { role: { not: "SUPER_ADMIN" } },
       select: { id: true, name: true, email: true, role: true },
       orderBy: { name: 'asc' }
   })
