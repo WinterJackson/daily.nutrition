@@ -11,13 +11,14 @@ import { NotificationConfig } from "@/components/admin/NotificationConfig"
 import { SecurityConfig } from "@/components/admin/SecurityConfig"
 import { SessionManagement } from "@/components/admin/SessionManagement"
 import { SecretCard } from "@/components/admin/settings/SecretCard"
+import { StaffManagement } from "@/components/admin/settings/StaffManagement"
 import { StatusCard } from "@/components/admin/settings/StatusCard"
 import { SocialMediaConfig } from "@/components/admin/SocialMediaConfig"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
 import { getPublicIdFromUrl } from "@/lib/cloudinary-utils"
-import { Calendar, CheckCircle, ChevronDown, Clock, Database, Globe, ImageIcon, Key, Loader2, MapPin, Moon, Save, Sparkles, Star, Sun, Trash2 } from "lucide-react"
+import { Calendar, CheckCircle, ChevronDown, Clock, Database, Globe, ImageIcon, Key, Loader2, MapPin, Moon, Save, Sparkles, Star, Sun, Trash2, Users } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState, useTransition } from "react"
@@ -168,9 +169,16 @@ export interface SettingsClientProps {
   envStatus: EnvStatusMap
   secretStatuses: Record<string, boolean>
   is2FAEnabled: boolean
+  userRole?: string
 }
 
-export default function SettingsClient({ initialSettings, envStatus, secretStatuses, is2FAEnabled }: SettingsClientProps) {
+export default function SettingsClient({ 
+  initialSettings, 
+  envStatus, 
+  secretStatuses, 
+  is2FAEnabled,
+  userRole = "ADMIN"
+}: SettingsClientProps) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("general")
   const [settings, setSettings] = useState<SettingsData>(initialSettings)
@@ -397,6 +405,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
           { id: "seo", label: "SEO" },
           { id: "integrations", label: "Integrations", icon: Calendar },
           { id: "environment", label: "Environment", icon: Database },
+          ...(userRole === "SUPER_ADMIN" ? [{ id: "staff", label: "Staff & Roles", icon: Users }] : []),
           { id: "access", label: "Access" },
         ].map((tab) => {
           const isActive = activeTab === tab.id
@@ -1175,6 +1184,13 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                     className="md:col-span-2"
                 />
             </div>
+          </div>
+        )}
+
+        {/* Staff & Roles Tab */}
+        {activeTab === "staff" && userRole === "SUPER_ADMIN" && (
+          <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <StaffManagement />
           </div>
         )}
 

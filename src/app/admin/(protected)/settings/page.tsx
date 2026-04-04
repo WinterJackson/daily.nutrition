@@ -42,6 +42,7 @@ export default async function AdminSettingsPage() {
       envStatus={envStatus as any}
       secretStatuses={secretStatuses}
       is2FAEnabled={user?.twoFactorEnabled || false}
+      userRole={user?.role || "ADMIN"}
     />
   )
 }
