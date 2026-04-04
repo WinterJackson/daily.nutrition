@@ -336,22 +336,11 @@ export function AdminSidebar() {
         >
           <Menu className="w-6 h-6" />
         </button>
-        
-        <Link href="/admin" className="flex items-center gap-2">
-           <div className="relative h-10 w-28 bg-gradient-to-br from-white via-white to-olive/20 rounded-[10px] px-1 shadow-sm">
-               <Image 
-                 src="/admin-logo.png" 
-                 alt="Edwak Nutrition" 
-                 fill
-                 className="object-contain"
-               />
-           </div>
-        </Link>
 
-        {/* User Avatar on Mobile Header */}
-        <div className="w-9 h-9 rounded-full bg-white/20 flex items-center justify-center text-white border border-white/10 shadow-inner">
+        {/* User Avatar on Mobile Header (Links to Settings) */}
+        <Link href="/admin/settings" className="w-9 h-9 rounded-full bg-white/20 hover:bg-white/30 transition-colors flex items-center justify-center text-white border border-white/10 shadow-inner" aria-label="Admin Settings">
             <User className="w-5 h-5" />
-        </div>
+        </Link>
       </div>
 
       {/* Mobile Sidebar Overlay */}

@@ -352,14 +352,14 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
 
   return (
     <div className="space-y-8 max-w-[1600px] mx-auto animate-in fade-in duration-500">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl md:text-3xl lg:text-4xl font-bold font-serif text-body flex items-center gap-3">Settings</h1>
           <p className="text-sm md:text-base text-caption mt-1">Configure your platform preferences.</p>
         </div>
         <Button
           variant="accent"
-          className="shadow-lg shadow-orange/20"
+          className="shadow-lg shadow-orange/20 w-full sm:w-auto"
           onClick={handleSave}
           disabled={isSaving}
         >
@@ -391,7 +391,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
       )}
 
       {/* Custom Tabs Navigation */}
-      <div className="flex items-center gap-1 p-1 surface-secondary rounded-xl w-fit">
+      <div className="flex items-center gap-1 p-1 surface-secondary rounded-xl w-[calc(100vw-2rem)] sm:w-fit overflow-x-auto flex-nowrap scroll-smooth scrollbar-hide">
         {[
           { id: "general", label: "General" },
           { id: "seo", label: "SEO" },
@@ -404,7 +404,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-2 px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
+              className={`flex items-center whitespace-nowrap gap-2 px-6 py-2 rounded-lg text-sm font-medium transition-all duration-300 ${
                 isActive
                   ? "surface-elevated text-body shadow-sm"
                   : "text-label hover:text-body"
