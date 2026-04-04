@@ -356,7 +356,7 @@ export function InquiriesTable({
       {/* ----------------------------------------------------- */}
       {/* LEFT PANE: LEAD LIST / INBOX */}
       {/* ----------------------------------------------------- */}
-      <div className={`w-full lg:w-80 xl:w-96 flex flex-col shrink-0 bg-white/90 dark:bg-[#121212]/90 backdrop-blur-md rounded-[10px] border border-neutral-200 dark:border-white/10 shadow-xl overflow-hidden transition-all duration-300 \${selectedId ? 'hidden lg:flex' : 'flex'}`}>
+      <div className={`w-full lg:w-80 xl:w-96 flex flex-col shrink-0 bg-white/90 dark:bg-[#121212]/90 backdrop-blur-md rounded-[10px] border border-neutral-200 dark:border-white/10 shadow-xl overflow-hidden transition-all duration-300 ${selectedId ? 'hidden lg:flex' : 'flex'}`}>
         
         {/* Header / Search */}
         <div className="p-4 border-b border-neutral-100 dark:border-white/5 space-y-4 shrink-0 bg-neutral-50/50 dark:bg-white/[0.02]">
@@ -530,7 +530,7 @@ export function InquiriesTable({
       {/* RIGHT PANE: DETAIL VIEWER */}
       {/* ----------------------------------------------------- */}
       <div
-        className={`flex-1 flex bg-white/90 dark:bg-[#121212]/90 backdrop-blur-md rounded-[10px] border border-neutral-200 dark:border-white/10 shadow-xl overflow-hidden relative transition-all duration-300 \${
+        className={`flex-1 flex bg-white/90 dark:bg-[#121212]/90 backdrop-blur-md rounded-[10px] border border-neutral-200 dark:border-white/10 shadow-xl overflow-hidden relative transition-all duration-300 ${
           !selectedId ? "hidden lg:flex" : "flex"
         }`}
       >
