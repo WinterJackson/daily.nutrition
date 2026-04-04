@@ -51,7 +51,7 @@ export default function BookingManagePage() {
                     <div className="w-16 h-16 bg-white dark:bg-white/10 rounded-2xl shadow-xl flex items-center justify-center mx-auto mb-6 transform -rotate-6">
                         <Calendar className="w-8 h-8 text-olive" />
                     </div>
-                    <h1 className="text-3xl font-bold text-body mb-2">
+                    <h1 className="text-2xl sm:text-3xl font-bold text-body mb-2">
                         Manage Booking
                     </h1>
                     <p className="text-caption">

@@ -22,7 +22,7 @@ export default async function AdminInquiriesPage({
       {/* Header Container - Fixed Height */}
       <div className="flex flex-col md:flex-row md:items-center justify-between shrink-0">
         <div>
-          <h1 className="text-3xl font-bold font-serif text-olive dark:text-off-white">Inquiries CRM</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold font-serif text-olive dark:text-off-white">Inquiries CRM</h1>
           <p className="text-neutral-500 dark:text-neutral-400 mt-1">Manage incoming messages, assign leads, and reply via email.</p>
         </div>
       </div>

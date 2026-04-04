@@ -127,7 +127,7 @@ export default function MediaLibraryClient({ initialFiles }: { initialFiles: Med
         <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
             <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                 <div>
-                    <h1 className="text-3xl font-serif text-olive dark:text-off-white">Media Library</h1>
+                    <h1 className="text-2xl sm:text-3xl font-serif text-olive dark:text-off-white">Media Library</h1>
                     <p className="text-caption mt-1">Manage your uploaded images and videos.</p>
                 </div>
                 <div className="flex items-center gap-4">

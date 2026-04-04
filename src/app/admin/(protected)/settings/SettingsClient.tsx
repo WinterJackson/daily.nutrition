@@ -828,7 +828,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
 
             <Card className="surface-card">
               <CardHeader>
-                  <CardTitle className="flex items-center gap-2">
+                  <CardTitle className="text-base sm:text-lg flex items-center gap-2">
                        <Key className="w-5 h-5 text-olive" />
                        Encrypted API Keys
                   </CardTitle>
@@ -862,7 +862,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                    />
 
                    <div className="space-y-4 pt-4 border-t border-subtle">
-                       <h4 className="font-bold text-body flex items-center gap-2">
+                       <h4 className="text-sm font-bold text-body flex items-center gap-2">
                            <Sparkles className="w-4 h-4 text-purple-500" />
                            Cloudinary Media Pipeline
                        </h4>
@@ -915,7 +915,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                     <Star className="w-6 h-6" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white">Google Reviews Integration</h2>
+                    <h2 className="text-base sm:text-xl font-bold text-white">Google Reviews Integration</h2>
                     <p className="text-white/80 text-sm">Sync your Google Business Profile reviews to display on your website</p>
                   </div>
                 </div>
@@ -1005,7 +1005,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
                     <Calendar className="w-6 h-6" />
                   </div>
                   <div>
-                    <h2 className="text-xl font-bold text-white">Google Calendar Integration</h2>
+                    <h2 className="text-base sm:text-xl font-bold text-white">Google Calendar Integration</h2>
                     <p className="text-white/80 text-sm">Two-way sync for live booking availability and events</p>
                   </div>
                 </div>
@@ -1045,7 +1045,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
 
                 {/* Booking Rules */}
                 <div className="pt-6 mt-6 border-t border-subtle">
-                   <h4 className="font-bold text-body flex items-center gap-2 mb-2">
+                   <h4 className="text-sm sm:text-base font-bold text-body flex items-center gap-2 mb-2">
                        <Clock className="w-4 h-4 text-olive" />
                        Booking Rules
                    </h4>
@@ -1091,7 +1091,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
 
                 {/* Service Account Credentials */}
                 <div className="space-y-4 pt-6 mt-6 border-t border-subtle">
-                   <h4 className="font-bold text-body flex items-center gap-2">
+                   <h4 className="text-sm sm:text-base font-bold text-body flex items-center gap-2">
                        <Key className="w-4 h-4 text-olive" />
                        Service Account Credentials
                    </h4>
@@ -1143,7 +1143,7 @@ export default function SettingsClient({ initialSettings, envStatus, secretStatu
         {activeTab === "environment" && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div className="bg-red-50 dark:bg-red-500/10 border-l-4 border-red-500 p-4 rounded-r-xl">
-                <h4 className="font-bold text-red-800 dark:text-red-400">Strict Server Configuration</h4>
+                <h4 className="text-sm sm:text-base font-bold text-red-800 dark:text-red-400">Strict Server Configuration</h4>
                 <p className="text-sm text-red-700/80 dark:text-red-300 mt-1">
                     These variables represent the physical boot configuration of your server. If an item is red, you must update your hosting environment variables and redeploy.
                 </p>

@@ -23,7 +23,7 @@ export default function Error({
                     </svg>
                 </div>
 
-                <h1 className="text-3xl font-bold font-serif text-olive dark:text-off-white">
+                <h1 className="text-2xl sm:text-3xl font-bold font-serif text-olive dark:text-off-white">
                     Something went wrong
                 </h1>
                 <p className="text-neutral-500 dark:text-neutral-400">

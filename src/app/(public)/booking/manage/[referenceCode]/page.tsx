@@ -135,7 +135,7 @@ export default function BookingDetailPage() {
     if (error || !booking) {
         return (
             <div className="min-h-screen flex flex-col items-center justify-center p-6">
-                <div className="text-red-500 mb-4 text-xl font-bold">{error || "Booking not found"}</div>
+                <div className="text-red-500 mb-4 text-lg sm:text-xl font-bold">{error || "Booking not found"}</div>
                 <Button onClick={() => router.push("/booking/manage")}>
                     Back to Lookup
                 </Button>
@@ -214,7 +214,7 @@ export default function BookingDetailPage() {
                                     <div className="bg-white dark:bg-charcoal p-4 rounded-xl border border-amber-100 dark:border-amber-900/20 grid grid-cols-1 sm:grid-cols-2 gap-4">
                                         <div>
                                             <p className="text-xs uppercase font-bold text-caption">M-Pesa Till Number</p>
-                                            <p className="font-mono text-xl font-bold text-body">{settings.paymentTillNumber || "N/A"}</p>
+                                            <p className="font-mono text-lg sm:text-xl font-bold text-body">{settings.paymentTillNumber || "N/A"}</p>
                                         </div>
                                         <div>
                                             <p className="text-xs uppercase font-bold text-caption">Alternative Paybill</p>

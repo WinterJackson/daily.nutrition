@@ -145,7 +145,7 @@ export default function AuditLogPage() {
             {/* Header */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold font-serif text-olive dark:text-off-white flex items-center gap-3">
+                    <h1 className="text-2xl sm:text-3xl font-bold font-serif text-olive dark:text-off-white flex items-center gap-3">
                         <Shield className="w-8 h-8 text-brand-green" />
                         Audit Trail
                     </h1>
@@ -324,7 +324,7 @@ export default function AuditLogPage() {
             <Dialog open={!!selectedLog} onOpenChange={(open) => { if (!open) setSelectedLog(null) }}>
                 <DialogContent className="sm:max-w-xl max-h-[80vh] overflow-y-auto">
                     <div className="pr-8">
-                        <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                        <DialogTitle className="text-base sm:text-xl font-bold flex items-center gap-2">
                             <Shield className="w-5 h-5 text-brand-green" />
                             Audit Event Details
                         </DialogTitle>

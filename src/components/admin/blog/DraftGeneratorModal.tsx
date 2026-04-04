@@ -89,7 +89,7 @@ export function DraftGeneratorModal({ isOpen, onClose, onGenerate }: DraftGenera
                             <Sparkles className="w-5 h-5 text-orange" />
                         </div>
                         <div>
-                            <h2 className="text-xl font-bold font-serif text-olive dark:text-off-white">Generate with AI</h2>
+                            <h2 className="text-base sm:text-xl font-bold font-serif text-olive dark:text-off-white">Generate with AI</h2>
                             <p className="text-sm text-neutral-500">Seed your next post instantly.</p>
                         </div>
                     </div>

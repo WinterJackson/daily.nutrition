@@ -51,7 +51,7 @@ export function CollapsibleCard({
                         </div>
                         <div>
                             <div className="flex items-center gap-3">
-                                <h2 className="text-xl font-bold tracking-tight text-white">{title}</h2>
+                                <h2 className="text-base sm:text-xl font-bold tracking-tight text-white">{title}</h2>
                                 {status === "active" && (
                                     <span className="bg-white/20 text-white text-xs px-2 py-0.5 rounded-full flex items-center gap-1 backdrop-blur-md border border-white/10">
                                         <CheckCircle className="w-3 h-3" />

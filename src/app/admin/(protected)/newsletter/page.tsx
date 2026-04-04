@@ -141,7 +141,7 @@ export default function NewsletterPage() {
                 {/* Header Widget */}
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-2">
                     <div>
-                        <h1 className="text-3xl font-serif font-medium text-body flex items-center gap-3">
+                        <h1 className="text-2xl sm:text-3xl font-serif font-medium text-body flex items-center gap-3">
                             <Mail className="w-8 h-8 text-olive dark:text-brand-green" />
                             Newsletter & Campaigns
                         </h1>
@@ -320,7 +320,7 @@ export default function NewsletterPage() {
                                             <div className="flex justify-between items-end mb-2">
                                                 <p className="text-xs text-label font-medium group-hover:text-body transition-colors">Daily Allowed</p>
                                                 <div className="flex items-baseline gap-1">
-                                                    <span className={`text-2xl font-bold font-serif ${quota.dailyRemaining < 10 ? 'text-red-500' : 'text-body'}`}>
+                                                    <span className={`text-xl sm:text-2xl font-bold font-serif ${quota.dailyRemaining < 10 ? 'text-red-500' : 'text-body'}`}>
                                                         {quota.dailySent}
                                                     </span>
                                                     <span className="text-xs text-caption font-mono">/ {quota.dailyLimit}</span>
@@ -339,7 +339,7 @@ export default function NewsletterPage() {
                                             <div className="flex justify-between items-end mb-2">
                                                 <p className="text-xs text-label font-medium group-hover:text-body transition-colors">Monthly Allowed</p>
                                                 <div className="flex items-baseline gap-1">
-                                                    <span className={`text-2xl font-bold font-serif ${quota.monthlyRemaining < 100 ? 'text-red-500' : 'text-body'}`}>
+                                                    <span className={`text-xl sm:text-2xl font-bold font-serif ${quota.monthlyRemaining < 100 ? 'text-red-500' : 'text-body'}`}>
                                                         {quota.monthlySent}
                                                     </span>
                                                     <span className="text-xs text-caption font-mono">/ {quota.monthlyLimit}</span>
@@ -366,7 +366,7 @@ export default function NewsletterPage() {
 
                             {/* Draft Campaign Form */}
                             <Card className="p-6 surface-card">
-                                <h2 className="text-xl font-serif text-body mb-4">Draft New Campaign</h2>
+                                <h2 className="text-base sm:text-xl font-serif text-body mb-4">Draft New Campaign</h2>
                                 <form onSubmit={handleDraftCampaign} className="space-y-4">
                                     <div className="space-y-2">
                                         <label className="text-xs font-bold uppercase tracking-wider text-caption">Email Subject</label>
@@ -411,7 +411,7 @@ export default function NewsletterPage() {
 
                         {/* Recent Campaigns List */}
                         <div className="lg:col-span-2 space-y-4">
-                            <h2 className="text-xl font-serif text-body mb-4">Recent Campaigns</h2>
+                            <h2 className="text-base sm:text-xl font-serif text-body mb-4">Recent Campaigns</h2>
                             
                             {campaigns.length === 0 && !loading && (
                                 <div className="p-8 text-center border border-dashed border-subtle rounded-2xl text-caption">
@@ -487,7 +487,7 @@ export default function NewsletterPage() {
             <Dialog open={!!selectedSubscriber} onOpenChange={(open) => { if (!open) setSelectedSubscriber(null) }}>
                 <DialogContent className="sm:max-w-md">
                     <div className="pr-8">
-                        <DialogTitle className="text-xl font-bold flex items-center gap-2">
+                        <DialogTitle className="text-base sm:text-xl font-bold flex items-center gap-2">
                             <Mail className="w-5 h-5 text-brand-green" />
                             Subscriber Details
                         </DialogTitle>

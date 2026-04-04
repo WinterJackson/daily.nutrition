@@ -16,7 +16,7 @@ export default function CategoriesPage() {
             <ArrowLeft className="w-4 h-4" />
           </Link>
         </Button>
-        <h1 className="text-3xl font-bold font-serif text-neutral-900 dark:text-white">
+        <h1 className="text-2xl sm:text-3xl font-bold font-serif text-neutral-900 dark:text-white">
           Categories
         </h1>
       </div>

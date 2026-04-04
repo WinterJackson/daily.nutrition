@@ -25,7 +25,7 @@ export function AiDashboardClient({ userRole }: AiDashboardClientProps) {
         <div className="space-y-6">
             {/* Header */}
             <div>
-                <h1 className="text-2xl font-bold text-olive dark:text-off-white">
+                <h1 className="text-xl sm:text-2xl font-bold text-olive dark:text-off-white">
                     AI Content Assistant
                 </h1>
                 <p className="text-sm mt-1" style={{ color: "var(--text-muted)" }}>
