@@ -63,6 +63,7 @@ export interface GeneralSettingsData {
     linkedinUrl: string
     privacyPolicyContent: string
     termsContent: string
+    cookiePolicyContent: string
 }
 
 export interface SettingsData {
@@ -93,6 +94,7 @@ export interface SettingsData {
     linkedinUrl: string
     privacyPolicyContent: string
     termsContent: string
+    cookiePolicyContent: string
 
     // Google Calendar Config
     googleCalendarId: string
@@ -200,6 +202,7 @@ export async function getSettings() {
                     ogImageUrl: settings.ogImageUrl,
                     privacyPolicyContent: settings.privacyPolicyContent,
                     termsContent: settings.termsContent,
+                    cookiePolicyContent: settings.cookiePolicyContent || "",
 
                     googleCalendarConfig: GoogleCalendarConfig ? {
                         eventDuration: GoogleCalendarConfig.eventDuration,

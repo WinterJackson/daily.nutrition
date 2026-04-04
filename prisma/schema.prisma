@@ -539,6 +539,7 @@ model SiteSettings {
 
   privacyPolicyContent String              @default("")
   termsContent         String              @default("")
+  cookiePolicyContent  String              @default("")
   googlePlaceId        String              @default("")
 }
 
