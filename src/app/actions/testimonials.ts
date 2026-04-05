@@ -196,9 +196,9 @@ export async function syncGoogleReviews() {
             return { success: false, error: "Google Maps API Key is not configured. Go to Settings → Integrations to set it up." }
         }
 
-        // 3. Fetch reviews from Google Places API
+        // 3. Fetch reviews from Google Places API (Sort by NEWEST to fix missing recent reviews)
         const placeId = settings.googlePlaceId
-        const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${encodeURIComponent(placeId)}&fields=reviews&key=${apiKey}`
+        const url = `https://maps.googleapis.com/maps/api/place/details/json?place_id=${encodeURIComponent(placeId)}&fields=reviews&reviews_sort=newest&key=${apiKey}`
 
         const response = await fetch(url, { cache: "no-store" })
         if (!response.ok) {
