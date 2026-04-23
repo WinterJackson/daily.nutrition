@@ -23,11 +23,12 @@ export interface PlatformSettings {
 
 interface BookingWidgetProps {
   settings: PlatformSettings
+  serviceId: string
   serviceTitle: string
   sessionType: "virtual" | "in-person"
 }
 
-export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWidgetProps) {
+export function BookingWidget({ settings, serviceId, serviceTitle, sessionType }: BookingWidgetProps) {
   console.log("BookingWidget Settings:", settings);
   const [currentMonth, setCurrentMonth] = useState(startOfMonth(new Date()))
   const [selectedDate, setSelectedDate] = useState<Date | null>(null)
@@ -131,6 +132,7 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
         clientEmail: formData.email,
         clientPhone: formData.phone,
         notes: formData.notes,
+        serviceId: serviceId,
         serviceName: serviceTitle,
         clientTimezone: clientTimezone,
         sessionType: sessionType

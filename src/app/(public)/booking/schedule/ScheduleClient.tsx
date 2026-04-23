@@ -176,6 +176,7 @@ export function ScheduleClient({ calendarId, businessName, blockedDates, googleC
             {isCalendarConfigured ? (
                <div className="min-h-[600px]">
                   <BookingWidget 
+                    serviceId={service.id}
                     serviceTitle={service.title}
                     sessionType={sessionType}
                     settings={{

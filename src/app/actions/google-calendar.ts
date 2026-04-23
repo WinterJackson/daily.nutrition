@@ -49,6 +49,7 @@ export async function bookAppointment(data: {
     clientEmail: string
     clientPhone?: string
     notes?: string
+    serviceId: string
     serviceName: string
     clientTimezone?: string
     sessionType?: "virtual" | "in-person"
@@ -145,6 +146,7 @@ export async function bookAppointment(data: {
                     clientName: data.clientName.trim(),
                     clientEmail: data.clientEmail.trim().toLowerCase(),
                     clientPhone: data.clientPhone?.trim() || undefined,
+                    serviceId: data.serviceId,
                     serviceName: data.serviceName,
                     scheduledAt: scheduledAt,
                     duration: duration,
