@@ -55,6 +55,7 @@ export const serviceSchema = z.object({
 export const inquirySchema = z.object({
     name: z.string().min(2).max(100).trim(),
     email: z.string().email().toLowerCase().trim(),
+    phone: z.string().min(10, "Phone number must be at least 10 digits").optional().or(z.literal("")),
     message: z.string().min(10).max(2000).trim(),
     preferredDate: z.date().optional().nullable(),
 })
@@ -90,8 +91,9 @@ export const settingsSchema = z.object({
     pageTitle: z.string(),
     metaDescription: z.string(),
     keywords: z.string(),
-    paymentTillNumber: z.string().optional(),
     paymentPaybill: z.string().optional(),
+    paymentAccountNumber: z.string().optional(),
+    paymentAccountName: z.string().optional(),
     themePreference: z.enum(["light", "dark", "system"]).default("light"),
     googleCalendarId: z.string().optional(),
     instagramUrl: z.string().optional(),

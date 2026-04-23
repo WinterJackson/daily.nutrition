@@ -170,6 +170,7 @@ export async function forgotPassword(email: string) {
                     paymentTill: settings?.paymentTillNumber,
                     paymentPaybill: settings?.paymentPaybill,
                     paymentAccountNumber: settings?.paymentAccountNumber,
+                    paymentAccountName: settings?.paymentAccountName,
                 },
             }),
         );

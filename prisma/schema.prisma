@@ -266,6 +266,7 @@ model Inquiry {
   id           String  @id @default(cuid())
   name         String
   email        String
+  phone        String?
   message      String  @db.Text
   statusString String  @default("NEW") @map("status") // Kept for backwards compat
   isStarred    Boolean @default(false)
@@ -532,6 +533,7 @@ model SiteSettings {
   paymentTillNumber       String                   @default("")
   paymentPaybill          String                   @default("")
   paymentAccountNumber    String                   @default("")
+  paymentAccountName      String                   @default("")
   ogImageUrl              String?                  @default("")
   version                 Int                      @default(0)
   updatedAt               DateTime                 @updatedAt

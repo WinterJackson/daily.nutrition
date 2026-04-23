@@ -80,6 +80,7 @@ export interface SettingsData {
     paymentTillNumber: string
     paymentPaybill: string
     paymentAccountNumber: string
+    paymentAccountName: string
     profileImageUrl?: string | null
     aboutImageOne: string
     aboutImageTwo: string
@@ -195,6 +196,7 @@ export async function getSettings() {
                     googleMapsEmbedUrl: settings.googleMapsEmbedUrl,
                     paymentTillNumber: settings.paymentTillNumber,
                     paymentPaybill: settings.paymentPaybill,
+                    paymentAccountName: settings.paymentAccountName,
                     instagramUrl: settings.instagramUrl,
                     facebookUrl: settings.facebookUrl,
                     twitterUrl: settings.twitterUrl,

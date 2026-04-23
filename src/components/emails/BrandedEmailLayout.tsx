@@ -25,6 +25,7 @@ export interface EmailBrandingData {
     paymentTill?: string;
     paymentPaybill?: string;
     paymentAccountNumber?: string;
+    paymentAccountName?: string;
 }
 
 interface BrandedEmailLayoutProps {
@@ -40,7 +41,7 @@ export const BrandedEmailLayout = ({
     heading,
     children,
 }: BrandedEmailLayoutProps) => {
-    const { primaryColor, accentColor, logoUrl, footerText, websiteUrl, supportEmail, clinicLocation, contactPhone, paymentTill, paymentPaybill, paymentAccountNumber } = branding;
+    const { primaryColor, accentColor, logoUrl, footerText, websiteUrl, supportEmail, clinicLocation, contactPhone, paymentPaybill, paymentAccountNumber, paymentAccountName } = branding;
     const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
     const resolvedLogoUrl = logoUrl || `${appBaseUrl}/logo.png`;
 
@@ -111,7 +112,7 @@ export const BrandedEmailLayout = ({
                             </div>
 
                             {/* Dynamic Global Contact & Payment Injection */}
-                            {(clinicLocation || contactPhone || paymentTill || paymentPaybill) && (
+                            {(clinicLocation || contactPhone || paymentPaybill) && (
                                 <div className="mt-6 p-4 rounded-xl text-left border border-[#eaeaea] bg-offwhite">
                                     <Text className="m-0 text-olive font-bold uppercase text-[10px] mb-2 tracking-wider">
                                         Business Details
@@ -127,30 +128,23 @@ export const BrandedEmailLayout = ({
                                         </Text>
                                     )}
                                     
-                                    {(paymentTill || paymentPaybill) && (
+                                    {paymentPaybill && (
                                         <>
                                             <div className="w-full h-[1px] bg-[#eaeaea] my-3" />
                                             <Text className="m-0 text-olive font-bold uppercase text-[10px] mb-2 tracking-wider">
                                                 Accepted Payment Methods (M-Pesa)
                                             </Text>
-                                            {paymentTill && (
-                                                <Text className="m-0 text-[#666] text-[12px] leading-[20px] pb-1">
-                                                    <strong>Till Number (Buy Goods):</strong> {paymentTill}
-                                                </Text>
-                                            )}
-                                            {paymentPaybill && (
-                                                <Text className="m-0 text-[#666] text-[12px] leading-[20px] pb-1">
-                                                    <strong>Paybill:</strong> {paymentPaybill}
-                                                </Text>
-                                            )}
+                                            <Text className="m-0 text-[#666] text-[12px] leading-[20px] pb-1">
+                                                <strong>Paybill:</strong> {paymentPaybill}
+                                            </Text>
                                             {paymentAccountNumber && (
                                                 <Text className="m-0 text-[#666] text-[12px] leading-[20px] pb-1">
-                                                    <strong>Account Name:</strong> {paymentAccountNumber}
+                                                    <strong>Account Number:</strong> {paymentAccountNumber}
                                                 </Text>
                                             )}
-                                            {paymentPaybill && paymentAccountNumber && (
-                                                <Text className="m-0 text-[#888] text-[11px] leading-[18px] italic pb-1">
-                                                    Use your full official name as the account number
+                                            {paymentAccountName && (
+                                                <Text className="m-0 text-[#666] text-[12px] leading-[20px] pb-1">
+                                                    <strong>Account Name:</strong> {paymentAccountName}
                                                 </Text>
                                             )}
                                         </>

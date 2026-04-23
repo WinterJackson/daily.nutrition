@@ -269,7 +269,8 @@ export async function replyToInquiry(id: string, replyContent: string) {
             contactPhone: brandingSettings?.phoneNumber,
             paymentTill: brandingSettings?.paymentTillNumber,
             paymentPaybill: brandingSettings?.paymentPaybill,
-            paymentAccountNumber: brandingSettings?.paymentAccountNumber
+            paymentAccountNumber: brandingSettings?.paymentAccountNumber,
+            paymentAccountName: brandingSettings?.paymentAccountName
         }
 
         // Store reply explicitly

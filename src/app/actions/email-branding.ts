@@ -16,6 +16,7 @@ export interface EmailBrandingData {
     paymentTill?: string
     paymentPaybill?: string
     paymentAccountNumber?: string
+    paymentAccountName?: string
 }
 
 const DEFAULT_BRANDING: EmailBrandingData = {
@@ -52,7 +53,8 @@ export async function getEmailBranding(): Promise<EmailBrandingData> {
             contactPhone: settings.phoneNumber,
             paymentTill: settings.paymentTillNumber,
             paymentPaybill: settings.paymentPaybill,
-            paymentAccountNumber: settings.paymentAccountNumber
+            paymentAccountNumber: settings.paymentAccountNumber,
+            paymentAccountName: settings.paymentAccountName
         }
     } catch (error) {
         console.error("Failed to fetch email branding:", error)

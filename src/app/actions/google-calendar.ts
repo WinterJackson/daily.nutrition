@@ -144,6 +144,7 @@ export async function bookAppointment(data: {
                 data: {
                     clientName: data.clientName.trim(),
                     clientEmail: data.clientEmail.trim().toLowerCase(),
+                    clientPhone: data.clientPhone?.trim() || undefined,
                     serviceName: data.serviceName,
                     scheduledAt: scheduledAt,
                     duration: duration,
@@ -204,7 +205,8 @@ export async function bookAppointment(data: {
                 contactPhone: settings?.phoneNumber,
                 paymentTill: settings?.paymentTillNumber,
                 paymentPaybill: settings?.paymentPaybill,
-                paymentAccountNumber: settings?.paymentAccountNumber
+                paymentAccountNumber: settings?.paymentAccountNumber,
+                paymentAccountName: settings?.paymentAccountName
             }
 
             // Format Date/Time in Client Timezone

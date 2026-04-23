@@ -211,15 +211,25 @@ export default function BookingDetailPage() {
                                     <p className="text-amber-700 dark:text-amber-400 text-sm mb-4">
                                         Your booking is currently pending. To confirm this reservation and prevent it from automatically expiring, please complete payment via M-Pesa.
                                     </p>
-                                    <div className="bg-white dark:bg-charcoal p-4 rounded-xl border border-amber-100 dark:border-amber-900/20 grid grid-cols-1 sm:grid-cols-2 gap-4">
-                                        <div>
-                                            <p className="text-xs uppercase font-bold text-caption">M-Pesa Till Number</p>
-                                            <p className="font-mono text-lg sm:text-xl font-bold text-body">{settings.paymentTillNumber || "N/A"}</p>
-                                        </div>
-                                        <div>
-                                            <p className="text-xs uppercase font-bold text-caption">Alternative Paybill</p>
-                                            <p className="font-mono text-lg font-bold text-body">{settings.paymentPaybill || "N/A"}</p>
-                                        </div>
+                                    <div className="bg-white dark:bg-charcoal p-4 rounded-xl border border-amber-100 dark:border-amber-900/20 space-y-3">
+                                        {settings.paymentPaybill && (
+                                            <div>
+                                                <p className="text-xs uppercase font-bold text-caption">M-Pesa Paybill</p>
+                                                <p className="font-mono text-lg sm:text-xl font-bold text-body">{settings.paymentPaybill}</p>
+                                            </div>
+                                        )}
+                                        {settings.paymentAccountNumber && (
+                                            <div>
+                                                <p className="text-xs uppercase font-bold text-caption">Account Number</p>
+                                                <p className="font-mono text-lg font-bold text-body">{settings.paymentAccountNumber}</p>
+                                            </div>
+                                        )}
+                                        {settings.paymentAccountName && (
+                                            <div>
+                                                <p className="text-xs uppercase font-bold text-caption">Account Name</p>
+                                                <p className="text-sm font-semibold text-body">{settings.paymentAccountName}</p>
+                                            </div>
+                                        )}
                                     </div>
                                     <p className="text-amber-700 dark:text-amber-400 text-xs mt-4">
                                         Once your payment is manually verified by our team, you will receive a confirmation email with instructions or a Google Meet link (for virtual sessions).

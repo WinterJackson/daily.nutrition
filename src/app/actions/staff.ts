@@ -79,6 +79,7 @@ export async function inviteStaffMember(email: string, name: string, role: strin
             paymentTill: settings?.paymentTillNumber,
             paymentPaybill: settings?.paymentPaybill,
             paymentAccountNumber: settings?.paymentAccountNumber,
+            paymentAccountName: settings?.paymentAccountName,
         };
 
         // Send Email

@@ -471,36 +471,36 @@ export default function SettingsClient({
                   </div>
                   <div className="space-y-4 md:col-span-2 pt-4 border-t border-neutral-100 dark:border-white/5">
                     <h3 className="font-semibold text-olive dark:text-off-white text-sm md:text-base">Payment Credentials</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="space-y-2">
-                           <label className="text-xs font-bold uppercase tracking-wider text-caption">Safaricom Till Number</label>
-                           <Input
-                             value={settings.paymentTillNumber || ""}
-                             onChange={(e) => handleChange("paymentTillNumber", e.target.value)}
-                             placeholder="e.g. 123456"
-                             className="surface-input"
-                           />
-                           <p className="text-xs text-neutral-500">Leaving this blank hides it from confirmation emails.</p>
-                        </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                         <div className="space-y-2">
                            <label className="text-xs font-bold uppercase tracking-wider text-caption">Safaricom Paybill</label>
                            <Input
                              value={settings.paymentPaybill || ""}
                              onChange={(e) => handleChange("paymentPaybill", e.target.value)}
-                             placeholder="e.g. 123456"
+                             placeholder="e.g. 542542"
                              className="surface-input"
                            />
                            <p className="text-xs text-neutral-500">Leaving this blank hides it from confirmation emails.</p>
                         </div>
                         <div className="space-y-2">
-                           <label className="text-xs font-bold uppercase tracking-wider text-caption">Paybill Account Name</label>
+                           <label className="text-xs font-bold uppercase tracking-wider text-caption">Account Number</label>
                            <Input
                              value={settings.paymentAccountNumber || ""}
                              onChange={(e) => handleChange("paymentAccountNumber", e.target.value)}
-                             placeholder="e.g. Your Full Official Name"
+                             placeholder="e.g. 010449"
                              className="surface-input"
                            />
-                           <p className="text-xs text-neutral-500">Clients will be instructed to use their <strong>full official name</strong> as the account number when paying via Paybill.</p>
+                           <p className="text-xs text-neutral-500">The account number clients use when paying via Paybill.</p>
+                        </div>
+                        <div className="space-y-2">
+                           <label className="text-xs font-bold uppercase tracking-wider text-caption">Account Name</label>
+                           <Input
+                             value={settings.paymentAccountName || ""}
+                             onChange={(e) => handleChange("paymentAccountName", e.target.value)}
+                             placeholder="e.g. Edwak Nutrition Consultancy"
+                             className="surface-input"
+                           />
+                           <p className="text-xs text-neutral-500">Displayed to clients so they know where the payment is going.</p>
                         </div>
                     </div>
                   </div>

@@ -356,7 +356,8 @@ async function getEmailConfig() {
         contactPhone: settings?.phoneNumber,
         paymentTill: settings?.paymentTillNumber,
         paymentPaybill: settings?.paymentPaybill,
-        paymentAccountNumber: settings?.paymentAccountNumber
+        paymentAccountNumber: settings?.paymentAccountNumber,
+        paymentAccountName: settings?.paymentAccountName
     }
 
     return { resend, fromEmail, branding }

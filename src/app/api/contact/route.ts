@@ -40,7 +40,8 @@ export async function POST(request: Request) {
       data: {
         name,
         email,
-        message: `${service ? `[${service}] ` : ''}${message}${phone ? `\n\nPhone: ${phone}` : ''}`,
+        phone: phone || null,
+        message: `${service ? `[${service}] ` : ''}${message}`,
         statusString: 'NEW',
         ipAddress: ip,
         userAgent: userAgent

@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/Input"
 import { Textarea } from "@/components/ui/Textarea"
 import { addMonths, eachDayOfInterval, endOfMonth, endOfWeek, format, isBefore, isSameDay, startOfMonth, startOfToday, startOfWeek, subMonths } from "date-fns"
 import { AnimatePresence, motion } from "framer-motion"
-import { AlertCircle, ArrowRight, CheckCircle, ChevronLeft, ChevronRight, Clock, Globe, Info, Loader2, Mail, User } from "lucide-react"
+import { AlertCircle, ArrowRight, CheckCircle, ChevronLeft, ChevronRight, Clock, Globe, Info, Loader2, Mail, Phone, User } from "lucide-react"
 import Link from "next/link"
 import { useEffect, useMemo, useState } from "react"
 
@@ -41,7 +41,7 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [referenceCode, setReferenceCode] = useState<string | null>(null)
   
-  const [formData, setFormData] = useState({ name: "", email: "", notes: "" })
+  const [formData, setFormData] = useState({ name: "", email: "", phone: "", notes: "" })
   const [bookingError, setBookingError] = useState<string | null>(null)
   const [isInstructionsOpen, setIsInstructionsOpen] = useState(true)
 
@@ -129,6 +129,7 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
         time: selectedTime,
         clientName: formData.name,
         clientEmail: formData.email,
+        clientPhone: formData.phone,
         notes: formData.notes,
         serviceName: serviceTitle,
         clientTimezone: clientTimezone,
@@ -490,6 +491,21 @@ export function BookingWidget({ settings, serviceTitle, sessionType }: BookingWi
                                     className="pl-10"
                                 />
                                 <Mail className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
+                            </div>
+                        </div>
+
+                        <div className="space-y-2">
+                            <label className="text-[10px] md:text-xs font-bold text-neutral-700 dark:text-neutral-300">Phone Number</label>
+                            <div className="relative">
+                                <Input 
+                                    required
+                                    type="tel"
+                                    value={formData.phone}
+                                    onChange={e => setFormData({...formData, phone: e.target.value})}
+                                    placeholder="+254 712 345 678"
+                                    className="pl-10"
+                                />
+                                <Phone className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-neutral-400" />
                             </div>
                         </div>
 
