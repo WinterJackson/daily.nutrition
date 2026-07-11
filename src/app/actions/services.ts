@@ -78,6 +78,7 @@ export async function updateService(id: string, data: {
         revalidatePath("/admin/services")
         revalidatePath("/services")
         revalidatePath("/")
+        revalidatePath(`/services/${service.slug}`)
         return { success: true, service }
     } catch (error) {
         console.error("Failed to update service:", error)
@@ -109,6 +110,7 @@ export async function toggleServiceVisibility(id: string) {
         revalidatePath("/admin/services")
         revalidatePath("/services")
         revalidatePath("/")
+        revalidatePath(`/services/${service.slug}`)
         return { success: true, service: updated }
     } catch (error) {
         console.error("Failed to toggle service visibility:", error)
@@ -175,6 +177,7 @@ export async function createService(data: {
         revalidatePath("/admin/services")
         revalidatePath("/services")
         revalidatePath("/")
+        revalidatePath(`/services/${service.slug}`)
         return { success: true, service }
     } catch (error) {
         console.error("Failed to create service:", error)
@@ -188,6 +191,9 @@ export async function deleteService(id: string) {
     if (!session) return { success: false, error: "Unauthorized" }
 
     try {
+        // Fetch slug before soft-delete so we can revalidate the public page
+        const service = await prisma.service.findUnique({ where: { id }, select: { slug: true } })
+
         await prisma.service.update({
             where: { id },
             data: { deletedAt: new Date() }
@@ -203,6 +209,7 @@ export async function deleteService(id: string) {
         revalidatePath("/admin/services")
         revalidatePath("/services")
         revalidatePath("/")
+        if (service?.slug) revalidatePath(`/services/${service.slug}`)
         return { success: true }
     } catch (error) {
         console.error("Failed to delete service:", error)

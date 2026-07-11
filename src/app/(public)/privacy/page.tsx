@@ -7,6 +7,7 @@ import remarkGfm from "remark-gfm"
 export const metadata: Metadata = {
   title: "Privacy Policy | Edwak Nutrition",
   description: "Privacy Policy and data protection practices for Edwak Nutrition in compliance with the Kenya Data Protection Act, 2019.",
+  alternates: { canonical: "/privacy" },
 }
 
 export default async function PrivacyPolicyPage() {

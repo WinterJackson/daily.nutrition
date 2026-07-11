@@ -7,6 +7,7 @@ import { BookingClient } from "./BookingClient"
 export const metadata: Metadata = {
   title: "Book a Consultation | Edwak Nutrition",
   description: "Book a virtual or in-person nutrition consultation with Edwak Nutrition. Choose your service, select a time, and get expert dietary guidance tailored to your needs.",
+  alternates: { canonical: "/booking" },
   openGraph: {
     title: "Book a Consultation | Edwak Nutrition",
     description: "Schedule your personalized nutrition consultation — virtual or in-person appointments available.",

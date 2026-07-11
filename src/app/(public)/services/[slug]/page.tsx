@@ -1,8 +1,9 @@
-import { getServiceBySlug } from "@/app/actions/services";
+import { getServiceBySlug, getServices } from "@/app/actions/services";
 import { ServiceBookingCard } from "@/components/services/ServiceBookingCard";
 import { AnimatedBackground } from "@/components/ui/AnimatedBackground";
 import { ServiceIcon } from "@/components/ui/ServiceIcon";
 import { ArrowLeft, CheckCircle2, ImageIcon } from "lucide-react";
+import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -10,6 +11,48 @@ import { notFound } from "next/navigation";
 type Props = {
     params: Promise<{ slug: string }>;
 };
+
+export async function generateStaticParams() {
+    const services = await getServices();
+    return services.map((s) => ({ slug: s.slug }));
+}
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
+    const { slug } = await params;
+    const service = await getServiceBySlug(slug);
+
+    if (!service) {
+        return { title: "Service Not Found | Edwak Nutrition" };
+    }
+
+    const description =
+        service.shortDescription ||
+        (service.fullDescription ? service.fullDescription.slice(0, 160).trim() : undefined) ||
+        "Learn more about our specialized nutrition services in Nairobi, Kenya.";
+
+    return {
+        title: `${service.title} | Edwak Nutrition`,
+        description,
+        alternates: {
+            canonical: `/services/${slug}`,
+        },
+        openGraph: {
+            title: service.title,
+            description,
+            type: "website",
+            url: `/services/${slug}`,
+            images: service.image
+                ? [{ url: service.image, width: 1200, height: 630, alt: service.title }]
+                : undefined,
+        },
+        twitter: {
+            card: "summary_large_image",
+            title: service.title,
+            description,
+            images: service.image ? [service.image] : undefined,
+        },
+    };
+}
 
 export default async function ServicePage({ params }: Props) {
     const { slug } = await params;
@@ -19,8 +62,31 @@ export default async function ServicePage({ params }: Props) {
         notFound();
     }
 
+    const serviceJsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'Service',
+        name: service.title,
+        description: service.shortDescription || service.fullDescription,
+        serviceType: service.title,
+        provider: {
+            '@type': 'DietNutrition',
+            name: 'Edwak Nutrition',
+            url: process.env.NEXT_PUBLIC_SITE_URL || 'https://edwaknutrition.co.ke',
+        },
+        areaServed: {
+            '@type': 'City',
+            name: 'Nairobi',
+        },
+    };
+
     return (
         <div className="min-h-screen bg-off-white dark:bg-charcoal pt-24 pb-16 relative overflow-hidden">
+            {/* Service Schema JSON-LD */}
+            <script
+                type="application/ld+json"
+                dangerouslySetInnerHTML={{ __html: JSON.stringify(serviceJsonLd) }}
+            />
+
             {/* Animated Background */}
             <AnimatedBackground variant="nutrition" />
 

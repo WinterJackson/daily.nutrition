@@ -1,7 +1,30 @@
 import { prisma } from "@/lib/prisma"
 import { MetadataRoute } from "next"
+import { unstable_cache } from "next/cache"
 
 const BASE_URL = process.env.NEXT_PUBLIC_SITE_URL || "https://edwaknutrition.co.ke"
+
+const getCachedServiceSlugs = unstable_cache(
+    async () => {
+        return prisma.service.findMany({
+            where: { isVisible: true, deletedAt: null },
+            select: { slug: true, updatedAt: true },
+        })
+    },
+    ["sitemap-services"],
+    { tags: ["sitemap-services"], revalidate: 3600 }
+)
+
+const getCachedBlogSlugs = unstable_cache(
+    async () => {
+        return prisma.blogPost.findMany({
+            where: { published: true, deletedAt: null },
+            select: { slug: true, updatedAt: true },
+        })
+    },
+    ["sitemap-blog"],
+    { tags: ["sitemap-blog"], revalidate: 3600 }
+)
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     // Static routes
@@ -16,10 +39,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
 
     // Dynamic service pages
     try {
-        const services = await prisma.service.findMany({
-            where: { isVisible: true, deletedAt: null },
-            select: { slug: true, updatedAt: true },
-        })
+        const services = await getCachedServiceSlugs()
 
         const serviceRoutes: MetadataRoute.Sitemap = services.map((s) => ({
             url: `${BASE_URL}/services/${s.slug}`,
@@ -29,10 +49,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         }))
 
         // Dynamic blog posts
-        const posts = await prisma.blogPost.findMany({
-            where: { published: true, deletedAt: null },
-            select: { slug: true, updatedAt: true },
-        })
+        const posts = await getCachedBlogSlugs()
 
         const blogRoutes: MetadataRoute.Sitemap = posts.map((p) => ({
             url: `${BASE_URL}/blog/${p.slug}`,

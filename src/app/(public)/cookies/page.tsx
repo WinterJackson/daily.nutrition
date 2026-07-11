@@ -7,6 +7,7 @@ import remarkGfm from "remark-gfm"
 export const metadata: Metadata = {
   title: "Cookie Policy | Edwak Nutrition",
   description: "Detailed information about how Edwak Nutrition uses cookies and tracking technologies.",
+  alternates: { canonical: "/cookies" },
 }
 
 export default async function CookiePolicyPage() {

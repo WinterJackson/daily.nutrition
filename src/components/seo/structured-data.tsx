@@ -4,11 +4,11 @@ export async function StructuredData() {
   const settings = await getSettings()
   if (!settings) return null
 
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://edwaknutrition.co.ke"
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://edwaknutrition.co.ke"
 
   const structuredData = {
     "@context": "https://schema.org",
-    "@type": "HealthAndBeautyBusiness",
+    "@type": "DietNutrition",
     "name": settings.businessName || "Edwak Nutrition",
     "image": settings.ogImageUrl || `${baseUrl}/images/og-image.jpg`,
     "@id": baseUrl,

@@ -10,6 +10,7 @@ export const metadata: Metadata = {
   title: "Edwak Nutrition | Professional Nutrition Consultancy in Nairobi",
   description: "Expert nutrition care for cancer, diabetes, gut health, and weight management. Book virtual or in-person consultations with a registered dietitian in Nairobi, Kenya.",
   keywords: ["nutrition consultancy", "dietitian Nairobi", "cancer nutrition", "diabetes diet", "gut health", "weight management", "virtual nutrition consultation"],
+  alternates: { canonical: "/" },
   openGraph: {
     title: "Edwak Nutrition | Professional Nutrition Consultancy",
     description: "Expert nutrition care for cancer, diabetes, gut health, and weight management. Book virtual or in-person consultations.",

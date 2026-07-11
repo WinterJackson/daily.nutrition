@@ -1,4 +1,4 @@
-import { getPostBySlug, getRelatedPosts } from "@/app/actions/blog"
+import { getPostBySlug, getPublishedSlugs, getRelatedPosts } from "@/app/actions/blog"
 import { AnimatedBackground } from "@/components/ui/AnimatedBackground"
 import { Button } from "@/components/ui/Button"
 import { Card, CardFooter, CardHeader, CardTitle } from "@/components/ui/Card"
@@ -17,9 +17,14 @@ interface BlogPostPageProps {
 
 /** Calculate read time from markdown content */
 function calculateReadTime(content: string): number {
-  const plainText = content.replace(/[#*_\[\]()>`~\-|]/g, "").trim()
+  const plainText = content.replace(/[#*_\[\]()\>`~\-|]/g, "").trim()
   const wordCount = plainText.split(/\s+/).filter(Boolean).length
   return Math.max(1, Math.ceil(wordCount / 200))
+}
+
+/** Strip markdown syntax and return a plain-text excerpt */
+function getPlainTextExcerpt(content: string, maxLength = 160): string {
+  return content.replace(/[#*`_\[\]]/g, '').substring(0, maxLength).trim() + "..."
 }
 
 /**
@@ -146,6 +151,11 @@ const markdownComponents: Components = {
   ),
 }
 
+export async function generateStaticParams() {
+  const posts = await getPublishedSlugs();
+  return posts.map((p) => ({ slug: p.slug }));
+}
+
 export async function generateMetadata(
   { params }: BlogPostPageProps,
   parent: ResolvingMetadata
@@ -156,7 +166,7 @@ export async function generateMetadata(
   if (!post) return { title: "Post Not Found" }
   
   const title = post.metaTitle || `${post.title} | Edwak Nutrition`
-  const description = post.metaDescription || post.content.replace(/[#*`_\[\]]/g, '').substring(0, 160).trim() + "..."
+  const description = post.metaDescription || getPlainTextExcerpt(post.content)
   
   const previousImages = (await parent).openGraph?.images || []
   
@@ -164,13 +174,18 @@ export async function generateMetadata(
     ? [{ url: post.image, width: 1200, height: 630, alt: post.title }] 
     : previousImages
 
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://edwaknutrition.co.ke"
+
   return {
     title: title,
     description: description,
+    alternates: {
+      canonical: `/blog/${post.slug}`,
+    },
     openGraph: {
       title: post.metaTitle || post.title,
       description: description,
-      url: `https://daily.nutrition/blog/${post.slug}`,
+      url: `${baseUrl}/blog/${post.slug}`,
       siteName: 'Edwak Nutrition',
       images: ogImages,
       locale: 'en_US',
@@ -199,6 +214,8 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const relatedPosts = await getRelatedPosts(post.category?.name || "", post.id)
   const readTime = calculateReadTime(post.content)
 
+  const baseUrl = process.env.NEXT_PUBLIC_SITE_URL || 'https://edwaknutrition.co.ke'
+
   const jsonLd = {
     '@context': 'https://schema.org',
     '@type': 'Article',
@@ -209,17 +226,17 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     author: [{
         '@type': 'Organization',
         name: 'Edwak Nutrition Team',
-        url: 'https://daily.nutrition'
+        url: baseUrl
     }],
     publisher: {
         '@type': 'Organization',
         name: 'Edwak Nutrition',
         logo: {
             '@type': 'ImageObject',
-            url: 'https://daily.nutrition/logo.png'
+            url: `${baseUrl}/logo.png`
         }
     },
-    description: post.content.replace(/[#*`_\[\]]/g, '').substring(0, 160).trim() + "..."
+    description: getPlainTextExcerpt(post.content)
   }
 
   return (
@@ -264,11 +281,13 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
 
            {post.image && (
              <div className="relative w-full aspect-[21/9] rounded-3xl overflow-hidden shadow-2xl mb-12">
-                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                 <img 
-                    src={post.image} 
+                 <Image
+                    src={post.image}
                     alt={post.title}
-                    className="object-cover w-full h-full"
+                    fill
+                    priority
+                    className="object-cover"
+                    sizes="(max-width: 768px) 100vw, 1200px"
                  />
              </div>
            )}

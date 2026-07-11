@@ -309,3 +309,16 @@ export async function deletePosts(ids: string[]) {
         return { success: false, error: "Failed to delete posts" }
     }
 }
+
+/** Lightweight slug-only query for generateStaticParams */
+export async function getPublishedSlugs() {
+    try {
+        return await prisma.blogPost.findMany({
+            where: { published: true, deletedAt: null },
+            select: { slug: true },
+        })
+    } catch {
+        return []
+    }
+}
+

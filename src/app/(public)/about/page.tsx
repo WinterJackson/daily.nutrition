@@ -7,6 +7,7 @@ import { AboutClient } from "./AboutClient"
 export const metadata: Metadata = {
   title: "About | Edwak Nutrition",
   description: "Meet Edna Wakio — Registered Dietitian (MSc. Nutrition & Dietetics), Oncology Nutrition Specialist, and Diabetes Educator with 8+ years of clinical experience in Nairobi, Kenya.",
+  alternates: { canonical: "/about" },
   openGraph: {
     title: "About Edwak Nutrition",
     description: "Meet Edna Wakio — Registered Dietitian with 8+ years of clinical experience specializing in oncology nutrition and diabetes management.",
