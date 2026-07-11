@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Schedule Appointment | Edwak Nutrition",
+  title: "Schedule Appointment",
   description: "Select a date and time for your nutrition consultation. Choose from available slots and book your virtual or in-person appointment.",
 }
 

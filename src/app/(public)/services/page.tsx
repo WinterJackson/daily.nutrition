@@ -3,11 +3,11 @@ import { ServicesPageContent } from "@/components/services/ServicesPageContent"
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Services | Edwak Nutrition",
+  title: "Services",
   description: "Explore our nutrition services: oncology nutrition, diabetes management, gut health, weight management, and more. Virtual and in-person consultations available.",
   alternates: { canonical: "/services" },
   openGraph: {
-    title: "Nutrition Services | Edwak Nutrition",
+    title: "Nutrition Services",
     description: "Expert nutrition services including oncology nutrition, diabetes management, gut health, and weight management consultations.",
     type: "website",
   },

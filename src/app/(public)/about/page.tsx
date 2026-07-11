@@ -5,7 +5,7 @@ import type { Metadata } from "next"
 import { AboutClient } from "./AboutClient"
 
 export const metadata: Metadata = {
-  title: "About | Edwak Nutrition",
+  title: "About",
   description: "Meet Edna Wakio — Registered Dietitian (MSc. Nutrition & Dietetics), Oncology Nutrition Specialist, and Diabetes Educator with 8+ years of clinical experience in Nairobi, Kenya.",
   alternates: { canonical: "/about" },
   openGraph: {

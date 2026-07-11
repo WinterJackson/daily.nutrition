@@ -165,7 +165,7 @@ export async function generateMetadata(
   
   if (!post) return { title: "Post Not Found" }
   
-  const title = post.metaTitle || `${post.title} | Edwak Nutrition`
+  const title = post.metaTitle || post.title
   const description = post.metaDescription || getPlainTextExcerpt(post.content)
   
   const previousImages = (await parent).openGraph?.images || []

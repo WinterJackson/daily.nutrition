@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const service = await getServiceBySlug(slug);
 
     if (!service) {
-        return { title: "Service Not Found | Edwak Nutrition" };
+        return { title: "Service Not Found" };
     }
 
     const description =
@@ -31,7 +31,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         "Learn more about our specialized nutrition services in Nairobi, Kenya.";
 
     return {
-        title: `${service.title} | Edwak Nutrition`,
+        title: service.title,
         description,
         alternates: {
             canonical: `/services/${slug}`,

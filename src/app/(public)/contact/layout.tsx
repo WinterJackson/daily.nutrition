@@ -1,7 +1,7 @@
 import type { Metadata } from "next"
 
 export const metadata: Metadata = {
-  title: "Contact Us | Edwak Nutrition",
+  title: "Contact Us",
   description: "Get in touch with Edwak Nutrition. Visit us at PMC Parklands, Nairobi or book a virtual consultation. We offer in-person and remote nutrition consultations.",
   alternates: { canonical: "/contact" },
   openGraph: {

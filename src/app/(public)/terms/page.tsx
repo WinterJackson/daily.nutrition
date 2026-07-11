@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 
 export const metadata: Metadata = {
-  title: "Terms of Service | Edwak Nutrition",
+  title: "Terms of Service",
   description: "Terms of Service, governing laws, and dispute resolution for Edwak Nutrition.",
   alternates: { canonical: "/terms" },
 }

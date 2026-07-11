@@ -5,7 +5,7 @@ import ReactMarkdown from "react-markdown"
 import remarkGfm from "remark-gfm"
 
 export const metadata: Metadata = {
-  title: "Cookie Policy | Edwak Nutrition",
+  title: "Cookie Policy",
   description: "Detailed information about how Edwak Nutrition uses cookies and tracking technologies.",
   alternates: { canonical: "/cookies" },
 }

@@ -9,11 +9,11 @@ import Image from "next/image"
 import Link from "next/link"
 
 export const metadata: Metadata = {
-  title: "Blog | Edwak Nutrition",
+  title: "Blog",
   description: "Evidence-based articles, nutrition tips, recipes, and wellness insights from a registered dietitian. Stay informed on your health journey.",
   alternates: { canonical: "/blog" },
   openGraph: {
-    title: "Nutrition Blog | Edwak Nutrition",
+    title: "Nutrition Blog",
     description: "Evidence-based articles, nutrition tips, and recipes from a registered dietitian.",
     type: "website",
   },
