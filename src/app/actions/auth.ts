@@ -135,7 +135,7 @@ export async function forgotPassword(email: string) {
         });
 
         // Generate reset link
-        const host = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+        const host = process.env.NEXT_PUBLIC_SITE_URL || "https://edwaknutrition.co.ke";
         const resetLink = `${host}/admin/reset-password?token=${token}`;
 
         // Dispatch React Email

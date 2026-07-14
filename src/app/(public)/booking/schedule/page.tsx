@@ -1,5 +1,6 @@
 import { getBlockedDates } from "@/app/actions/blocked-dates"
 import { getCalendarConfig } from "@/app/actions/calendar-config"
+import { getServices } from "@/app/actions/services"
 import { Skeleton } from "@/components/ui/Skeleton"
 import { Suspense } from "react"
 import { ScheduleClient } from "./ScheduleClient"
@@ -7,6 +8,7 @@ import { ScheduleClient } from "./ScheduleClient"
 export default async function SchedulePage() {
   let calendarConfig = { calendarId: "", businessName: "Edwak Nutrition", googleConfig: undefined } as any
   let blockedRes = { success: true, blockedDates: [] as any[] }
+  let services: Awaited<ReturnType<typeof getServices>> = []
   
   try {
     calendarConfig = await getCalendarConfig()
@@ -18,6 +20,12 @@ export default async function SchedulePage() {
     blockedRes = await getBlockedDates()
   } catch (error) {
     console.warn("Schedule page: Failed to fetch blocked dates:", error instanceof Error ? error.message : String(error))
+  }
+  
+  try {
+    services = await getServices()
+  } catch (error) {
+    console.warn("Schedule page: Failed to fetch services:", error instanceof Error ? error.message : String(error))
   }
   
   // Convert Postgres Date objects to easily comparable YYYY-MM-DD strings
@@ -44,6 +52,7 @@ export default async function SchedulePage() {
         businessName={calendarConfig.businessName}
         googleCalendarConfig={calendarConfig.googleConfig}
         blockedDates={blockedDates}
+        services={services}
       />
     </Suspense>
   )

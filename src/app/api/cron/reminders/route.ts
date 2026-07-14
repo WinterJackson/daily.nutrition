@@ -46,7 +46,7 @@ export async function GET(request: Request) {
             primaryColor: settings?.EmailBranding?.primaryColor || "#556B2F",
             accentColor: settings?.EmailBranding?.accentColor || "#E87A1E",
             footerText: settings?.EmailBranding?.footerText || `${settings?.businessName || "Edwak Nutrition"}`,
-            websiteUrl: settings?.EmailBranding?.websiteUrl || process.env.NEXT_PUBLIC_APP_URL || "https://edwakplatform.com",
+            websiteUrl: settings?.EmailBranding?.websiteUrl || process.env.NEXT_PUBLIC_SITE_URL || "https://edwaknutrition.co.ke",
             supportEmail: settings?.EmailBranding?.supportEmail || settings?.contactEmail || "info@edwaknutritionco.com"
         }
 

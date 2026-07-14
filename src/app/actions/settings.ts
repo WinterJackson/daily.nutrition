@@ -21,7 +21,7 @@ export interface CloudinaryConfigData {
 export interface EnvStatusMap {
     DATABASE_URL: boolean
     ENCRYPTION_KEY: boolean
-    NEXT_PUBLIC_APP_URL: boolean
+    NEXT_PUBLIC_SITE_URL: boolean
     RESEND_WEBHOOK_SECRET: boolean
 }
 
@@ -451,7 +451,7 @@ export async function getServerEnvStatus() {
     return {
         DATABASE_URL: !!(process.env.DATABASE_URL || process.env.POSTGRES_URL),
         ENCRYPTION_KEY: !!process.env.ENCRYPTION_KEY,
-        NEXT_PUBLIC_APP_URL: !!process.env.NEXT_PUBLIC_APP_URL,
+        NEXT_PUBLIC_SITE_URL: !!process.env.NEXT_PUBLIC_SITE_URL,
         RESEND_WEBHOOK_SECRET: !!process.env.RESEND_WEBHOOK_SECRET,
     }
 }

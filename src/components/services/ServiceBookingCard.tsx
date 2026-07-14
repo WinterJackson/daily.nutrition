@@ -3,7 +3,7 @@
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent } from "@/components/ui/Card"
 import { ServiceIcon as ServiceIconComponent } from "@/components/ui/ServiceIcon"
-import { pricing } from "@/lib/data"
+// Removed pricing import
 import { cn } from "@/lib/utils"
 import { Calendar, CheckCircle2, Clock, Globe, MapPin, Sparkles, Video } from "lucide-react"
 import Link from "next/link"
@@ -15,6 +15,8 @@ interface ServiceBookingCardProps {
   serviceColor: string
   serviceBgColor: string
   ServiceIcon: string
+  priceVirtual: number | null
+  priceInPerson: number | null
 }
 
 const serviceMessages: Record<string, { headline: string; benefit: string; prep: string }> = {
@@ -45,13 +47,14 @@ export function ServiceBookingCard({
   serviceTitle, 
   serviceColor, 
   serviceBgColor,
-  ServiceIcon 
+  ServiceIcon,
+  priceVirtual,
+  priceInPerson,
 }: ServiceBookingCardProps) {
   const [sessionType, setSessionType] = useState<"virtual" | "in-person">("virtual")
   const message = serviceMessages[serviceId] || serviceMessages["general-counselling"]
   
-  // Use service-specific pricing for cancer and diabetes, default for others
-  const servicePricing = serviceId === "cancer-nutrition" ? pricing.cancer : serviceId === "diabetes-management" ? pricing.diabetes : pricing.default
+  const servicePricing = { virtual: priceVirtual, inPerson: priceInPerson }
   const isDiabetes = serviceId === "diabetes-management"
 
   return (
@@ -92,7 +95,7 @@ export function ServiceBookingCard({
               <p className="text-sm font-semibold text-olive dark:text-off-white">Virtual</p>
               <p className="text-xs text-neutral-500">via Google Meet</p>
               <p className="text-lg font-bold text-brand-green mt-2">
-                  {serviceId === "discovery-call" ? "Free" : `Ksh ${servicePricing.virtual.toLocaleString()}`}
+                  {serviceId === "discovery-call" ? "Free" : (servicePricing.virtual != null ? `Ksh ${servicePricing.virtual.toLocaleString()}` : "Contact us")}
               </p>
             </button>
             
@@ -109,7 +112,7 @@ export function ServiceBookingCard({
                 <MapPin className={cn("w-5 h-5 mb-2", sessionType === "in-person" ? "text-brand-green" : "text-neutral-400")} />
                 <p className="text-sm font-semibold text-olive dark:text-off-white">In-Person</p>
                 <p className="text-xs text-neutral-500">PMC, Parklands</p>
-                <p className="text-lg font-bold text-brand-green mt-2">Ksh {servicePricing.inPerson.toLocaleString()}</p>
+                <p className="text-lg font-bold text-brand-green mt-2">{servicePricing.inPerson != null ? `Ksh ${servicePricing.inPerson.toLocaleString()}` : "Contact us"}</p>
                 </button>
             )}
           </div>

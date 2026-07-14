@@ -58,7 +58,7 @@ export async function inviteStaffMember(email: string, name: string, role: strin
         });
 
         // Generate setup link
-        const host = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+        const host = process.env.NEXT_PUBLIC_SITE_URL || "https://edwaknutrition.co.ke";
         const setupLink = `${host}/admin/setup-account?token=${token}`;
 
         // Get branding settings

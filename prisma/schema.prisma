@@ -25,6 +25,7 @@ enum BookingStatus {
   COMPLETED
   CANCELLED
   NO_SHOW
+  EXPIRED
 }
 
 enum NotificationPriority {
@@ -209,6 +210,8 @@ model Booking {
   bookingStatus BookingStatus @default(PENDING) @map("booking_status")
 
   notes                String? @db.Text
+  expectedAmount       Int?
+  paymentDeadline      DateTime?
   amountPaid           Int? // Snapshot of Revenue confirmed by Admin Admin Dashboard.
   googleEventId        String? @unique
   encryptedMeetLink    String?

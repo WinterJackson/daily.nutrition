@@ -14,6 +14,7 @@ interface BookingConfirmationProps {
   rescheduleLink?: string;
   referenceCode?: string;
   sessionType?: "virtual" | "in-person";
+  expectedAmount?: number | null;
   branding: EmailBrandingData;
 }
 
@@ -25,6 +26,7 @@ export const BookingConfirmationEmail = ({
   meetLink = "",
   referenceCode = "DN-123456",
   sessionType = "virtual",
+  expectedAmount,
   branding
 }: BookingConfirmationProps) => {
   const isVirtual = sessionType === "virtual";
@@ -67,8 +69,19 @@ export const BookingConfirmationEmail = ({
                 <Text className="m-0 text-olive font-bold uppercase text-xs mb-2 mt-4">
                     Reference Code
                 </Text>
-                <Text className="m-0 text-lg font-mono font-semibold">
+                <Text className="m-0 text-lg font-mono font-semibold mb-4">
                     {referenceCode}
+                </Text>
+            </>
+        )}
+        
+        {expectedAmount != null && (
+            <>
+                <Text className="m-0 text-olive font-bold uppercase text-xs mb-2 mt-4">
+                    Amount to Pay
+                </Text>
+                <Text className="m-0 text-lg font-semibold text-brand-green">
+                    Ksh {expectedAmount.toLocaleString()}
                 </Text>
             </>
         )}

@@ -165,7 +165,7 @@ export async function dispatchCampaign(campaignId: string) {
 
         const crypto = await import("crypto")
         const secret = process.env.ENCRYPTION_KEY || "fallback_secret_key_for_dev_only"
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://edwaknutrition.co.ke"
+        const appUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://edwaknutrition.co.ke"
 
         const emailsToSend = subscribers.map(sub => {
             const token = crypto.createHmac("sha256", secret).update(sub.email).digest("hex")

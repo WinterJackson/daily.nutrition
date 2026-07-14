@@ -3,16 +3,27 @@
 import { BookingWidget } from "@/components/booking/BookingWidget";
 import { AnimatedBackground } from "@/components/ui/AnimatedBackground";
 import { Button } from "@/components/ui/Button";
-import { pricing, services } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { ArrowLeft, Calendar, Check, Clock, Globe, Info, MapPin } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 
+interface Service {
+  id: string
+  slug: string
+  title: string
+  icon: string
+  priceVirtual: number | null
+  priceInPerson: number | null
+  bgColor: string
+  color: string
+}
+
 interface ScheduleClientProps {
   calendarId: string
   businessName: string
   blockedDates: string[]
+  services: Service[]
   googleCalendarConfig?: {
     eventDuration: number
     bufferTime: number
@@ -48,7 +59,7 @@ const PREP_CHECKLISTS: Record<string, string[]> = {
   ]
 }
 
-export function ScheduleClient({ calendarId, businessName, blockedDates, googleCalendarConfig }: ScheduleClientProps) {
+export function ScheduleClient({ calendarId, businessName, blockedDates, services, googleCalendarConfig }: ScheduleClientProps) {
   const searchParams = useSearchParams()
   const router = useRouter()
 
@@ -67,8 +78,9 @@ export function ScheduleClient({ calendarId, businessName, blockedDates, googleC
   const sessionType = isDiscovery ? "virtual" : (rawSessionType || "virtual")
 
   // Pricing Strategy
-  const servicePricing = isDiabetes ? pricing.diabetes : pricing.default
-  const currentPrice = isDiscovery ? 0 : (sessionType === "in-person" ? servicePricing.inPerson : servicePricing.virtual)
+  const currentPrice = isDiscovery 
+    ? 0 
+    : (sessionType === "in-person" ? service?.priceInPerson : service?.priceVirtual) ?? 0
 
   const prepList = PREP_CHECKLISTS[service?.id || ""] || PREP_CHECKLISTS["general-counselling"]
 

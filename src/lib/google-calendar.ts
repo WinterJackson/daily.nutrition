@@ -124,7 +124,7 @@ export async function getAvailableSlots(dateStr: string): Promise<TimeSlotAvaila
                 lt: workingEnd
             },
             bookingStatus: {
-                not: "CANCELLED"
+                notIn: ["CANCELLED", "EXPIRED"]
             },
             deletedAt: null
         },

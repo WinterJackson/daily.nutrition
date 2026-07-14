@@ -140,6 +140,18 @@ export async function bookAppointment(data: {
         // Ensure we handle defaults if new fields are missing (though they are required in type)
         const clientTimezone = data.clientTimezone || "Africa/Nairobi"
 
+        // Fetch service to snapshot the price at booking time
+        const bookedService = data.serviceId ? await prisma.service.findUnique({
+            where: { id: data.serviceId },
+            select: { priceVirtual: true, priceInPerson: true }
+        }) : null
+
+        const expectedAmount = bookedService
+            ? (data.sessionType === "in-person" ? bookedService.priceInPerson : bookedService.priceVirtual)
+            : null
+
+        const paymentDeadline = new Date(Date.now() + 45 * 60 * 1000) // 45 minutes
+
         try {
             await prisma.booking.create({
                 data: {
@@ -156,7 +168,9 @@ export async function bookAppointment(data: {
                     encryptedMeetLink: encryptedMeetLink,
                     sessionType: data.sessionType || "virtual",
                     referenceCode: referenceCode,
-                    clientTimezone: clientTimezone
+                    clientTimezone: clientTimezone,
+                    expectedAmount: expectedAmount,
+                    paymentDeadline: paymentDeadline
                 }
             })
         } catch (dbErr) {
@@ -243,7 +257,8 @@ export async function bookAppointment(data: {
                             time: `${clientFormattedTime} (${clientTimezone})`,
                             referenceCode: referenceCode,
                             sessionType: data.sessionType || "virtual",
-                            branding: branding
+                            branding: branding,
+                            expectedAmount: expectedAmount
                         })
                     })
                     await logEmailAttempt({ recipientEmail: data.clientEmail, subject: emailSubject, context: "BOOKING_CONFIRMATION", entityId: referenceCode, success: true })

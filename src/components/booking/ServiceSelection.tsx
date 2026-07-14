@@ -2,7 +2,7 @@
 
 import { Button } from "@/components/ui/Button";
 import { ServiceIcon } from "@/components/ui/ServiceIcon";
-import { pricing } from "@/lib/data";
+import { services as defaultServices } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, Globe, MapPin, Sparkles } from "lucide-react";
 import Image from "next/image";
@@ -19,6 +19,8 @@ interface Service {
     color: string;
     bgColor: string;
     image?: string | null;
+    priceVirtual: number | null;
+    priceInPerson: number | null;
 }
 
 interface ServiceSelectionProps {
@@ -91,16 +93,27 @@ export function ServiceSelection({
             )}
 
             {/* Pricing Display */}
-            <div className="text-center space-y-2">
-                <p className="text-3xl md:text-4xl lg:text-5xl font-bold font-serif text-olive dark:text-off-white">
-                    {selectedServiceId === "discovery-call"
-                        ? "Free"
-                        : `Ksh ${sessionType === "virtual" ? pricing.default.virtual.toLocaleString() : pricing.default.inPerson.toLocaleString()}`}
-                </p>
-                {selectedServiceId === "discovery-call"
-                    ? "5-15 Minute complimentary consultation"
-                    : `per 45-60 minute ${sessionType} consultation`}
-            </div>
+            {(() => {
+                const selectedService = visibleServices.find((s) => s.id === selectedServiceId);
+                const price = selectedService
+                    ? (sessionType === "virtual" ? selectedService.priceVirtual : selectedService.priceInPerson)
+                    : null;
+
+                return (
+                    <div className="text-center space-y-2">
+                        <p className="text-3xl md:text-4xl lg:text-5xl font-bold font-serif text-olive dark:text-off-white">
+                            {selectedServiceId === "discovery-call"
+                                ? "Free"
+                                : price != null
+                                    ? `Ksh ${price.toLocaleString()}`
+                                    : "Select a service"}
+                        </p>
+                        {selectedServiceId === "discovery-call"
+                            ? "5-15 Minute complimentary consultation"
+                            : `per 45-60 minute ${sessionType} consultation`}
+                    </div>
+                );
+            })()}
 
             {/* Featured Service (Discovery Call) */}
             {discoveryService && (

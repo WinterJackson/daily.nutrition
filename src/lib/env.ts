@@ -16,6 +16,9 @@ export const envSchema = z.object({
     JWT_SECRET: z.string().min(32, "JWT_SECRET must be at least 32 characters"),
     ENCRYPTION_KEY: z.string().min(32, "ENCRYPTION_KEY must be at least 32 characters"),
 
+    // Domain — required for SEO, emails, and transactional links
+    NEXT_PUBLIC_SITE_URL: z.string().url("NEXT_PUBLIC_SITE_URL must be a valid URL (e.g. https://edwaknutrition.co.ke)"),
+
     // Optional — graceful if missing
     NEXTAUTH_URL: z.string().url().optional(),
     NODE_ENV: z.enum(["development", "production", "test"]).default("development"),

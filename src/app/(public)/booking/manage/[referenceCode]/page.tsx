@@ -212,6 +212,14 @@ export default function BookingDetailPage() {
                                         Your booking is currently pending. To confirm this reservation and prevent it from automatically expiring, please complete payment via M-Pesa.
                                     </p>
                                     <div className="bg-white dark:bg-charcoal p-4 rounded-xl border border-amber-100 dark:border-amber-900/20 space-y-3">
+                                        {booking.expectedAmount != null && (
+                                            <div className="mb-4 pb-4 border-b border-amber-200 dark:border-amber-900/30">
+                                                <p className="text-xs uppercase font-bold text-amber-700 dark:text-amber-400">Amount to Pay</p>
+                                                <p className="font-mono text-2xl font-bold text-amber-900 dark:text-amber-300">
+                                                    Ksh {booking.expectedAmount.toLocaleString()}
+                                                </p>
+                                            </div>
+                                        )}
                                         {settings.paymentPaybill && (
                                             <div>
                                                 <p className="text-xs uppercase font-bold text-caption">M-Pesa Paybill</p>

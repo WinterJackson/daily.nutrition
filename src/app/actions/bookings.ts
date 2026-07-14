@@ -596,8 +596,8 @@ export async function approvePaymentAndSendLink(id: string, manualMeetLink?: str
         if (!booking) return { success: false, error: "Booking not found" }
         if (booking.bookingStatus !== "PENDING") return { success: false, error: "Booking is not pending" }
 
-        let finalAmountPaid = null
-        if (booking.service) {
+        let finalAmountPaid = booking.expectedAmount
+        if (finalAmountPaid == null && booking.service) {
             finalAmountPaid = booking.sessionType === "in-person" || booking.sessionType === "IN_PERSON"
                 ? booking.service.priceInPerson
                 : booking.service.priceVirtual

@@ -22,7 +22,7 @@ export const BookingCancellationEmail = ({
   time = "10:00 AM",
   referenceCode,
   branding,
-  bookingUrl = "http://localhost:3000/booking"
+  bookingUrl = "https://edwaknutrition.co.ke/booking"
 }: BookingCancellationProps) => {
   const previewText = `Booking Cancelled: ${serviceName} with Edwak Nutrition`;
 

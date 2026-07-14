@@ -1172,9 +1172,9 @@ export default function SettingsClient({
                     className="md:col-span-1"
                 />
                 <StatusCard 
-                    envKey="NEXT_PUBLIC_APP_URL" 
-                    isConfigured={envStatus.NEXT_PUBLIC_APP_URL}
-                    description="The absolute domain resolution pathing used by internal Next.js components."
+                    envKey="NEXT_PUBLIC_SITE_URL" 
+                    isConfigured={envStatus.NEXT_PUBLIC_SITE_URL}
+                    description="The canonical production domain used for SEO metadata, password reset links, staff invites, and transactional emails."
                     className="md:col-span-1"
                 />
                 <StatusCard 

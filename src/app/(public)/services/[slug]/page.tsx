@@ -177,6 +177,8 @@ export default async function ServicePage({ params }: Props) {
                                 serviceColor={service.color}
                                 serviceBgColor={service.bgColor}
                                 ServiceIcon={service.icon}
+                                priceVirtual={service.priceVirtual}
+                                priceInPerson={service.priceInPerson}
                             />
                         </div>
                     </div>

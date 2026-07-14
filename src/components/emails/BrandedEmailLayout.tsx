@@ -42,7 +42,7 @@ export const BrandedEmailLayout = ({
     children,
 }: BrandedEmailLayoutProps) => {
     const { primaryColor, accentColor, logoUrl, footerText, websiteUrl, supportEmail, clinicLocation, contactPhone, paymentPaybill, paymentAccountNumber, paymentAccountName } = branding;
-    const appBaseUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const appBaseUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://edwaknutrition.co.ke";
     const resolvedLogoUrl = logoUrl || `${appBaseUrl}/logo.png`;
 
     return (
