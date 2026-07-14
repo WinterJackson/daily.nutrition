@@ -26,6 +26,8 @@ interface Booking {
   clientTimezone: string
   notes: string | null
   meetLink?: string
+  mpesaTransactionCode?: string | null
+  expectedAmount?: number | null
   createdAt: Date
   updatedAt: Date
 }
@@ -256,8 +258,12 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
   }
 
   // Server-side filtering — bookings are already filtered by the server action
-  // No client-side filtering needed
-  const filteredBookings = bookings
+  // Sort PAYMENT_SUBMITTED above PENDING
+  const filteredBookings = [...bookings].sort((a, b) => {
+    if (a.status === "PAYMENT_SUBMITTED" && b.status !== "PAYMENT_SUBMITTED") return -1;
+    if (b.status === "PAYMENT_SUBMITTED" && a.status !== "PAYMENT_SUBMITTED") return 1;
+    return 0;
+  });
 
   const getStatusBadge = (status: string) => {
     switch (status) {
@@ -294,6 +300,20 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
           <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ring-inset bg-yellow-50 text-yellow-600 ring-yellow-200 dark:bg-yellow-900/20 dark:text-yellow-400 dark:ring-yellow-800">
             <Clock className="w-3 h-3 mr-1" />
             Pending
+          </span>
+        )
+      case "PAYMENT_SUBMITTED":
+        return (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ring-inset bg-blue-100 text-blue-700 ring-blue-300 dark:bg-blue-900/40 dark:text-blue-300 dark:ring-blue-700">
+            <CheckCircle className="w-3 h-3 mr-1" />
+            Payment Submitted
+          </span>
+        )
+      case "EXPIRED":
+        return (
+          <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ring-1 ring-inset bg-gray-50 text-gray-500 ring-gray-200 dark:bg-gray-900/20 dark:text-gray-400 dark:ring-gray-700">
+            <Clock className="w-3 h-3 mr-1" />
+            Expired
           </span>
         )
       default:
@@ -348,9 +368,11 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
           >
             <option value="ALL">All Statuses</option>
             <option value="PENDING">Pending</option>
+            <option value="PAYMENT_SUBMITTED">Payment Submitted</option>
             <option value="CONFIRMED">Confirmed</option>
             <option value="COMPLETED">Completed</option>
             <option value="CANCELLED">Cancelled</option>
+            <option value="EXPIRED">Expired</option>
             <option value="NO_SHOW">No Show</option>
           </select>
           <select
@@ -804,8 +826,24 @@ export function BookingsClient({ initialBookings, totalCount, currentPage, pageS
               </>
             )}
 
-            {selectedBooking?.status === "PENDING" && (
+            {(selectedBooking?.status === "PENDING" || selectedBooking?.status === "PAYMENT_SUBMITTED") && (
               <div className="flex flex-col gap-3 w-full">
+                {selectedBooking?.status === "PAYMENT_SUBMITTED" && selectedBooking?.mpesaTransactionCode && (
+                  <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-200 dark:border-blue-800/30">
+                    <label className="text-xs font-bold uppercase text-blue-800 dark:text-blue-400 tracking-wider flex items-center gap-2 mb-1">
+                      M-Pesa Transaction Code
+                    </label>
+                    <div className="font-mono text-2xl font-bold text-blue-900 dark:text-blue-300 tracking-wider">
+                      {selectedBooking.mpesaTransactionCode}
+                    </div>
+                    {selectedBooking.expectedAmount != null && (
+                      <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-800/30">
+                        <label className="text-xs font-bold uppercase text-blue-800 dark:text-blue-400 tracking-wider">Expected Amount</label>
+                        <div className="font-semibold text-lg text-blue-900 dark:text-blue-300">Ksh {selectedBooking.expectedAmount.toLocaleString()}</div>
+                      </div>
+                    )}
+                  </div>
+                )}
                 {selectedBooking.sessionType === "virtual" && (
                   <div className="space-y-2 surface-secondary p-4 rounded-xl border border-neutral-100 dark:border-white/5">
                     <label className="text-xs font-bold uppercase text-neutral-500 tracking-wider flex items-center gap-2">

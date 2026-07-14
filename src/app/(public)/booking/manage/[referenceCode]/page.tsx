@@ -2,6 +2,7 @@
 
 import { cancelBooking, checkCanReschedule, getBookingDetails, rescheduleBooking } from "@/app/actions/booking-management"
 import { fetchAvailability } from "@/app/actions/google-calendar"
+import { PaymentSubmissionForm } from "@/components/booking/PaymentSubmissionForm"
 import { Button } from "@/components/ui/Button"
 import { Card, CardContent } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
@@ -146,6 +147,7 @@ export default function BookingDetailPage() {
     const isCancelled = booking.bookingStatus === "CANCELLED" || booking.status === "CANCELLED"
     const isCompleted = booking.bookingStatus === "COMPLETED" || booking.status === "COMPLETED"
     const isPending = booking.bookingStatus === "PENDING" || booking.status === "PENDING"
+    const isPaymentSubmitted = booking.bookingStatus === "PAYMENT_SUBMITTED" || booking.status === "PAYMENT_SUBMITTED"
     const scheduledDate = new Date(booking.scheduledAt)
 
     return (
@@ -209,7 +211,7 @@ export default function BookingDetailPage() {
                                         Action Required: Awaiting Payment
                                     </h3>
                                     <p className="text-amber-700 dark:text-amber-400 text-sm mb-4">
-                                        Your booking is currently pending. To confirm this reservation and prevent it from automatically expiring, please complete payment via M-Pesa.
+                                        Your booking is currently pending. Complete payment and submit your M-Pesa code within 45 minutes to keep this slot.
                                     </p>
                                     <div className="bg-white dark:bg-charcoal p-4 rounded-xl border border-amber-100 dark:border-amber-900/20 space-y-3">
                                         {booking.expectedAmount != null && (
@@ -239,8 +241,18 @@ export default function BookingDetailPage() {
                                             </div>
                                         )}
                                     </div>
-                                    <p className="text-amber-700 dark:text-amber-400 text-xs mt-4">
-                                        Once your payment is manually verified by our team, you will receive a confirmation email with instructions or a Google Meet link (for virtual sessions).
+                                    <PaymentSubmissionForm referenceCode={booking.referenceCode} />
+                                </div>
+                            )}
+
+                            {isPaymentSubmitted && (
+                                <div className="bg-brand-green/10 border border-brand-green/30 rounded-2xl p-6">
+                                    <h3 className="text-brand-green font-bold text-lg mb-2 flex items-center gap-2">
+                                        <CheckCircle2 className="w-5 h-5" />
+                                        Payment Submitted
+                                    </h3>
+                                    <p className="text-body text-sm mb-4">
+                                        We have received your payment code (<span className="font-mono font-bold text-brand-orange">{booking.mpesaTransactionCode}</span>). Our team is verifying it and will confirm your booking shortly.
                                     </p>
                                 </div>
                             )}

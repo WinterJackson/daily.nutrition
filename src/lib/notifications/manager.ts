@@ -7,7 +7,7 @@ import { INTERNAL_getSecret } from "@/lib/ai/secrets";
 import { prisma } from "@/lib/prisma";
 import { Resend } from "resend";
 
-export type AdminNotificationType = "NEW_BOOKING" | "PASSWORD_CHANGED" | "BOOKING_CANCELLED" | "BOOKING_RESCHEDULED";
+export type AdminNotificationType = "NEW_BOOKING" | "PASSWORD_CHANGED" | "BOOKING_CANCELLED" | "BOOKING_RESCHEDULED" | "PAYMENT_SUBMITTED";
 
 interface NotificationPayload {
     newBooking?: {
@@ -39,6 +39,12 @@ interface NotificationPayload {
         newDate: string;
         newTime: string;
     };
+    paymentSubmitted?: {
+        clientName: string;
+        referenceCode: string;
+        amount: number | null;
+        transactionCode: string;
+    };
 }
 
 export const NotificationManager = {
@@ -66,6 +72,7 @@ export const NotificationManager = {
                 "PASSWORD_CHANGED": true, // Always send security alerts
                 "BOOKING_CANCELLED": prefs?.emailOnCancellation ?? true,
                 "BOOKING_RESCHEDULED": prefs?.emailOnReschedule ?? true,
+                "PAYMENT_SUBMITTED": prefs?.emailOnPaymentSubmitted ?? true,
             };
 
             if (!shouldSendMap[type]) {
@@ -101,6 +108,8 @@ export const NotificationManager = {
             //   System alerts (PASSWORD_CHANGED) → NO replyTo header
             //     → Gmail falls back to from: no-reply@edwaknutrition.co.ke (prevents accidental replies)
             //
+            const { AdminPaymentSubmittedEmail } = await import("@/components/emails/AdminPaymentSubmittedEmail");
+
             let subject = "";
             let reactElement: React.ReactElement | null = null;
             let htmlContent = "";
@@ -150,6 +159,16 @@ export const NotificationManager = {
                         reactElement = AdminBookingRescheduledEmail({
                             branding,
                             ...payload.bookingRescheduled,
+                            dashboardUrl: `${branding.websiteUrl}/admin/bookings`
+                        });
+                    }
+                    break;
+                case "PAYMENT_SUBMITTED":
+                    if (payload.paymentSubmitted) {
+                        subject = `Payment Submitted: ${payload.paymentSubmitted.clientName} (${payload.paymentSubmitted.transactionCode})`;
+                        reactElement = AdminPaymentSubmittedEmail({
+                            branding,
+                            ...payload.paymentSubmitted,
                             dashboardUrl: `${branding.websiteUrl}/admin/bookings`
                         });
                     }

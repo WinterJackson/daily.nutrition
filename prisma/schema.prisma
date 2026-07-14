@@ -21,6 +21,7 @@ enum BookingType {
 
 enum BookingStatus {
   PENDING
+  PAYMENT_SUBMITTED
   CONFIRMED
   COMPLETED
   CANCELLED
@@ -212,6 +213,8 @@ model Booking {
   notes                String? @db.Text
   expectedAmount       Int?
   paymentDeadline      DateTime?
+  mpesaTransactionCode String?
+  paymentSubmittedAt   DateTime?
   amountPaid           Int? // Snapshot of Revenue confirmed by Admin Admin Dashboard.
   googleEventId        String? @unique
   encryptedMeetLink    String?
@@ -511,9 +514,10 @@ model ResendConfig {
 model NotificationPreferences {
   id                  String       @id @default("default")
   settingsId          String       @unique
-  emailOnNewBooking   Boolean      @default(true)
-  emailOnCancellation Boolean      @default(true)
-  emailOnReschedule   Boolean      @default(true)
+  emailOnNewBooking       Boolean      @default(true)
+  emailOnCancellation     Boolean      @default(true)
+  emailOnReschedule       Boolean      @default(true)
+  emailOnPaymentSubmitted Boolean      @default(true)
   emailDailyAgenda    Boolean      @default(false)
   agendaTime          String       @default("08:00")
   createdAt           DateTime     @default(now())

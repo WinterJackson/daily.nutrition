@@ -43,12 +43,17 @@ The platform requires automated CRON schedules for checking and grooming. Vercel
     {
        "path": "/api/cron/trend-scout",
        "schedule": "0 0 * * 1"
+    },
+    {
+       "path": "/api/cron/expire-bookings",
+       "schedule": "*/10 * * * *"
     }
   ]
 }
 ```
 * **`/api/cron/reminders`**: Checks PostgreSQL for upcoming `Booking` sessions and leverages the Resend API to dispatch customized 24-hour and 1-hour secure meeting links.
 * **`/api/cron/trend-scout`**: (Automated) Triggers the Google Gemini pipeline to crawl search logic algorithms and inject high SEO scoring drafts into the `BlogIdea` database table.
+* **`/api/cron/expire-bookings`**: Automatically sweeps for unpaid pending bookings past their 45-minute payment deadline to release calendar slots and notify clients.
 
 ## Static Caching & Revalidation
 

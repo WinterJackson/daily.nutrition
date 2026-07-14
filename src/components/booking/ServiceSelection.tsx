@@ -2,7 +2,6 @@
 
 import { Button } from "@/components/ui/Button";
 import { ServiceIcon } from "@/components/ui/ServiceIcon";
-import { services as defaultServices } from "@/lib/data";
 import { cn } from "@/lib/utils";
 import { CheckCircle2, Globe, MapPin, Sparkles } from "lucide-react";
 import Image from "next/image";

@@ -13,7 +13,7 @@ import { NotificationService } from "@/lib/services/notification-service"
 import { revalidatePath, revalidateTag } from "next/cache"
 import { Resend } from "resend"
 
-export type BookingStatus = "PENDING" | "CONFIRMED" | "COMPLETED" | "CANCELLED" | "NO_SHOW"
+export type BookingStatus = "PENDING" | "PAYMENT_SUBMITTED" | "CONFIRMED" | "COMPLETED" | "CANCELLED" | "EXPIRED" | "NO_SHOW"
 
 export interface BookingData {
     clientName: string
@@ -594,7 +594,9 @@ export async function approvePaymentAndSendLink(id: string, manualMeetLink?: str
             include: { service: { select: { priceVirtual: true, priceInPerson: true } } }
         })
         if (!booking) return { success: false, error: "Booking not found" }
-        if (booking.bookingStatus !== "PENDING") return { success: false, error: "Booking is not pending" }
+        if (booking.bookingStatus !== "PENDING" && booking.bookingStatus !== "PAYMENT_SUBMITTED") {
+            return { success: false, error: "Booking is not awaiting payment verification" }
+        }
 
         let finalAmountPaid = booking.expectedAmount
         if (finalAmountPaid == null && booking.service) {
@@ -763,4 +765,61 @@ export async function adminUpdateMeetLink(id: string, newMeetLink: string) {
         console.error("Update Meet Link Error:", error)
         return { success: false, error: "Failed to update link" }
     }
+}
+
+export async function submitPaymentProof(referenceCode: string, transactionCode: string) {
+    const cleaned = transactionCode.trim().toUpperCase()
+    if (!/^[A-Z0-9]{10}$/.test(cleaned)) {
+        return { success: false, error: "That doesn't look like a valid M-Pesa transaction code. Check the confirmation SMS and try again." }
+    }
+
+    const booking = await prisma.booking.findUnique({ where: { referenceCode } })
+    if (!booking || booking.bookingStatus !== "PENDING") {
+        return { success: false, error: "This booking can no longer accept a payment code." }
+    }
+
+    await prisma.booking.update({
+        where: { referenceCode },
+        data: {
+            mpesaTransactionCode: cleaned,
+            paymentSubmittedAt: new Date(),
+            bookingStatus: "PAYMENT_SUBMITTED",
+        },
+    })
+
+    logAudit({
+        action: "BOOKING_STATUS_UPDATED",
+        entity: "Booking",
+        entityId: booking.id,
+        metadata: {
+            referenceCode: booking.referenceCode,
+            status: "PAYMENT_SUBMITTED",
+            mpesaTransactionCode: cleaned
+        },
+    })
+
+    await NotificationManager.sendAdminNotification("PAYMENT_SUBMITTED", {
+        paymentSubmitted: {
+            clientName: booking.clientName,
+            referenceCode: booking.referenceCode || booking.id,
+            amount: booking.expectedAmount,
+            transactionCode: cleaned,
+        }
+    })
+
+    // In-App Bell Notification — broadcast to all admin users
+    await NotificationService.broadcastToRoles({
+        roles: ["SUPER_ADMIN", "ADMIN"],
+        type: "INFO",
+        title: "Payment Submitted",
+        message: `${booking.clientName} has submitted a payment code for their booking.`,
+        priority: "NORMAL",
+        link: `/admin/bookings`,
+        expiresInDays: 7
+    }).catch(console.error)
+
+    revalidatePath(`/booking/manage/${referenceCode}`)
+    revalidatePath("/admin/bookings")
+    
+    return { success: true }
 }
