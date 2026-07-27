@@ -198,6 +198,7 @@ export async function createPost(data: { title: string; content: string; publish
 
         revalidatePath("/admin/blog")
         revalidatePath("/blog")
+        revalidatePath("/blog/[slug]", "page")
         return { success: true, post }
     } catch (error) {
         console.error("Failed to create post:", error)
@@ -248,7 +249,7 @@ export async function updatePost(id: string, data: { title: string; content: str
 
         revalidatePath("/admin/blog")
         revalidatePath("/blog")
-        revalidatePath(`/blog/${post.slug}`)
+        revalidatePath("/blog/[slug]", "page")
         return { success: true, post }
     } catch (error) {
         console.error("Failed to update post:", error)
@@ -276,6 +277,7 @@ export async function deletePost(id: string) {
 
         revalidatePath("/admin/blog")
         revalidatePath("/blog")
+        revalidatePath("/blog/[slug]", "page")
         return { success: true }
     } catch (error) {
         console.error("Failed to delete post:", error)

@@ -207,7 +207,7 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
   const { slug } = await params
   const post = await getPostBySlug(slug)
 
-  if (!post || !post.published) {
+  if (!post || !post.published || post.deletedAt) {
     notFound()
   }
 
