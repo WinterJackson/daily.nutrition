@@ -362,7 +362,7 @@ export async function updateSettings(data: SettingsData) {
         }
 
         revalidatePath("/", "layout")
-        revalidateTag(GLOBAL_SETTINGS_TAG, "default")
+        revalidateTag(GLOBAL_SETTINGS_TAG)
 
         return { success: true, settings }
     } catch {

@@ -576,7 +576,15 @@ export default function SettingsClient({
                           {settings.aboutImageOne ? "Change Image" : "Select Image"}
                        </Button>
                        {settings.aboutImageOne && (
-                          <Button type="button" variant="ghost" onClick={() => handleChange("aboutImageOne", "")} className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 px-3">
+                          <Button type="button" variant="ghost" onClick={async () => {
+                            handleChange("aboutImageOne", "")
+                            const res = await updateSettings({ ...settings, aboutImageOne: "" })
+                            if (res?.success) {
+                              setSettings(prev => ({ ...prev, version: (prev.version || 0) + 1 }))
+                              setSaveSuccess(true)
+                              setTimeout(() => setSaveSuccess(false), 3000)
+                            }
+                          }} className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 px-3">
                             <Trash2 className="w-4 h-4" />
                           </Button>
                        )}
@@ -603,7 +611,15 @@ export default function SettingsClient({
                           {settings.aboutImageTwo ? "Change Image" : "Select Image"}
                        </Button>
                        {settings.aboutImageTwo && (
-                          <Button type="button" variant="ghost" onClick={() => handleChange("aboutImageTwo", "")} className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 px-3">
+                          <Button type="button" variant="ghost" onClick={async () => {
+                            handleChange("aboutImageTwo", "")
+                            const res = await updateSettings({ ...settings, aboutImageTwo: "" })
+                            if (res?.success) {
+                              setSettings(prev => ({ ...prev, version: (prev.version || 0) + 1 }))
+                              setSaveSuccess(true)
+                              setTimeout(() => setSaveSuccess(false), 3000)
+                            }
+                          }} className="text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-500/10 px-3">
                             <Trash2 className="w-4 h-4" />
                           </Button>
                        )}
@@ -616,13 +632,29 @@ export default function SettingsClient({
             <MediaPickerModal 
               open={isMediaPickerOneOpen}
               onOpenChange={setIsMediaPickerOneOpen}
-              onSelect={(url) => handleChange("aboutImageOne", url)}
+              onSelect={async (url) => {
+                handleChange("aboutImageOne", url)
+                const res = await updateSettings({ ...settings, aboutImageOne: url })
+                if (res?.success) {
+                  setSettings(prev => ({ ...prev, version: (prev.version || 0) + 1 }))
+                  setSaveSuccess(true)
+                  setTimeout(() => setSaveSuccess(false), 3000)
+                }
+              }}
               allowedTypes="image"
             />
             <MediaPickerModal 
               open={isMediaPickerTwoOpen}
               onOpenChange={setIsMediaPickerTwoOpen}
-              onSelect={(url) => handleChange("aboutImageTwo", url)}
+              onSelect={async (url) => {
+                handleChange("aboutImageTwo", url)
+                const res = await updateSettings({ ...settings, aboutImageTwo: url })
+                if (res?.success) {
+                  setSettings(prev => ({ ...prev, version: (prev.version || 0) + 1 }))
+                  setSaveSuccess(true)
+                  setTimeout(() => setSaveSuccess(false), 3000)
+                }
+              }}
               allowedTypes="image"
             />
 
