@@ -204,7 +204,7 @@ export async function createPost(data: { title: string; content: string; publish
 
         revalidatePath("/admin/blog")
         revalidatePath("/blog")
-        revalidatePath("/blog/[slug]", "page")
+        revalidatePath(`/blog/${post.slug}`)
         return { success: true, post }
     } catch (error) {
         console.error("Failed to create post:", error)
@@ -261,7 +261,7 @@ export async function updatePost(id: string, data: { title: string; content: str
 
         revalidatePath("/admin/blog")
         revalidatePath("/blog")
-        revalidatePath("/blog/[slug]", "page")
+        revalidatePath(`/blog/${post.slug}`)
         return { success: true, post }
     } catch (error) {
         console.error("Failed to update post:", error)
@@ -275,7 +275,7 @@ export async function deletePost(id: string) {
     if (!session) return { success: false, error: "Unauthorized" }
 
     try {
-        await prisma.blogPost.update({
+        const post = await prisma.blogPost.update({
             where: { id },
             data: { deletedAt: new Date() }
         })
@@ -289,7 +289,7 @@ export async function deletePost(id: string) {
 
         revalidatePath("/admin/blog")
         revalidatePath("/blog")
-        revalidatePath("/blog/[slug]", "page")
+        revalidatePath(`/blog/${post.slug}`)
         return { success: true }
     } catch (error) {
         console.error("Failed to delete post:", error)
@@ -303,6 +303,11 @@ export async function deletePosts(ids: string[]) {
     if (!session) return { success: false, error: "Unauthorized" }
 
     try {
+        const postsToRevalidate = await prisma.blogPost.findMany({ 
+            where: { id: { in: ids } }, 
+            select: { slug: true } 
+        })
+
         await prisma.blogPost.updateMany({
             where: { id: { in: ids } },
             data: { deletedAt: new Date() }
@@ -317,6 +322,8 @@ export async function deletePosts(ids: string[]) {
         })
 
         revalidatePath("/admin/blog")
+        revalidatePath("/blog")
+        postsToRevalidate.forEach(p => revalidatePath(`/blog/${p.slug}`))
         return { success: true }
     } catch (error) {
         console.error("Failed to delete posts:", error)
