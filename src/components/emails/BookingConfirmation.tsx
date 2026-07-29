@@ -15,6 +15,7 @@ interface BookingConfirmationProps {
   referenceCode?: string;
   sessionType?: "virtual" | "in-person";
   expectedAmount?: number | null;
+  isFree?: boolean;
   branding: EmailBrandingData;
 }
 
@@ -27,26 +28,29 @@ export const BookingConfirmationEmail = ({
   referenceCode = "DN-123456",
   sessionType = "virtual",
   expectedAmount,
+  isFree = false,
   branding
 }: BookingConfirmationProps) => {
   const isVirtual = sessionType === "virtual";
-  const previewText = `Action Required: Complete Payment for ${serviceName}`;
+  const previewText = isFree ? `Booking Confirmed: ${serviceName}` : `Action Required: Complete Payment for ${serviceName}`;
 
   return (
     <BrandedEmailLayout
       branding={branding}
       previewText={previewText}
-      heading="Action Required: Complete Payment"
+      heading={isFree ? "Booking Confirmed" : "Action Required: Complete Payment"}
     >
         <Text className="text-black text-[14px] leading-[24px]">
         Hello <strong>{clientName}</strong>,
         </Text>
         <Text className="text-black text-[14px] leading-[24px]">
-        Your reservation for <strong>{serviceName}</strong> is currently <strong>PENDING</strong>.
-        To secure this time slot, please complete your M-Pesa payment using the instructions located in the Secure Payment block at the bottom of this email.
+        Your reservation for <strong>{serviceName}</strong> is currently <strong>{isFree ? "CONFIRMED" : "PENDING"}</strong>.
+        {!isFree && " To secure this time slot, please complete your M-Pesa payment using the instructions located in the Secure Payment block at the bottom of this email."}
         </Text>
         <Text className="text-black text-[14px] leading-[24px]">
-        Once payment is verified by our team, you will receive a final confirmation containing your Google Meet link or check-in instructions.
+        {isFree
+            ? "Our team will reach out with your Google Meet link or check-in instructions shortly before your session."
+            : "Once payment is verified by our team, you will receive a final confirmation containing your Google Meet link or check-in instructions."}
         </Text>
         
         <Section className="bg-offwhite p-6 rounded-lg my-6">
@@ -97,7 +101,7 @@ export const BookingConfirmationEmail = ({
         </Section>
         
         <Text className="text-black text-[14px] leading-[24px]">
-        If you need to cancel this reservation or have any questions, please reply directly to this email. Unpaid slots will be automatically released.
+        If you need to cancel this reservation or have any questions, please reply directly to this email. {!isFree && "Unpaid slots will be automatically released."}
         </Text>
     </BrandedEmailLayout>
   );

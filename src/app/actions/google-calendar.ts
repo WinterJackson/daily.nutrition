@@ -150,7 +150,8 @@ export async function bookAppointment(data: {
             ? (data.sessionType === "in-person" ? bookedService.priceInPerson : bookedService.priceVirtual)
             : null
 
-        const paymentDeadline = new Date(Date.now() + 45 * 60 * 1000) // 45 minutes
+        const isFree = expectedAmount === 0
+        const paymentDeadline = isFree ? null : new Date(Date.now() + 45 * 60 * 1000) // 45 minutes
 
         try {
             await prisma.booking.create({
@@ -162,7 +163,7 @@ export async function bookAppointment(data: {
                     serviceName: data.serviceName,
                     scheduledAt: scheduledAt,
                     duration: duration,
-                    bookingStatus: "PENDING",
+                    bookingStatus: isFree ? "CONFIRMED" : "PENDING",
                     notes: data.notes,
                     googleEventId: googleEvent?.id || undefined,
                     encryptedMeetLink: encryptedMeetLink,
@@ -243,7 +244,9 @@ export async function bookAppointment(data: {
             if (apiKey) {
                 const resend = new Resend(apiKey)
                 const emailMeetLink = meetLink || ""
-                const emailSubject = `Awaiting Payment: ${data.serviceName} (#${referenceCode})`
+                const emailSubject = isFree 
+                    ? `Booking Confirmed: ${data.serviceName} (#${referenceCode})`
+                    : `Awaiting Payment: ${data.serviceName} (#${referenceCode})`
 
                 try {
                     await resend.emails.send({
@@ -258,7 +261,8 @@ export async function bookAppointment(data: {
                             referenceCode: referenceCode,
                             sessionType: data.sessionType || "virtual",
                             branding: branding,
-                            expectedAmount: expectedAmount
+                            expectedAmount: expectedAmount,
+                            isFree: isFree
                         })
                     })
                     await logEmailAttempt({ recipientEmail: data.clientEmail, subject: emailSubject, context: "BOOKING_CONFIRMATION", entityId: referenceCode, success: true })
