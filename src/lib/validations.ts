@@ -29,7 +29,7 @@ export const blogPostSchema = z.object({
     published: z.boolean().default(false),
     status: z.enum(["DRAFT", "IN_REVIEW", "PUBLISHED", "ARCHIVED"]).default("DRAFT"),
     categoryId: z.string().optional().nullable(),
-    image: z.string().url("Must be a valid URL").optional().nullable(),
+    image: z.string().url("Must be a valid URL").optional().nullable().or(z.literal("")),
     metaTitle: z.string().max(60).optional().nullable(),
     metaDescription: z.string().max(160).optional().nullable(),
 })

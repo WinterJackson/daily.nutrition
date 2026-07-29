@@ -290,20 +290,31 @@ export function BlogEditor({ initialData, userRole = "ADMIN" }: BlogEditorProps)
             version: initialData?.version,
         }
 
+        let errorMsg: string | undefined = undefined;
+
         if (initialData?.id) {
             const res = await updatePost(initialData.id, payload)
-            if (!res.success && res.error?.includes("modified by another user")) {
-                setVersionConflict(true)
-                setSavingAction(null)
-                return
+            if (!res.success) {
+                errorMsg = res.error || "Failed to update post"
+                if (res.error?.includes("modified by another user")) {
+                    setVersionConflict(true)
+                }
             }
         } else {
             const res = await createPost(payload)
             if (res.success && res.post) {
                 router.push("/admin/blog")
+                return // Exit early, no need to set state
+            } else if (!res.success) {
+                errorMsg = res.error || "Failed to create post"
             }
         }
-        setLastSaved(new Date())
+
+        if (errorMsg) {
+            alert(errorMsg)
+        } else {
+            setLastSaved(new Date())
+        }
         setSavingAction(null)
     })
   }

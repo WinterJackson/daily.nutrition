@@ -142,7 +142,7 @@ export async function getPost(id: string) {
     }
 }
 
-export async function createPost(data: { title: string; content: string; published: boolean; categoryId?: string; image?: string | null; metaTitle?: string; metaDescription?: string; status?: "DRAFT" | "IN_REVIEW" | "PUBLISHED" | "ARCHIVED" }) {
+export async function createPost(data: { title: string; content: string; published: boolean; categoryId?: string; image?: string | null; metaTitle?: string; metaDescription?: string; status?: "DRAFT" | "IN_REVIEW" | "PUBLISHED" | "ARCHIVED"; category?: string }) {
     const session = await verifySession()
     if (!session) return { success: false, error: "Unauthorized" }
 
@@ -172,6 +172,12 @@ export async function createPost(data: { title: string; content: string; publish
         const plainText = data.content.replace(/[#*_\[\]()>`~-]/g, "").trim()
         const excerpt = plainText.slice(0, 160).trim() + (plainText.length > 160 ? "..." : "")
 
+        let finalCategoryId = data.categoryId
+        if (data.category && !finalCategoryId) {
+            const cat = await prisma.blogCategory.findUnique({ where: { name: data.category } })
+            if (cat) finalCategoryId = cat.id
+        }
+
         const post = await prisma.blogPost.create({
             data: {
                 title: data.title,
@@ -180,7 +186,7 @@ export async function createPost(data: { title: string; content: string; publish
                 content: data.content,
                 published: data.published,
                 status: data.status || (data.published ? "PUBLISHED" : "DRAFT"),
-                categoryId: data.categoryId,
+                categoryId: finalCategoryId,
                 image: data.image,
                 metaTitle: data.metaTitle,
                 metaDescription: data.metaDescription,
@@ -206,7 +212,7 @@ export async function createPost(data: { title: string; content: string; publish
     }
 }
 
-export async function updatePost(id: string, data: { title: string; content: string; published: boolean; categoryId?: string; image?: string | null; metaTitle?: string; metaDescription?: string; version?: number; status?: "DRAFT" | "IN_REVIEW" | "PUBLISHED" | "ARCHIVED" }) {
+export async function updatePost(id: string, data: { title: string; content: string; published: boolean; categoryId?: string; image?: string | null; metaTitle?: string; metaDescription?: string; version?: number; status?: "DRAFT" | "IN_REVIEW" | "PUBLISHED" | "ARCHIVED"; category?: string }) {
     const session = await verifySession()
     if (!session) return { success: false, error: "Unauthorized" }
 
@@ -223,6 +229,12 @@ export async function updatePost(id: string, data: { title: string; content: str
         const plainText = data.content.replace(/[#*_\[\]()>`~-]/g, "").trim()
         const excerpt = plainText.slice(0, 160).trim() + (plainText.length > 160 ? "..." : "")
 
+        let finalCategoryId = data.categoryId
+        if (data.category && !finalCategoryId) {
+            const cat = await prisma.blogCategory.findUnique({ where: { name: data.category } })
+            if (cat) finalCategoryId = cat.id
+        }
+
         const post = await prisma.blogPost.update({
             where: { id },
             data: {
@@ -231,7 +243,7 @@ export async function updatePost(id: string, data: { title: string; content: str
                 content: data.content,
                 published: data.published,
                 status: data.status || (data.published ? "PUBLISHED" : "DRAFT"),
-                categoryId: data.categoryId,
+                categoryId: finalCategoryId,
                 image: data.image,
                 metaTitle: data.metaTitle,
                 metaDescription: data.metaDescription,
