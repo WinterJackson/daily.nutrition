@@ -50,6 +50,9 @@ export function AboutClient({ images }: AboutClientProps) {
             <p>
             For over 8 years, I have worked closely with people of all ages to provide support, education, and the necessary resources to make long-lasting changes in their eating and overall health.
             </p>
+            <p>
+            Whether you're looking to improve your overall health, better manage your blood glucose levels, reduce digestive symptoms, or simply feel your best, I'm here to support you every step of the way. Together, we'll find an approach that works for your lifestyle and helps you achieve your goals.
+            </p>
         </div>
         
         <div className="pt-4">
