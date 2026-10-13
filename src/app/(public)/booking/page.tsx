@@ -1,3 +1,4 @@
+import { FAQSection } from "@/components/booking/FAQSection"
 import { Skeleton } from "@/components/ui/Skeleton"
 import { getServiceConfig } from "@/lib/service-manager"
 import type { Metadata } from "next"
@@ -6,11 +7,11 @@ import { BookingClient } from "./BookingClient"
 
 export const metadata: Metadata = {
   title: "Book a Consultation",
-  description: "Book a virtual or in-person nutrition consultation with Edwak Nutrition. Choose your service, select a time, and get expert dietary guidance tailored to your needs.",
+  description: "Book a virtual or in-person nutrition consultation with Edwak Nutrition. Insurance accepted. Choose your service, select a time, and get expert dietary guidance tailored to your needs.",
   alternates: { canonical: "/booking" },
   openGraph: {
     title: "Book a Consultation",
-    description: "Schedule your personalized nutrition consultation — virtual or in-person appointments available.",
+    description: "Schedule your personalized nutrition consultation — virtual or in-person appointments available. Insurance accepted at our partner clinic.",
     type: "website",
   },
 }
@@ -24,7 +25,12 @@ export default async function BookingPage() {
 
   return (
     <Suspense fallback={<div className="container py-24"><Skeleton className="h-[600px] w-full rounded-3xl" /></div>}>
-      <BookingClient activeServiceIds={activeServiceIds} services={services} />
+      <BookingClient
+        activeServiceIds={activeServiceIds}
+        services={services}
+        // Server-rendered FAQ with live insurance data passed as a slot
+        faqSlot={<FAQSection />}
+      />
     </Suspense>
   )
 }

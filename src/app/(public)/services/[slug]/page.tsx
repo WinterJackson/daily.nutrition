@@ -1,4 +1,5 @@
 import { getServiceBySlug, getServices } from "@/app/actions/services";
+import { InsuranceAcceptedSection } from "@/components/insurance/InsuranceAcceptedSection";
 import { ServiceBookingCard } from "@/components/services/ServiceBookingCard";
 import { AnimatedBackground } from "@/components/ui/AnimatedBackground";
 import { ServiceIcon } from "@/components/ui/ServiceIcon";
@@ -170,7 +171,7 @@ export default async function ServicePage({ params }: Props) {
 
                     {/* Sidebar / Enhanced Booking */}
                     <div className="lg:col-span-1">
-                        <div className="sticky top-28">
+                        <div className="sticky top-28 space-y-0">
                             <ServiceBookingCard
                                 serviceId={service.id}
                                 serviceTitle={service.title}
@@ -180,6 +181,11 @@ export default async function ServicePage({ params }: Props) {
                                 priceVirtual={service.priceVirtual}
                                 priceInPerson={service.priceInPerson}
                             />
+                            {/* Show insurance sidebar only for paid clinical services with in-person pricing.
+                                Excludes: free Discovery Call, virtual-only services with no priceInPerson. */}
+                            {service.id !== "discovery-call" && service.priceInPerson != null && service.priceInPerson > 0 && (
+                                <InsuranceAcceptedSection variant="sidebar" />
+                            )}
                         </div>
                     </div>
                 </div>

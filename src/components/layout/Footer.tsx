@@ -1,5 +1,6 @@
 import { getServices } from "@/app/actions/services";
 import { getSettings } from "@/app/actions/settings";
+import { InsuranceAcceptedSection } from "@/components/insurance/InsuranceAcceptedSection";
 import {
     Facebook,
     Instagram,
@@ -44,7 +45,7 @@ export async function Footer() {
     return (
         <footer className="bg-olive text-white pt-16 pb-8 mx-1.25 mb-1.25 rounded-b-xl rounded-t-none">
             <div className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
                     {/* Brand */}
                     <div className="space-y-4 text-center md:text-left flex flex-col items-center md:items-start">
                         <Link href="/" className="inline-block">
@@ -207,6 +208,9 @@ export async function Footer() {
                             )}
                         </div>
                     </div>
+
+                    {/* Insurance Accepted */}
+                    <InsuranceAcceptedSection variant="footer" />
                 </div>
 
                 <div className="border-t border-white/10 pt-8 flex flex-col items-center gap-2 text-xs md:text-sm text-white/60 md:flex-row md:justify-between md:gap-4">

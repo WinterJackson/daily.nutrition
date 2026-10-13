@@ -51,9 +51,10 @@ model User {
   sessions          Session[]
   assignedInquiries Inquiry[]
 
-  createdAt DateTime  @default(now())
-  updatedAt DateTime  @updatedAt
-  deletedAt DateTime?
+  createdAt      DateTime        @default(now())
+  updatedAt      DateTime        @updatedAt
+  deletedAt      DateTime?
+  mealPlanOrders MealPlanOrder[]
 
   @@index([email])
   @@index([role])
@@ -210,24 +211,28 @@ model Booking {
   statusString  String        @default("CONFIRMED") @map("status") // Kept for backwards compat
   bookingStatus BookingStatus @default(PENDING) @map("booking_status")
 
-  notes                String? @db.Text
-  expectedAmount       Int?
-  paymentDeadline      DateTime?
-  mpesaTransactionCode String?
-  paymentSubmittedAt   DateTime?
-  amountPaid           Int? // Snapshot of Revenue confirmed by Admin Admin Dashboard.
-  googleEventId        String? @unique
-  encryptedMeetLink    String?
-  clientTimezone       String  @default("Africa/Nairobi")
-  referenceCode        String? @unique
-  reminder1hSent       Boolean @default(false)
-  reminder6hSent       Boolean @default(false)
-  adminReminder30mSent Boolean @default(false)
-  adminReminder15mSent Boolean @default(false)
+  notes                  String?   @db.Text
+  expectedAmount         Int?
+  paymentDeadline        DateTime?
+  mpesaTransactionCode   String?
+  paymentSubmittedAt     DateTime?
+  amountPaid             Int? // Snapshot of Revenue confirmed by Admin Admin Dashboard.
+  googleEventId          String?   @unique
+  encryptedMeetLink      String?
+  clientTimezone         String    @default("Africa/Nairobi")
+  referenceCode          String?   @unique
+  reminder1hSent         Boolean   @default(false)
+  reminder6hSent         Boolean   @default(false)
+  adminReminder30mSent   Boolean   @default(false)
+  adminReminder15mSent   Boolean   @default(false)
+  paymentReviewNudgeSent Boolean   @default(false)
 
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
   deletedAt DateTime?
+
+  payments       Payment[]
+  mealPlanOrders MealPlanOrder[]
 
   @@index([date])
   @@index([statusString])
@@ -262,6 +267,7 @@ model Service {
 
   bookings     Booking[]
   testimonials Testimonial[]
+  mealPlans    MealPlan[]
 
   @@index([slug])
   @@index([status])
@@ -512,17 +518,17 @@ model ResendConfig {
 }
 
 model NotificationPreferences {
-  id                  String       @id @default("default")
-  settingsId          String       @unique
+  id                      String       @id @default("default")
+  settingsId              String       @unique
   emailOnNewBooking       Boolean      @default(true)
   emailOnCancellation     Boolean      @default(true)
   emailOnReschedule       Boolean      @default(true)
   emailOnPaymentSubmitted Boolean      @default(true)
-  emailDailyAgenda    Boolean      @default(false)
-  agendaTime          String       @default("08:00")
-  createdAt           DateTime     @default(now())
-  updatedAt           DateTime     @updatedAt
-  SiteSettings        SiteSettings @relation(fields: [settingsId], references: [id], onDelete: Cascade)
+  emailDailyAgenda        Boolean      @default(false)
+  agendaTime              String       @default("08:00")
+  createdAt               DateTime     @default(now())
+  updatedAt               DateTime     @updatedAt
+  SiteSettings            SiteSettings @relation(fields: [settingsId], references: [id], onDelete: Cascade)
 }
 
 model SiteSettings {
@@ -560,6 +566,11 @@ model SiteSettings {
   twitterUrl   String @default("")
   facebookUrl  String @default("")
 
+  /// Master switch for the M-Pesa STK Push checkout. While false the legacy
+  /// manual Paybill + transaction-code flow runs untouched, so the new rail can
+  /// be deployed dark and enabled only after a live low-value test passes.
+  mpesaStkEnabled Boolean @default(false)
+
   privacyPolicyContent String @default("")
   termsContent         String @default("")
   cookiePolicyContent  String @default("")
@@ -582,4 +593,422 @@ model EmailLog {
   @@index([context])
   @@index([recipientEmail])
   @@index([createdAt])
+}
+
+/// Durable sliding-window rate limiting.
+/// Serverless instances do not share memory, so the in-memory limiter alone is
+/// per-instance and trivially bypassed by hitting a different lambda. Each row is
+/// one request hit; the window is evaluated by counting rows newer than the cutoff.
+model RateLimitHit {
+  id        String   @id @default(cuid())
+  key       String
+  createdAt DateTime @default(now())
+
+  @@index([key, createdAt])
+  @@index([createdAt])
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+//  Payments — M-Pesa STK Push (Daraja)
+// ────────────────────────────────────────────────────────────────────────────
+
+enum PaymentStatus {
+  INITIATED /// Row written, Daraja not yet called. Exists BEFORE the push so an
+  /// early callback can never arrive for a payment we have not persisted.
+  PENDING /// Push accepted by Safaricom, awaiting the customer's PIN.
+  SUCCESS /// Confirmed and reconciled. Fulfilment has fired exactly once.
+  FAILED /// Declined — wrong PIN, insufficient funds, unreachable handset.
+  CANCELLED /// Customer dismissed the prompt (result code 1032).
+  TIMEOUT /// No callback and the query stayed inconclusive past the window.
+  MISMATCH /// Money arrived but the amount ≠ expected. Quarantined: never auto-fulfils.
+}
+
+enum PaymentPurpose {
+  BOOKING
+  MEAL_PLAN_ORDER
+}
+
+/// The single ledger for every shilling the platform collects.
+///
+/// One table serves bookings and meal-plan orders alike so that exactly one code
+/// path — reconcile() — may transition a row to SUCCESS, and so revenue reporting
+/// has one authoritative source rather than several partial ones.
+model Payment {
+  id        String         @id @default(cuid())
+  reference String         @unique /// Internal, human-quotable ("PAY-XXXXXX").
+  purpose   PaymentPurpose
+
+  /// Exactly one of these is set, enforced in application code because Prisma
+  /// cannot express an XOR constraint.
+  bookingId       String?
+  booking         Booking?       @relation(fields: [bookingId], references: [id])
+  mealPlanOrderId String?
+  mealPlanOrder   MealPlanOrder? @relation(fields: [mealPlanOrderId], references: [id])
+
+  amountExpected Int /// Whole shillings — M-Pesa has no minor unit.
+  amountPaid     Int?
+  phoneNumber    String /// Normalised to 2547…/2541… before it is ever stored.
+
+  status   PaymentStatus @default(INITIATED)
+  provider String        @default("MPESA_STK") /// MPESA_STK | MPESA_MANUAL
+
+  merchantRequestId  String?
+  /// Daraja's idempotency key. Unique so a retried callback cannot create a
+  /// second payment, and so the guarded updateMany has a single target row.
+  checkoutRequestId  String? @unique
+  /// Unique platform-wide: the same M-Pesa receipt can never be attached to two
+  /// orders, not even through the admin reconciliation override.
+  mpesaReceiptNumber String? @unique
+
+  resultCode String?
+  resultDesc String?
+  attempt    Int     @default(1)
+
+  initiatedAt DateTime  @default(now())
+  completedAt DateTime?
+  expiresAt   DateTime?
+
+  failureReason String?
+  initiatedIp   String?
+  metadata      Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  callbacks MpesaCallbackLog[]
+
+  @@index([status, initiatedAt])
+  @@index([bookingId])
+  @@index([mealPlanOrderId])
+  @@index([phoneNumber])
+}
+
+/// Verbatim capture of every callback Safaricom delivers.
+///
+/// Written BEFORE any processing is attempted, which is what makes the
+/// callback-arrives-before-our-own-write race survivable: an unmatched callback
+/// is still durably recorded and is replayed later by the reconciliation cron.
+model MpesaCallbackLog {
+  id String @id @default(cuid())
+
+  checkoutRequestId String?
+  merchantRequestId String?
+  resultCode        String?
+
+  paymentId String?
+  payment   Payment? @relation(fields: [paymentId], references: [id])
+
+  payload  Json /// The raw body, exactly as received.
+  sourceIp String?
+
+  processed       Boolean @default(false)
+  processingError String? @db.Text
+
+  receivedAt  DateTime  @default(now())
+  processedAt DateTime?
+
+  @@index([checkoutRequestId])
+  @@index([processed, receivedAt])
+  @@index([paymentId])
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+//  Meal plans — owner-controlled commercial settings
+// ────────────────────────────────────────────────────────────────────────────
+
+/// Singleton (id = "default") holding every number the owner must be able to
+/// change without a deploy: weekly capacity for bespoke plans, the fulfilment
+/// SLA, the revision policy, and even the public tier names — so marketing can
+/// rename a tier without a migration.
+model MealPlanSettings {
+  id String @id @default("default")
+
+  /// Bespoke plans sold per ISO week, evaluated in Africa/Nairobi. A personalised
+  /// plan is 60–120 minutes of clinical time; selling thirty in a week produces
+  /// missed SLAs and refunds, which costs more than the foregone sale.
+  personalizedCapacityPerWeek Int     @default(5)
+  /// Hard pause, for holidays or overload. Withdraws the tier from sale at once.
+  acceptingPersonalized       Boolean @default(true)
+  waitlistEnabled             Boolean @default(true)
+
+  fulfilmentSlaHours Int @default(72)
+  freeRevisions      Int @default(1)
+  revisionWindowDays Int @default(14)
+
+  /// Public tier labels. "Template" does not sell in this market, and the naming
+  /// is a marketing decision that must not require a code change.
+  signatureTierLabel    String @default("Signature Plans")
+  personalizedTierLabel String @default("Personal Plans")
+
+  /// Gates the public /meal-plans route and its nav link. Kept false until at
+  /// least one plan is published, so the header never leads to an empty grid.
+  storefrontEnabled Boolean @default(false)
+
+  version   Int      @default(0)
+  updatedAt DateTime @updatedAt
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+//  Meal plans
+// ────────────────────────────────────────────────────────────────────────────
+
+enum MealPlanTier {
+  /// Self-serve, built from real patient cases. Sold to buyers we have not assessed,
+  /// which is why the clinical screener is load-bearing rather than decorative.
+  SIGNATURE
+  /// Bespoke, built around one client's labs, kitchen and budget. Capacity-limited.
+  PERSONALIZED
+}
+
+enum MealPlanOrderStatus {
+  PENDING_PAYMENT
+  PAID
+  INTAKE_REQUIRED /// Personalised only: awaiting the clinical questionnaire.
+  IN_PREPARATION /// Intake received, SLA clock running.
+  DELIVERED
+  REVISION_REQUESTED
+  CANCELLED
+  EXPIRED /// Never paid for within the window.
+  REFUNDED
+}
+
+/// A sellable plan on the storefront. Entirely owner-authored — nothing about the
+/// catalogue is hardcoded, so plans are added, repriced and withdrawn without a deploy.
+model MealPlan {
+  id       String  @id @default(cuid())
+  slug     String  @unique
+  title    String
+  subtitle String?
+
+  tier MealPlanTier @default(SIGNATURE)
+
+  shortDescription String
+  fullDescription  String?  @db.Text
+  features         String[]
+
+  /// Whole shillings, matching Service. compareAtPrice is the struck-through anchor.
+  price          Int
+  compareAtPrice Int?
+  durationDays   Int?
+
+  coverImage      String?
+  sampleImageUrls String[]
+
+  /// Which consultation a screened-out buyer is routed to. The block is only
+  /// commercially sensible because it converts into a higher-value lead.
+  serviceId String?
+  service   Service? @relation(fields: [serviceId], references: [id])
+
+  /// Screening keys that BLOCK purchase. A controlled vocabulary from
+  /// lib/meal-plans/screening.ts — free text here would silently disable the gate,
+  /// because the admin's wording would never match the screener's keys.
+  contraindications String[]
+
+  /// Null inherits the global weekly capacity from MealPlanSettings.
+  capacityOverride Int?
+
+  metaTitle       String?
+  metaDescription String?
+
+  status       ContentStatus @default(DRAFT)
+  displayOrder Int           @default(0)
+  version      Int           @default(0)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  orders MealPlanOrder[]
+  assets MealPlanAsset[]
+
+  @@index([slug])
+  @@index([status])
+  @@index([tier])
+  @@index([displayOrder])
+}
+
+/// One purchase. Snapshots title and price so a renamed, repriced or withdrawn plan
+/// still renders correctly in the buyer's order history and in revenue reporting.
+model MealPlanOrder {
+  id            String @id @default(cuid())
+  referenceCode String @unique /// "MP-XXXXXX"
+
+  mealPlanId String?
+  mealPlan   MealPlan?    @relation(fields: [mealPlanId], references: [id])
+  tier       MealPlanTier
+
+  /// Immutable snapshots. Never read the live plan for a historical order.
+  planTitleSnapshot String
+  pricePaid         Int
+
+  clientName  String
+  clientEmail String
+  clientPhone String?
+
+  status MealPlanOrderStatus @default(PENDING_PAYMENT)
+
+  /// Set when the plan was bought as an add-on during a consultation booking.
+  linkedBookingId String?
+  linkedBooking   Booking? @relation(fields: [linkedBookingId], references: [id])
+
+  paidAt      DateTime?
+  dueAt       DateTime? /// Fulfilment SLA deadline.
+  deliveredAt DateTime?
+  expiresAt   DateTime? /// Payment window for an unpaid order.
+
+  assignedToId String?
+  assignedTo   User?   @relation(fields: [assignedToId], references: [id])
+
+  /// Evidence the buyer accepted the educational-guidance disclaimer.
+  disclaimerAcceptedAt DateTime?
+
+  revisionCount       Int       @default(0)
+  revisionNotes       String?   @db.Text
+  revisionRequestedAt DateTime?
+
+  /// Cron idempotency flags, mirroring the booking reminder pattern.
+  intakeNudge24hSent Boolean @default(false)
+  intakeNudge72hSent Boolean @default(false)
+  slaWarningSent     Boolean @default(false)
+  slaBreachAlerted   Boolean @default(false)
+  followUpSent       Boolean @default(false)
+  upsellSent         Boolean @default(false)
+
+  internalNotes String? @db.Text
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  payments       Payment[]
+  intake         MealPlanIntake?
+  assets         MealPlanAsset[]
+  downloadTokens MealPlanDownloadToken[]
+
+  @@index([status])
+  @@index([clientEmail])
+  @@index([dueAt])
+  @@index([mealPlanId])
+  @@index([paidAt])
+}
+
+/// The clinical questionnaire — the most sensitive data on the platform.
+///
+/// A booking holds a name and a time. An intake holds diagnoses, medications, weight
+/// and pregnancy status, so the payload is encrypted at rest with the same AES-256-GCM
+/// helper used for Meet links. Only non-identifying screeningFlags stay in plaintext,
+/// so "how many orders were flagged" is answerable without decrypting anything.
+model MealPlanIntake {
+  id      String        @id @default(cuid())
+  orderId String        @unique
+  order   MealPlanOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  encryptedPayload String   @db.Text
+  screeningFlags   String[]
+
+  submittedAt DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+/// A deliverable file. Stores a storage KEY, never a URL — the moment a public
+/// res.cloudinary.com URL for a paid PDF is persisted, the product is one WhatsApp
+/// forward from worthless.
+model MealPlanAsset {
+  id String @id @default(cuid())
+
+  /// Attached either to a plan (the Signature deliverable) or to one order (a
+  /// personalised plan prepared for a single buyer).
+  mealPlanId String?
+  mealPlan   MealPlan?      @relation(fields: [mealPlanId], references: [id])
+  orderId    String?
+  order      MealPlanOrder? @relation(fields: [orderId], references: [id])
+
+  storageKey String /// Private Cloudinary public_id.
+  filename   String
+  mimeType   String @default("application/pdf")
+  size       Int    @default(0)
+  version    Int    @default(1)
+
+  /// Per-buyer watermarking makes sharing socially awkward, which is where
+  /// deterrence for digital goods actually lives.
+  watermarked Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  downloadTokens MealPlanDownloadToken[]
+
+  @@index([mealPlanId])
+  @@index([orderId])
+}
+
+/// Expiring, counted, revocable download grant.
+///
+/// Binds to the ASSET rather than the plan, so archiving or unpublishing a plan can
+/// never break a link a buyer has already paid for.
+model MealPlanDownloadToken {
+  id    String @id @default(cuid())
+  token String @unique
+
+  orderId String
+  order   MealPlanOrder @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  assetId String
+  asset   MealPlanAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+
+  expiresAt      DateTime
+  maxDownloads   Int       @default(5)
+  downloadCount  Int       @default(0)
+  lastDownloadIp String?
+  lastDownloadAt DateTime?
+  revokedAt      DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([orderId])
+  @@index([expiresAt])
+}
+
+/// Waitlist for when bespoke capacity is exhausted. Capturing the lead is worth more
+/// than the refused sale, and it tells the owner exactly how much to raise capacity by.
+model MealPlanWaitlistEntry {
+  id String @id @default(cuid())
+
+  mealPlanId String?
+  name       String
+  email      String
+  phone      String?
+
+  notifiedAt  DateTime?
+  convertedAt DateTime?
+  createdAt   DateTime  @default(now())
+
+  @@index([mealPlanId])
+  @@index([email])
+}
+
+// ────────────────────────────────────────────────────────────────────────────
+//  Insurance Providers — clinic-partnership billing model
+// ────────────────────────────────────────────────────────────────────────────
+
+/// Each row represents one accepted insurance company.
+/// Clients visiting the partner clinic pay their insurer directly; the clinic
+/// then settles with the platform owner on a monthly basis.
+/// Admin can add, edit, toggle active/inactive, reorder, and permanently delete.
+model InsuranceProvider {
+  id          String  @id @default(cuid())
+  name        String  /// e.g. "Cigna", "CIC Insurance Group"
+  logoUrl     String? /// Optional logo stored in media library
+  description String? /// e.g. "Covers outpatient nutrition consultations"
+  contactInfo String? /// e.g. "Call 0703 099 120 or visit cicinsurancegroup.com"
+  websiteUrl  String? /// Link to insurer's public website
+
+  /// Soft-toggle without permanent deletion — useful when a partnership is
+  /// temporarily suspended rather than fully terminated.
+  isActive     Boolean @default(true)
+  displayOrder Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([isActive])
+  @@index([displayOrder])
 }

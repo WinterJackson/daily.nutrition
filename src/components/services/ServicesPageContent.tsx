@@ -22,6 +22,7 @@ import { motion } from "framer-motion";
 import { ArrowRight, Sparkles } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
+import { ReactNode } from "react";
 
 interface Service {
     id: string;
@@ -37,7 +38,7 @@ interface Service {
     image?: string | null;
 }
 
-export function ServicesPageContent({ services }: { services: Service[] }) {
+export function ServicesPageContent({ services, insuranceBanner }: { services: Service[]; insuranceBanner?: ReactNode }) {
     const discoveryService = services.find((s) => s.id === "discovery-call");
     const gridServices = services.filter((s) => s.id !== "discovery-call");
     const isDiscoveryCallActive = !!discoveryService;
@@ -270,6 +271,9 @@ export function ServicesPageContent({ services }: { services: Service[] }) {
                     ))}
                 </div>
             </section>
+
+            {/* Insurance Accepted Banner (server-rendered slot) */}
+            {insuranceBanner}
 
             {/* Process Timeline Section */}
             <section className="relative z-10 container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-24">

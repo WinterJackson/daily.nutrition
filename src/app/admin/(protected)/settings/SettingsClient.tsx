@@ -1,15 +1,18 @@
 "use client"
 
+import { InsuranceProviderData } from "@/app/actions/insurance"
 import { EnvStatusMap, SettingsData, updateSettings, upsertIntegrationSecrets } from "@/app/actions/settings"
 import { deleteImage, uploadImage } from "@/app/actions/upload"
 import { CollapsibleCard } from "@/components/admin/CollapsibleCard"
 import { DataExport } from "@/components/admin/DataExport"
 import { EmailBrandingEditor } from "@/components/admin/EmailBrandingEditor"
+import { InsuranceProvidersManager } from "@/components/admin/InsuranceProvidersManager"
 import { LegalContentConfig } from "@/components/admin/LegalContentConfig"
 import { MediaPickerModal } from "@/components/admin/MediaPickerModal"
 import { NotificationConfig } from "@/components/admin/NotificationConfig"
 import { SecurityConfig } from "@/components/admin/SecurityConfig"
 import { SessionManagement } from "@/components/admin/SessionManagement"
+import { MpesaIntegrationPanel } from "@/components/admin/settings/MpesaIntegrationPanel"
 import { SecretCard } from "@/components/admin/settings/SecretCard"
 import { StaffManagement } from "@/components/admin/settings/StaffManagement"
 import { StatusCard } from "@/components/admin/settings/StatusCard"
@@ -18,7 +21,7 @@ import { Button } from "@/components/ui/Button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/Card"
 import { Input } from "@/components/ui/Input"
 import { getPublicIdFromUrl } from "@/lib/cloudinary-utils"
-import { Calendar, CheckCircle, ChevronDown, Clock, Database, Globe, ImageIcon, Key, Loader2, MapPin, Moon, Save, Sparkles, Star, Sun, Trash2, Users } from "lucide-react"
+import { Calendar, CheckCircle, ChevronDown, Clock, Database, Globe, ImageIcon, Key, Loader2, MapPin, Moon, Save, Shield, Sparkles, Star, Sun, Trash2, Users } from "lucide-react"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
 import { useEffect, useRef, useState, useTransition } from "react"
@@ -170,6 +173,7 @@ export interface SettingsClientProps {
   secretStatuses: Record<string, boolean>
   is2FAEnabled: boolean
   userRole?: string
+  initialInsuranceProviders?: InsuranceProviderData[]
 }
 
 export default function SettingsClient({ 
@@ -177,7 +181,8 @@ export default function SettingsClient({
   envStatus, 
   secretStatuses, 
   is2FAEnabled,
-  userRole = "ADMIN"
+  userRole = "ADMIN",
+  initialInsuranceProviders = []
 }: SettingsClientProps) {
   const router = useRouter()
   const [activeTab, setActiveTab] = useState("general")
@@ -403,6 +408,7 @@ export default function SettingsClient({
         {[
           { id: "general", label: "General" },
           { id: "seo", label: "SEO" },
+          { id: "insurance", label: "Insurance & Clinic", icon: Shield },
           { id: "integrations", label: "Integrations", icon: Calendar },
           { id: "environment", label: "Environment", icon: Database },
           ...(userRole === "SUPER_ADMIN" ? [{ id: "staff", label: "Staff & Roles", icon: Users }] : []),
@@ -867,6 +873,10 @@ export default function SettingsClient({
         {activeTab === "integrations" && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
 
+            {/* Payments lead the tab: this is the only integration on the page
+                that can take money from a customer and fail to deliver. */}
+            <MpesaIntegrationPanel userRole={userRole} />
+
             <Card className="surface-card">
               <CardHeader>
                   <CardTitle className="text-base sm:text-lg flex items-center gap-2">
@@ -1216,6 +1226,26 @@ export default function SettingsClient({
                     className="md:col-span-2"
                 />
             </div>
+          </div>
+        )}
+
+        {/* Insurance & Clinic Tab */}
+        {activeTab === "insurance" && (
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <Card className="surface-card">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Shield className="w-5 h-5 text-brand-green" />
+                  Insurance & Clinic Partnerships
+                </CardTitle>
+                <CardDescription>
+                  Manage which insurance companies you accept at your partner clinic. Changes appear on your website immediately — no redeploy needed.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <InsuranceProvidersManager initialProviders={initialInsuranceProviders} />
+              </CardContent>
+            </Card>
           </div>
         )}
 

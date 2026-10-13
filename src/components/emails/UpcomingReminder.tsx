@@ -13,7 +13,14 @@ interface UpcomingReminderProps {
   meetLink: string;
   hoursBefore: number; // 6 or 1
   referenceCode: string;
+  /** Capability token binding this booking to the recipient's email. */
+  accessToken?: string;
   sessionType?: "virtual" | "in-person";
+  /**
+   * Names of accepted insurance providers e.g. ["Cigna", "CIC Insurance"].
+   * When provided and sessionType is "in-person", a brief insurance reminder is shown.
+   */
+  acceptedInsurers?: string[];
   branding: EmailBrandingData;
 }
 
@@ -26,10 +33,13 @@ export const UpcomingReminderEmail = ({
   hoursBefore = 24,
   referenceCode,
   sessionType = "virtual",
+  accessToken,
+  acceptedInsurers,
   branding
 }: UpcomingReminderProps) => {
   const isVirtual = sessionType === "virtual";
   const timeFrame = hoursBefore === 1 ? "1 hour" : `${hoursBefore} hours`;
+  const showInsuranceNote = !isVirtual && acceptedInsurers && acceptedInsurers.length > 0;
   const previewText = `Reminder: Your appointment is in ${timeFrame}`;
 
   return (
@@ -61,6 +71,19 @@ export const UpcomingReminderEmail = ({
         </Text>
       </Section>
 
+      {/* Insurance reminder — only for in-person visits */}
+      {showInsuranceNote && (
+        <Section className="bg-offwhite p-5 rounded-lg my-4 border border-[#d4edda]">
+          <Text className="m-0 text-olive font-bold uppercase text-[10px] mb-2 tracking-wider">
+            🛡️ Insurance Accepted for Today's Visit
+          </Text>
+          <Text className="m-0 text-[#333] text-[13px] leading-[22px]">
+            We accept <strong>{acceptedInsurers!.join(" and ")}</strong> insurance at our partner clinic.
+            If you plan to use your insurance cover, please have your membership card ready when you arrive.
+          </Text>
+        </Section>
+      )}
+
       {isVirtual && meetLink ? (
         <Section className="text-center mt-[32px] mb-[32px]">
           <Button
@@ -74,7 +97,7 @@ export const UpcomingReminderEmail = ({
         <Section className="text-center mt-[32px] mb-[32px]">
           <Button
             className="bg-brand rounded text-white text-[12px] font-semibold no-underline text-center px-5 py-3"
-            href={`${branding.websiteUrl}/booking/manage/${referenceCode}`}
+            href={`${branding.websiteUrl}/booking/manage/${referenceCode}${accessToken ? `?t=${accessToken}` : ""}`}
           >
             Manage Booking
           </Button>

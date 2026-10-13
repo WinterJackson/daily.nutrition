@@ -17,6 +17,7 @@ export async function fetchAvailability(dateStr: string): Promise<{ success: boo
 }
 
 import { BookingConfirmationEmail } from "@/components/emails/BookingConfirmation"
+import { getActiveInsuranceProviders } from "@/app/actions/insurance"
 import { NotificationManager } from "@/lib/notifications/manager"
 import { prisma } from "@/lib/prisma"
 import { bookingLimiter } from "@/lib/rate-limit"
@@ -24,6 +25,7 @@ import { NotificationService } from "@/lib/services/notification-service"
 import { Resend } from 'resend'
 
 import { logAudit } from "@/lib/audit"
+import { generateBookingAccessToken } from "@/lib/booking-access"
 import { encrypt } from "@/lib/encryption"
 
 // Removed top-level Resend init to prevent crashes if API key is missing
@@ -53,6 +55,8 @@ export async function bookAppointment(data: {
     serviceName: string
     clientTimezone?: string
     sessionType?: "virtual" | "in-person"
+    /** Optional bespoke meal plan bought alongside the consultation. */
+    addOnPlanId?: string
 }) {
     try {
         // 0. Rate Limit — prevent booking spam
@@ -133,6 +137,11 @@ export async function bookAppointment(data: {
         // 3c. Generate Reference Code (with collision retry)
         const referenceCode = await generateUniqueReferenceCode()
 
+        // Capability token binding this booking to the client's email. Every
+        // self-service link (success screen, emails) must carry it.
+        const normalisedEmail = data.clientEmail.trim().toLowerCase()
+        const accessToken = generateBookingAccessToken(referenceCode, normalisedEmail)
+
         // 4. Save to Local Database
         // The incoming time is an absolute UTC ISO string, completely bypassing server timezone drift
         const scheduledAt = new Date(data.time)
@@ -146,12 +155,58 @@ export async function bookAppointment(data: {
             select: { priceVirtual: true, priceInPerson: true }
         }) : null
 
-        const expectedAmount = bookedService
+        let expectedAmount = bookedService
             ? (data.sessionType === "in-person" ? bookedService.priceInPerson : bookedService.priceVirtual)
             : null
 
+        // ── Meal plan add-on ────────────────────────────────────────────────
+        // Priced into the booking's single total so the client enters one PIN for
+        // both. Validated server-side: the browser supplies only an id, never a
+        // price, and capacity is re-checked here because the widget's copy may be
+        // seconds stale.
+        let addOnPlan: { id: string; title: string; price: number; tier: string } | null = null
+
+        if (data.addOnPlanId) {
+            const candidate = await prisma.mealPlan.findFirst({
+                where: {
+                    id: data.addOnPlanId,
+                    status: "PUBLISHED",
+                    deletedAt: null,
+                    tier: "PERSONALIZED",
+                },
+                select: { id: true, title: true, price: true, tier: true, capacityOverride: true },
+            })
+
+            if (candidate) {
+                const { getPersonalizedCapacity } = await import("@/lib/meal-plans/settings")
+                const capacity = await getPersonalizedCapacity(candidate.capacityOverride)
+
+                // Silently dropping a sold-out add-on is the right call: the
+                // consultation itself is still valid and must not fail because a
+                // plan filled up between page load and submit.
+                if (capacity.available) addOnPlan = candidate
+            }
+        }
+
+        const addOnAmount = addOnPlan?.price ?? 0
+        expectedAmount = expectedAmount === null || expectedAmount === undefined
+            ? (addOnAmount > 0 ? addOnAmount : expectedAmount)
+            : expectedAmount + addOnAmount
+
         const isFree = expectedAmount === 0
-        const paymentDeadline = isFree ? null : new Date(Date.now() + 45 * 60 * 1000) // 45 minutes
+
+        // STK Push resolves in seconds, so a 45-minute hold needlessly freezes a
+        // slot the customer has already abandoned. The manual Paybill flow genuinely
+        // needs the longer window — the client has to leave the site, pay, and come
+        // back — so the two rails get different deadlines.
+        const platformSettings = await prisma.siteSettings.findUnique({
+            where: { id: "default" },
+            select: { mpesaStkEnabled: true },
+        })
+        const stkEnabled = platformSettings?.mpesaStkEnabled ?? false
+        const holdMinutes = stkEnabled ? 15 : 45
+
+        const paymentDeadline = isFree ? null : new Date(Date.now() + holdMinutes * 60 * 1000)
 
         try {
             await prisma.booking.create({
@@ -168,6 +223,9 @@ export async function bookAppointment(data: {
                     googleEventId: googleEvent?.id || undefined,
                     encryptedMeetLink: encryptedMeetLink,
                     sessionType: data.sessionType || "virtual",
+                    // Keep the typed enum authoritative for reporting. Without this it
+                    // stays at its VIRTUAL default and under-values in-person revenue.
+                    type: data.sessionType === "in-person" ? "IN_PERSON" : "VIRTUAL",
                     referenceCode: referenceCode,
                     clientTimezone: clientTimezone,
                     expectedAmount: expectedAmount,
@@ -181,6 +239,33 @@ export async function bookAppointment(data: {
                 console.error(`ORPHANED GOOGLE EVENT: ${googleEvent.id} — DB save failed, manual cleanup needed`)
             }
             return { success: false, error: "Failed to save your booking. Please try again or contact support." }
+        }
+
+        // The order is created only after the booking row exists, so a failed
+        // booking can never leave a dangling paid-for plan.
+        if (addOnPlan) {
+            try {
+                const createdBooking = await prisma.booking.findUnique({
+                    where: { referenceCode },
+                    select: { id: true },
+                })
+
+                if (createdBooking) {
+                    const { createMealPlanOrder } = await import("@/lib/meal-plans/orders")
+                    await createMealPlanOrder({
+                        mealPlanId: addOnPlan.id,
+                        clientName: data.clientName.trim(),
+                        clientEmail: data.clientEmail.trim().toLowerCase(),
+                        clientPhone: data.clientPhone?.trim(),
+                        linkedBookingId: createdBooking.id,
+                        // Accepting the booking terms covers the add-on; the full
+                        // clinical disclaimer is presented again at intake.
+                        disclaimerAccepted: true,
+                    })
+                }
+            } catch (addOnErr) {
+                console.error("Add-on order creation failed (booking was saved):", addOnErr)
+            }
         }
 
         logAudit({
@@ -249,6 +334,10 @@ export async function bookAppointment(data: {
                     : `Awaiting Payment: ${data.serviceName} (#${referenceCode})`
 
                 try {
+                    // Fetch active insurers to include in in-person booking confirmations
+                    const insuranceProviders = await getActiveInsuranceProviders()
+                    const acceptedInsurers = insuranceProviders.map(p => p.name)
+
                     await resend.emails.send({
                         from: `Edwak Nutrition <${fromEmail}>`,
                         to: data.clientEmail.trim(),
@@ -262,7 +351,10 @@ export async function bookAppointment(data: {
                             sessionType: data.sessionType || "virtual",
                             branding: branding,
                             expectedAmount: expectedAmount,
-                            isFree: isFree
+                            isFree: isFree,
+                            paymentMode: stkEnabled ? "stk" : "manual",
+                            accessToken: accessToken,
+                            acceptedInsurers
                         })
                     })
                     await logEmailAttempt({ recipientEmail: data.clientEmail, subject: emailSubject, context: "BOOKING_CONFIRMATION", entityId: referenceCode, success: true })
@@ -323,6 +415,14 @@ export async function bookAppointment(data: {
         return {
             success: true,
             referenceCode,
+            accessToken,
+            // Drives the checkout step: the widget needs to know whether to ask for
+            // payment at all, and on which rail, without a second round trip.
+            expectedAmount,
+            isFree,
+            stkEnabled,
+            addOn: addOnPlan ? { title: addOnPlan.title, price: addOnPlan.price } : null,
+            paymentDeadline,
             ...(googleEventError ? { warning: "Your booking is confirmed, but calendar sync encountered an issue. Our team will follow up." } : {})
         }
     } catch (error) {

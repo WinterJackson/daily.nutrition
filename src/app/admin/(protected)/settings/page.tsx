@@ -1,3 +1,4 @@
+import { getAllInsuranceProviders } from "@/app/actions/insurance"
 import { getServerEnvStatus, getSettings } from "@/app/actions/settings"
 import { hasSecret } from "@/lib/ai/secrets"
 import { getCurrentUser } from "@/lib/auth"
@@ -10,6 +11,7 @@ export default async function AdminSettingsPage() {
   const settings = await getSettings()
   const envStatus = await getServerEnvStatus()
   const user = await getCurrentUser()
+  const insuranceResult = await getAllInsuranceProviders()
 
   // Generate the configuration map for the frontend to show the Green Encrypted badges securely
   const secretKeysToCheck = [
@@ -43,6 +45,7 @@ export default async function AdminSettingsPage() {
       secretStatuses={secretStatuses}
       is2FAEnabled={user?.twoFactorEnabled || false}
       userRole={user?.role || "ADMIN"}
+      initialInsuranceProviders={insuranceResult.data}
     />
   )
 }

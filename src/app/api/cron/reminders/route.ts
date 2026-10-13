@@ -1,6 +1,8 @@
 import { AdminUpcomingReminderEmail } from "@/components/emails/AdminUpcomingReminder"
 import { UpcomingReminderEmail } from "@/components/emails/UpcomingReminder"
+import { getActiveInsuranceProviders } from "@/app/actions/insurance"
 import { INTERNAL_getSecret } from "@/lib/ai/secrets"
+import { generateBookingAccessToken } from "@/lib/booking-access"
 import { decrypt } from "@/lib/encryption"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
@@ -49,6 +51,11 @@ export async function GET(request: Request) {
             websiteUrl: settings?.EmailBranding?.websiteUrl || process.env.NEXT_PUBLIC_SITE_URL || "https://edwaknutrition.co.ke",
             supportEmail: settings?.EmailBranding?.supportEmail || settings?.contactEmail || "info@edwaknutritionco.com"
         }
+
+        // Fetch active insurance provider names once for the whole batch.
+        // Passed to client reminder emails so in-person clients are informed.
+        const insuranceProviders = await getActiveInsuranceProviders()
+        const acceptedInsurers = insuranceProviders.map(p => p.name)
 
         const now = new Date()
 
@@ -146,7 +153,9 @@ export async function GET(request: Request) {
                     hoursBefore: 6,
                     referenceCode: booking.referenceCode || "",
                     sessionType: (booking.sessionType as "virtual" | "in-person") || "virtual",
-                    branding
+                    branding,
+                    acceptedInsurers,
+                    accessToken: generateBookingAccessToken(booking.referenceCode || "", booking.clientEmail)
                 })
             })
 
@@ -186,7 +195,9 @@ export async function GET(request: Request) {
                     hoursBefore: 1,
                     referenceCode: booking.referenceCode || "",
                     sessionType: (booking.sessionType as "virtual" | "in-person") || "virtual",
-                    branding
+                    branding,
+                    acceptedInsurers,
+                    accessToken: generateBookingAccessToken(booking.referenceCode || "", booking.clientEmail)
                 })
             })
 

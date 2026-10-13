@@ -150,7 +150,7 @@ export const processSteps = [
 export const faqs = [
     {
         question: "Do you accept insurance?",
-        answer: "At this time, we operate as a self-pay practice and do not accept insurance. However, as we continue to grow, we are actively working towards establishing partnerships with insurance providers in the future to make our services more accessible. We appreciate your understanding and are happy to discuss payment options that work for you."
+        answer: "Yes! We currently accept Cigna and CIC Insurance at our partner clinic. Clients visiting us in-person for clinical nutrition services can pay their insurer directly. The clinic settles our fee on a monthly basis. Please contact your insurer to verify your outpatient nutrition benefit before booking. Note: the free Discovery Call and online meal plan orders are self-pay."
     },
     {
         question: "Is it virtual or in-person?",

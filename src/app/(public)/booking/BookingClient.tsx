@@ -1,21 +1,21 @@
 "use client"
 
 import { BookingSteps } from "@/components/booking/BookingSteps"
-import { FAQSection } from "@/components/booking/FAQSection"
 import { ServiceSelection } from "@/components/booking/ServiceSelection"
 import { AnimatedBackground } from "@/components/ui/AnimatedBackground"
 import { motion } from "framer-motion"
 import { Calendar } from "lucide-react"
 import Link from "next/link"
 import { useRouter, useSearchParams } from "next/navigation"
-import { useEffect, useState } from "react"
+import { ReactNode, useEffect, useState } from "react"
 
 interface BookingClientProps {
   activeServiceIds: string[]
   services?: any[]
+  faqSlot?: ReactNode
 }
 
-export function BookingClient({ activeServiceIds, services = [] }: BookingClientProps) {
+export function BookingClient({ activeServiceIds, services = [], faqSlot }: BookingClientProps) {
   const [selectedService, setSelectedService] = useState<string | undefined>()
   const [sessionType, setSessionType] = useState<"virtual" | "in-person">("virtual")
   const searchParams = useSearchParams()
@@ -118,7 +118,7 @@ export function BookingClient({ activeServiceIds, services = [] }: BookingClient
 
       {/* FAQ */}
       <section className="container max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-24 relative z-10">
-         <FAQSection />
+         {faqSlot}
       </section>
 
       {/* Support CTA */}
