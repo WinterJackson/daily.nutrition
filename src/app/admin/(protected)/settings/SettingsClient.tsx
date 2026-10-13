@@ -12,7 +12,7 @@ import { MediaPickerModal } from "@/components/admin/MediaPickerModal"
 import { NotificationConfig } from "@/components/admin/NotificationConfig"
 import { SecurityConfig } from "@/components/admin/SecurityConfig"
 import { SessionManagement } from "@/components/admin/SessionManagement"
-import { MpesaIntegrationPanel } from "@/components/admin/settings/MpesaIntegrationPanel"
+
 import { SecretCard } from "@/components/admin/settings/SecretCard"
 import { StaffManagement } from "@/components/admin/settings/StaffManagement"
 import { StatusCard } from "@/components/admin/settings/StatusCard"
@@ -873,9 +873,6 @@ export default function SettingsClient({
         {activeTab === "integrations" && (
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-2 duration-300">
 
-            {/* Payments lead the tab: this is the only integration on the page
-                that can take money from a customer and fail to deliver. */}
-            <MpesaIntegrationPanel userRole={userRole} />
 
             <Card className="surface-card">
               <CardHeader>

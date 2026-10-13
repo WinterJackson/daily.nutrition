@@ -2,7 +2,6 @@ import { AdminUpcomingReminderEmail } from "@/components/emails/AdminUpcomingRem
 import { UpcomingReminderEmail } from "@/components/emails/UpcomingReminder"
 import { getActiveInsuranceProviders } from "@/app/actions/insurance"
 import { INTERNAL_getSecret } from "@/lib/ai/secrets"
-import { generateBookingAccessToken } from "@/lib/booking-access"
 import { decrypt } from "@/lib/encryption"
 import { prisma } from "@/lib/prisma"
 import { NextResponse } from "next/server"
@@ -154,8 +153,7 @@ export async function GET(request: Request) {
                     referenceCode: booking.referenceCode || "",
                     sessionType: (booking.sessionType as "virtual" | "in-person") || "virtual",
                     branding,
-                    acceptedInsurers,
-                    accessToken: generateBookingAccessToken(booking.referenceCode || "", booking.clientEmail)
+                    acceptedInsurers
                 })
             })
 
@@ -196,8 +194,7 @@ export async function GET(request: Request) {
                     referenceCode: booking.referenceCode || "",
                     sessionType: (booking.sessionType as "virtual" | "in-person") || "virtual",
                     branding,
-                    acceptedInsurers,
-                    accessToken: generateBookingAccessToken(booking.referenceCode || "", booking.clientEmail)
+                    acceptedInsurers
                 })
             })
 

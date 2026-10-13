@@ -13,8 +13,6 @@ interface UpcomingReminderProps {
   meetLink: string;
   hoursBefore: number; // 6 or 1
   referenceCode: string;
-  /** Capability token binding this booking to the recipient's email. */
-  accessToken?: string;
   sessionType?: "virtual" | "in-person";
   /**
    * Names of accepted insurance providers e.g. ["Cigna", "CIC Insurance"].
@@ -33,7 +31,6 @@ export const UpcomingReminderEmail = ({
   hoursBefore = 24,
   referenceCode,
   sessionType = "virtual",
-  accessToken,
   acceptedInsurers,
   branding
 }: UpcomingReminderProps) => {
@@ -97,7 +94,7 @@ export const UpcomingReminderEmail = ({
         <Section className="text-center mt-[32px] mb-[32px]">
           <Button
             className="bg-brand rounded text-white text-[12px] font-semibold no-underline text-center px-5 py-3"
-            href={`${branding.websiteUrl}/booking/manage/${referenceCode}${accessToken ? `?t=${accessToken}` : ""}`}
+            href={`${branding.websiteUrl}/booking/manage/${referenceCode}`}
           >
             Manage Booking
           </Button>
